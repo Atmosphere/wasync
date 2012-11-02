@@ -24,8 +24,12 @@ public interface Socket {
 
     enum EVENT {CLOSE, ERROR, HEADER, STATUS, MESSAGE}
 
-    Future send(Object data) throws IOException;
+    Future fire(Object data) throws IOException;
 
-    Socket on(EVENT type, Function<?> function);
+    Socket on(Function<? extends Object> function);
+
+    Socket open(DefaultRequest.Builder builder) throws IOException;
+
+    void close();
 
 }

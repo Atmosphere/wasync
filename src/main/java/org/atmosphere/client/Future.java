@@ -47,7 +47,8 @@ public class Future implements java.util.concurrent.Future<Socket> {
         return done.get();
     }
 
-    protected Future done(){
+    // TODO: Not public
+    public Future done(){
         done.set(true);
         latch.countDown();
         return this;

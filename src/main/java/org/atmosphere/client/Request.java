@@ -16,6 +16,7 @@
 package org.atmosphere.client;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -31,14 +32,14 @@ public interface Request {
 
     METHOD method();
 
-    Map<String, List<String>> headers();
+    Map<String, Collection<String>> headers();
 
-    Map<String, List<String>> queryString();
+    Map<String, Collection<String>> queryString();
 
-    List<Encoder> encoders();
+    Encoder<?> encoder();
 
-    List<Decoder> decoders();
+    Decoder<?> decoder();
 
-    URI uri();
+    String uri();
 
 }

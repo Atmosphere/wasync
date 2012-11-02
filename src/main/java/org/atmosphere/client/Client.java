@@ -15,13 +15,10 @@
  */
 package org.atmosphere.client;
 
-import java.io.IOException;
-
 public interface Client {
 
-    Client open(Options options);
+    Socket create();
 
-    Future fire(Request request) throws IOException;
+    Socket create(Options options);
 
-    Client close();
 }

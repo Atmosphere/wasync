@@ -15,7 +15,7 @@
  */
 package org.atmosphere.client;
 
-public interface Function<T> {
+public interface Function<T extends Object> {
 
     void on(T t);
 

@@ -15,27 +15,8 @@
  */
 package org.atmosphere.client;
 
-public interface Encoder<U,T> {
+public interface Encoder<T> {
 
-    EncodedMessage<T> encode(EncodedMessage<U> s);
-
-    public static class EncodedMessage<T> {
-
-        private final Class<T> encoding;
-        private final Object message;
-
-        public EncodedMessage(Class<T> encoding, Object message) {
-            this.encoding = encoding;
-            this.message = message;
-        }
-
-        public Class<T>  encoding(){
-            return encoding;
-        }
-
-        public Object message(){
-            return message;
-        }
-    }
+    T encode(Object s);
 
 }

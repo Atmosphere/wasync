@@ -24,5 +24,7 @@ public interface Transport<T> {
 
     Transport future(Future f);
 
-    Transport injectFunction(Socket.EVENT event, Function<T> function);
+    Transport registerF(Function<T> function);
+
+    void onThrowable(Throwable t);
 }

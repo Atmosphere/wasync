@@ -17,9 +17,14 @@ package org.atmosphere.client;
 
 public class AtmosphereClientFactory {
 
-    private final AtmosphereClientFactory factory = new AtmosphereClientFactory();
+    private final static AtmosphereClientFactory factory = new AtmosphereClientFactory();
 
+    public final static AtmosphereClientFactory getDefault(){
+        return factory;
+    }
 
-
+    public Client newclient() {
+        return new DefaultClient();
+    }
 
 }
