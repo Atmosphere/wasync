@@ -28,6 +28,8 @@ public interface Socket {
 
     Socket on(Function<? extends Object> function);
 
+    Socket on(String functionMessage, Function<? extends Object> function);
+
     Socket open(DefaultRequest.Builder builder) throws IOException;
 
     void close();

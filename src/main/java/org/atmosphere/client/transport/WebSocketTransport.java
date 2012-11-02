@@ -25,6 +25,7 @@ import com.ning.http.client.websocket.WebSocketTextListener;
 import com.ning.http.client.websocket.WebSocketUpgradeHandler;
 import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
+import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.Future;
 import org.atmosphere.client.Request;
 import org.atmosphere.client.Socket;
@@ -41,11 +42,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private WebSocket webSocket;
     private final AtomicBoolean ok = new AtomicBoolean(false);
     private Future f;
-    private final List<Function<? extends Object>> functions;
+    private final List<FunctionWrapper> functions;
 
     private final Decoder<?> decoder;
 
-    public WebSocketTransport(Decoder<?> decoder, List<Function<? extends Object>> functions) {
+    public WebSocketTransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
         super(new Builder());
         if (decoder == null) {
             decoder = new Decoder<Object>() {
@@ -59,13 +60,16 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.functions = functions;
     }
 
-    private void invokeFunction(Class<?> implementedType, Object instanceType) {
-        for (Function f : functions) {
+    private void invokeFunction(Class<?> implementedType, Object instanceType, String functionName) {
+        for (FunctionWrapper wrapper : functions) {
+            Function f = wrapper.function();
+            String fn = wrapper.functionName();
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
 
             if (typeArguments.length > 0 && typeArguments[0].equals(implementedType)) {
-                f.on(instanceType);
-                return;
+                if (fn.isEmpty() || fn.equalsIgnoreCase(functionName)) {
+                    f.on(instanceType);
+                }
             }
         }
     }
@@ -75,7 +79,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public void onThrowable(Throwable t) {
-        invokeFunction(t.getClass(), t);
+        invokeFunction(t.getClass(), t, "error");
     }
 
     /**
@@ -91,7 +95,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        invokeFunction(Integer.class, new Integer(responseStatus.getStatusCode()));
+        invokeFunction(Integer.class, new Integer(responseStatus.getStatusCode()), "status");
 
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
@@ -105,7 +109,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        invokeFunction(Map.class, headers.getHeaders());
+        invokeFunction(Map.class, headers.getHeaders(), "headers");
 
         return STATE.CONTINUE;
     }
@@ -129,11 +133,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.webSocket = webSocket;
 
         ok.set(true);
-        webSocket.addWebSocketListener(new WebSocketTextListener() {
+        WebSocketTextListener l = new WebSocketTextListener() {
             @Override
             public void onMessage(String message) {
                 Object m = decoder.decode(message);
-                invokeFunction(m.getClass(), m);
+                invokeFunction(m.getClass(), m, "message");
             }
 
             @Override
@@ -142,19 +146,21 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             @Override
             public void onOpen(WebSocket websocket) {
-                invokeFunction(String.class, "Open");
+                invokeFunction(String.class, "Open", "open");
             }
 
             @Override
             public void onClose(WebSocket websocket) {
-                invokeFunction(String.class, "Close");
+                invokeFunction(String.class, "Close", "close");
             }
 
             @Override
             public void onError(Throwable t) {
-                invokeFunction(t.getClass(), t);
+                invokeFunction(t.getClass(), t, "error");
             }
-        });
+        };
+        webSocket.addWebSocketListener(l);
+        l.onOpen(webSocket);
     }
 
     @Override
@@ -178,7 +184,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public final void onFailure(Throwable t) {
-        invokeFunction(t.getClass(), t);
+        invokeFunction(t.getClass(), t, "error");
     }
 
 }

@@ -38,7 +38,7 @@ public class SocketImpl implements Socket {
 
     private Request request;
     private InternalSocket socket;
-    private final List<Function<? extends Object>> functions = new ArrayList<Function<? extends Object>>();
+    private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     private final AsyncHttpClient asyncHttpClient;
 
     public SocketImpl(AsyncHttpClient asyncHttpClient) {
@@ -51,9 +51,88 @@ public class SocketImpl implements Socket {
     }
 
     public Socket on(Function<? extends Object> function) {
-        functions.add(function);
+        functions.add(new FunctionWrapper("", function));
         return this;
     }
+
+    public Socket on(String functionName, Function<? extends Object> function) {
+        functions.add(new FunctionWrapper(functionName, function));
+        return this;
+    }
+
+    public Socket open(DefaultRequest.Builder builder) throws IOException {
+        request = builder.build();
+        RequestBuilder r = new RequestBuilder();
+        r.setUrl(request.uri())
+                .setMethod(request.method().name())
+                .setHeaders(request.headers());
+
+        List<Transport> transports = getPrimaryTransport(request);
+
+        Transport primary = transports.get(0);
+        // TODO: Fallback implementation
+
+        Future f;
+        if (primary.name().equals(Request.TRANSPORT.WEBSOCKET)) {
+            java.util.concurrent.Future<WebSocket> w = asyncHttpClient.prepareRequest(r.build()).execute(
+                    (AsyncHandler<WebSocket>) primary);
+            try {
+                f = new Future(this);
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+            try {
+                socket = new InternalSocket(w.get());
+            } catch (Throwable t) {
+                primary.onThrowable(t);
+                return new VoidSocket();
+            }
+        } else {
+            java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(
+                    (AsyncCompletionHandler<String>) primary);
+
+            // TODO: This is no garantee the connection has been established.
+            f = new Future(this);
+            socket = new InternalSocket(asyncHttpClient);
+        }
+
+
+        primary.future(f);
+        return this;
+    }
+
+    @Override
+    public void close() {
+        if (socket != null) {
+            socket.close();
+        }
+    }
+
+    protected List<Transport> getPrimaryTransport(Request request) {
+        List<Transport> transports = new ArrayList<Transport>();
+        Request.TRANSPORT t = request.transport().get(0);
+        Decoder<?> decoder = request.decoder();
+        if (decoder == null) {
+            decoder = new Decoder<String>() {
+                @Override
+                public String decode(String s) {
+                    return s;
+                }
+            };
+        }
+
+        if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
+            transports.add(new WebSocketTransport(decoder, functions));
+        } else if (t.equals(Request.TRANSPORT.SSE)) {
+            transports.add(new SSETransport(decoder));
+        } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
+            transports.add(new LongPollingTransport(decoder));
+        } else if (t.equals(Request.TRANSPORT.STREAMING)) {
+            transports.add(new StreamTransport(decoder));
+        }
+        return transports;
+    }
+
 
     private final static class InternalSocket {
 
@@ -68,6 +147,14 @@ public class SocketImpl implements Socket {
         public InternalSocket(AsyncHttpClient asyncHttpClient) {
             this.webSocket = null;
             this.asyncHttpClient = asyncHttpClient;
+        }
+
+        public void close() {
+            if (webSocket != null) {
+                webSocket.close();
+            } else {
+                asyncHttpClient.close();
+            }
         }
 
         public InternalSocket write(Request request, Object data) throws IOException {
@@ -123,76 +210,6 @@ public class SocketImpl implements Socket {
         }
     }
 
-    public Socket open(DefaultRequest.Builder builder) throws IOException {
-        request = builder.build();
-        RequestBuilder r = new RequestBuilder();
-        r.setUrl(request.uri())
-                .setMethod(request.method().name())
-                .setHeaders(request.headers());
-
-        List<Transport> transports = getPrimaryTransport(request);
-
-        Transport primary = transports.get(0);
-        // TODO: Fallback implementation
-
-        Future f;
-        if (primary.name().equals(Request.TRANSPORT.WEBSOCKET)) {
-            java.util.concurrent.Future<WebSocket> w = asyncHttpClient.prepareRequest(r.build()).execute(
-                    (AsyncHandler<WebSocket>) primary);
-            try {
-                f = new Future(this);
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
-            try {
-                socket = new InternalSocket(w.get());
-            } catch (Throwable t) {
-                primary.onThrowable(t);
-                return new VoidSocket();
-            }
-        } else {
-            java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(
-                    (AsyncCompletionHandler<String>) primary);
-
-            // TODO: This is no garantee the connection has been established.
-            f = new Future(this);
-            socket = new InternalSocket(asyncHttpClient);
-        }
-
-
-        primary.future(f);
-        return this;
-    }
-
-    @Override
-    public void close() {
-        asyncHttpClient.closeAsynchronously();
-    }
-
-    protected List<Transport> getPrimaryTransport(Request request) {
-        List<Transport> transports = new ArrayList<Transport>();
-        Request.TRANSPORT t = request.transport().get(0);
-        Decoder<?> decoder = request.decoder();
-        if (decoder == null) {
-            decoder = new Decoder<String>() {
-                @Override
-                public String decode(String s) {
-                    return s;
-                }
-            };
-        }
-
-        if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
-            transports.add(new WebSocketTransport(decoder, functions));
-        } else if (t.equals(Request.TRANSPORT.SSE)) {
-            transports.add(new SSETransport(decoder));
-        } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-            transports.add(new LongPollingTransport(decoder));
-        } else if (t.equals(Request.TRANSPORT.STREAMING)) {
-            transports.add(new StreamTransport(decoder));
-        }
-        return transports;
-    }
 
     private final static class VoidSocket implements Socket {
 
@@ -203,6 +220,11 @@ public class SocketImpl implements Socket {
 
         @Override
         public Socket on(Function<? extends Object> function) {
+            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+        }
+
+        @Override
+        public Socket on(String functionMessage, Function<? extends Object> function) {
             throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
         }
 
