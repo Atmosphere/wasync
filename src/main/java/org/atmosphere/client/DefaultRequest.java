@@ -123,7 +123,7 @@ public class DefaultRequest implements Request {
             return this;
         }
 
-        protected DefaultRequest build(){
+        public DefaultRequest build(){
             return new DefaultRequest(this);
         }
     }

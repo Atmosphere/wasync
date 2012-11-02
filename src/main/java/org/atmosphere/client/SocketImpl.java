@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class SocketImpl implements Socket {
 
@@ -40,6 +41,7 @@ public class SocketImpl implements Socket {
     private InternalSocket socket;
     private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     private final AsyncHttpClient asyncHttpClient;
+    private Transport transportInUse;
 
     public SocketImpl(AsyncHttpClient asyncHttpClient) {
         this.asyncHttpClient = asyncHttpClient;
@@ -60,8 +62,8 @@ public class SocketImpl implements Socket {
         return this;
     }
 
-    public Socket open(DefaultRequest.Builder builder) throws IOException {
-        request = builder.build();
+    public Socket open(Request request) throws IOException {
+        this.request = request;
         RequestBuilder r = new RequestBuilder();
         r.setUrl(request.uri())
                 .setMethod(request.method().name())
@@ -69,34 +71,37 @@ public class SocketImpl implements Socket {
 
         List<Transport> transports = getPrimaryTransport(request);
 
-        Transport primary = transports.get(0);
+        transportInUse = transports.get(0);
         // TODO: Fallback implementation
 
-        Future f;
-        if (primary.name().equals(Request.TRANSPORT.WEBSOCKET)) {
+        Future f = new Future(this);
+        transportInUse.future(f);
+
+        if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             java.util.concurrent.Future<WebSocket> w = asyncHttpClient.prepareRequest(r.build()).execute(
-                    (AsyncHandler<WebSocket>) primary);
-            try {
-                f = new Future(this);
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
+                    (AsyncHandler<WebSocket>) transportInUse);
+
             try {
                 socket = new InternalSocket(w.get());
             } catch (Throwable t) {
-                primary.onThrowable(t);
+                transportInUse.onThrowable(t);
                 return new VoidSocket();
             }
         } else {
             java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(
-                    (AsyncCompletionHandler<String>) primary);
+                    (AsyncCompletionHandler<String>) transportInUse);
 
-            // TODO: This is no garantee the connection has been established.
-            f = new Future(this);
+            try {
+                // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
+                // beginning for streaming and sse, but nothing for long-polling
+                f.get(5, TimeUnit.SECONDS);
+            } catch (Throwable t) {
+                // Swallow  LOG ME
+            }
+
             socket = new InternalSocket(asyncHttpClient);
         }
 
-        primary.future(f);
         return this;
     }
 
@@ -104,6 +109,7 @@ public class SocketImpl implements Socket {
     public void close() {
         if (socket != null) {
             socket.close();
+            transportInUse.close();
         }
     }
 
@@ -123,11 +129,11 @@ public class SocketImpl implements Socket {
         if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
             transports.add(new WebSocketTransport(decoder, functions));
         } else if (t.equals(Request.TRANSPORT.SSE)) {
-            transports.add(new SSETransport(decoder));
+            transports.add(new SSETransport(decoder, functions));
         } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-            transports.add(new LongPollingTransport(decoder));
+            transports.add(new LongPollingTransport(decoder, functions));
         } else if (t.equals(Request.TRANSPORT.STREAMING)) {
-            transports.add(new StreamTransport(decoder));
+            transports.add(new StreamTransport(decoder, functions));
         }
         return transports;
     }
@@ -192,15 +198,24 @@ public class SocketImpl implements Socket {
                 if (InputStream.class.isAssignableFrom(object.getClass())) {
                     //TODO: Allow reading the response.
                     asyncHttpClient.preparePost(request.uri())
+                            .setMethod(Request.METHOD.POST.name())
                             .setBody((InputStream) object).execute();
                 } else if (Reader.class.isAssignableFrom(object.getClass())) {
                     asyncHttpClient.preparePost(request.uri())
-                            .setBody(new ReaderInputStream((Reader) object)).execute();
+                            .setMethod(Request.METHOD.POST.name())
+                            .setBody(new ReaderInputStream((Reader) object))
+                            .execute();
                     return this;
                 } else if (String.class.isAssignableFrom(object.getClass())) {
-                    asyncHttpClient.preparePost(request.uri()).setBody((String) object).execute();
+                    asyncHttpClient.preparePost(request.uri())
+                            .setMethod(Request.METHOD.POST.name())
+                            .setBody((String) object)
+                            .execute();
                 } else if (byte[].class.isAssignableFrom(object.getClass())) {
-                    asyncHttpClient.preparePost(request.uri()).setBody((byte[]) object).execute();
+                    asyncHttpClient.preparePost(request.uri())
+                            .setMethod(Request.METHOD.POST.name())
+                            .setBody((byte[]) object)
+                            .execute();
                 } else {
                     throw new IllegalStateException("No Encoder for " + data);
                 }
@@ -228,7 +243,7 @@ public class SocketImpl implements Socket {
         }
 
         @Override
-        public Socket open(DefaultRequest.Builder builder) throws IOException {
+        public Socket open(Request request) throws IOException {
             throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
         }
 

@@ -23,68 +23,23 @@ import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
 import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
+import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.Future;
 import org.atmosphere.client.Request;
 import org.atmosphere.client.Socket;
 import org.atmosphere.client.Transport;
 
-public class LongPollingTransport<T> extends AsyncCompletionHandler<String> implements Transport {
+import java.util.List;
 
-        private Future f;
-        private final Decoder<T> decoder;
+public class LongPollingTransport<T> extends StreamTransport {
 
-        public LongPollingTransport(Decoder<T> decoder) {
-            this.decoder = decoder;
-        }
-
-        @Override
-        public Transport future(Future f) {
-            this.f = f;
-            return this;
-        }
-
-        @Override
-        public Transport registerF(Function function) {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public STATE onBodyPartReceived(final HttpResponseBodyPart content) throws Exception {
-            return STATE.CONTINUE;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public STATE onStatusReceived(final HttpResponseStatus status) throws Exception {
-            f.done();
-            return STATE.CONTINUE;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public STATE onHeadersReceived(final HttpResponseHeaders headers) throws Exception {
-            return STATE.CONTINUE;
-        }
-
-        @Override
-        public String onCompleted(Response response) throws Exception {
-            return "";
-        }
-
-        @Override
-        public Request.TRANSPORT name() {
-            return Request.TRANSPORT.LONG_POLLING;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void onThrowable(Throwable t) {
-            f.cancel(true);
-        }
+    public LongPollingTransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
+        super(decoder, functions);
     }
+
+    @Override
+    public Request.TRANSPORT name() {
+        return Request.TRANSPORT.LONG_POLLING;
+    }
+}
 

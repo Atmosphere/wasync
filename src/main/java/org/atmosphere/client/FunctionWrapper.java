@@ -15,10 +15,21 @@
  */
 package org.atmosphere.client;
 
-public interface Function<T extends Object> {
+public class FunctionWrapper {
 
-    enum MESSAGE {error, open, close, message, status, headers, bytes}
+    private final String functionName;
+    private final Function<?> function;
 
-    void on(T t);
+    public FunctionWrapper(String functionName, Function<?> function) {
+        this.functionName = functionName;
+        this.function = function;
+    }
 
+    public Function<?> function(){
+        return function;
+    }
+
+    public String functionName() {
+        return functionName;
+    }
 }

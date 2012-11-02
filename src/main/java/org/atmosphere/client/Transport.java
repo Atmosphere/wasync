@@ -24,7 +24,9 @@ public interface Transport<T> {
 
     Transport future(Future f);
 
-    Transport registerF(Function<T> function);
+    Transport registerF(FunctionWrapper function);
 
     void onThrowable(Throwable t);
+
+    void close();
 }

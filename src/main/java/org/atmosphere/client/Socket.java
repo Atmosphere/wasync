@@ -30,7 +30,7 @@ public interface Socket {
 
     Socket on(String functionMessage, Function<? extends Object> function);
 
-    Socket open(DefaultRequest.Builder builder) throws IOException;
+    Socket open(Request request) throws IOException;
 
     void close();
 

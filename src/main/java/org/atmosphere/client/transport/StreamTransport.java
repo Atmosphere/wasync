@@ -21,24 +21,38 @@ import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
+import com.ning.http.client.websocket.WebSocketUpgradeHandler;
 import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
+import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.Future;
 import org.atmosphere.client.Request;
 import org.atmosphere.client.Socket;
 import org.atmosphere.client.Transport;
 
+import java.util.List;
+import java.util.Map;
+
 public class StreamTransport<T> extends AsyncCompletionHandler<String> implements Transport {
+    private final static String DEFAULT_CHARSET = "ISO-8859-1";
 
-    private Future f;
-    private Function<T> messageFunction = new NoOpsFunction();
-    private Function<T> errorFunction = new NoOpsFunction();
-    private Function<T> closeFunction = new NoOpsFunction();
-    private Function<T> openFunction = new NoOpsFunction();
-    private final Decoder<T> decoder;
+    protected Future f;
+    protected final List<FunctionWrapper> functions;
+    protected final Decoder<?> decoder;
+    //TODO fix me
+    protected String charSet = DEFAULT_CHARSET;
 
-    public StreamTransport(Decoder<T> decoder) {
+    public StreamTransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
+        if (decoder == null) {
+            decoder = new Decoder<Object>() {
+                @Override
+                public Object decode(String s) {
+                    return s;
+                }
+            };
+        }
         this.decoder = decoder;
+        this.functions = functions;
     }
 
     @Override
@@ -48,29 +62,53 @@ public class StreamTransport<T> extends AsyncCompletionHandler<String> implement
     }
 
     @Override
-    public Transport registerF(Function function) {
-        return null;
+    public Transport registerF(FunctionWrapper function) {
+        functions.add(function);
+        return this;
     }
 
     /**
      * {@inheritDoc}
      */
-    public STATE onBodyPartReceived(final HttpResponseBodyPart content) throws Exception {
+    @Override
+    public void onThrowable(Throwable t) {
+        t.printStackTrace();
+        TransportsUtil.invokeFunction(functions, t.getClass(), t, Function.MESSAGE.error.name());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+        String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+        if (!m.isEmpty()) {
+            Object m2 = decoder.decode(m);
+            TransportsUtil.invokeFunction(functions, m2.getClass(), m2, Function.MESSAGE.message.name());
+        }
         return STATE.CONTINUE;
     }
 
     /**
      * {@inheritDoc}
      */
-    public STATE onStatusReceived(final HttpResponseStatus status) throws Exception {
+    @Override
+    public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+        TransportsUtil.invokeFunction(functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name());
+
+        // TODO: Parse charset
+        return STATE.CONTINUE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         f.done();
-        return STATE.CONTINUE;
-    }
+        TransportsUtil.invokeFunction(functions, String.class, "Open", Function.MESSAGE.open.name());
+        TransportsUtil.invokeFunction(functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name());
 
-    /**
-     * {@inheritDoc}
-     */
-    public STATE onHeadersReceived(final HttpResponseHeaders headers) throws Exception {
         return STATE.CONTINUE;
     }
 
@@ -84,20 +122,9 @@ public class StreamTransport<T> extends AsyncCompletionHandler<String> implement
         return Request.TRANSPORT.STREAMING;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void onThrowable(Throwable t) {
-        f.cancel(true);
-    }
-
-
-    private final static class NoOpsFunction implements Function {
-
-        @Override
-        public void on(Object o) {
-
-        }
+    @Override
+    public void close() {
+        TransportsUtil.invokeFunction(functions, String.class, "Close", Function.MESSAGE.open.name());
     }
 }
 

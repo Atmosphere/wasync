@@ -32,13 +32,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
-public class BasicTests {
+public class WebSocketTests {
     private final static String RESUME = "Resume";
 
     protected Nettosphere server;
     private String targetUrl;
     private String wsUrl;
-    protected static final Logger logger = LoggerFactory.getLogger(BasicTests.class);
+    protected static final Logger logger = LoggerFactory.getLogger(WebSocketTests.class);
     public String urlTarget;
     public int port;
 
@@ -133,7 +133,7 @@ public class BasicTests {
                 latch.countDown();
             }
 
-        }).open(request).fire("PING");
+        }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
         assertEquals(response.get(), RESUME);
@@ -195,7 +195,7 @@ public class BasicTests {
                 builder.append(m);
                 latch.countDown();
             }
-        }).open(request).fire("PING");
+        }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
         socket.close();
@@ -267,7 +267,7 @@ public class BasicTests {
                 latch.countDown();
             }
 
-        }).open(request).fire("PING");
+        }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
         assertEquals(status.get(), 101);
@@ -297,7 +297,7 @@ public class BasicTests {
                 latch.countDown();
             }
 
-        }).open(request);
+        }).open(request.build());
 
         latch.await(5, TimeUnit.SECONDS);
         assertEquals(response.get().getClass(), ConnectException.class);
@@ -372,7 +372,7 @@ public class BasicTests {
                 latch.countDown();
             }
 
-        }).open(request).fire("echo");
+        }).open(request.build()).fire("echo");
 
         latch.await(5, TimeUnit.SECONDS);
         assertEquals(response.get(), "<-echo->");
@@ -439,7 +439,7 @@ public class BasicTests {
                 response.set(t);
                 latch.countDown();
             }
-        }).open(request).fire("echo");
+        }).open(request.build()).fire("echo");
 
         latch.await(5, TimeUnit.SECONDS);
         assertNotNull(response.get());

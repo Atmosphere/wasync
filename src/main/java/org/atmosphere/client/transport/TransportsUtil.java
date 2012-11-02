@@ -15,30 +15,27 @@
  */
 package org.atmosphere.client.transport;
 
-import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.HttpResponseStatus;
-import com.ning.http.client.Response;
-import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
 import org.atmosphere.client.FunctionWrapper;
-import org.atmosphere.client.Future;
-import org.atmosphere.client.Request;
-import org.atmosphere.client.Socket;
-import org.atmosphere.client.Transport;
+import org.atmosphere.client.util.TypeResolver;
 
 import java.util.List;
 
-public class SSETransport<T> extends StreamTransport {
+public class TransportsUtil {
 
-    public SSETransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
-        super(decoder, functions);
+
+
+    static void invokeFunction(List<FunctionWrapper> functions, Class<?> implementedType, Object instanceType, String functionName) {
+        for (FunctionWrapper wrapper : functions) {
+            Function f = wrapper.function();
+            String fn = wrapper.functionName();
+            Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
+
+            if (typeArguments.length > 0 && typeArguments[0].equals(implementedType)) {
+                if (fn.isEmpty() || fn.equalsIgnoreCase(functionName)) {
+                    f.on(instanceType);
+                }
+            }
+        }
     }
-
-    @Override
-    public Request.TRANSPORT name() {
-        return Request.TRANSPORT.SSE;
-    }
-
 }
