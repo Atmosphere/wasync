@@ -96,7 +96,6 @@ public class SocketImpl implements Socket {
             socket = new InternalSocket(asyncHttpClient);
         }
 
-
         primary.future(f);
         return this;
     }
