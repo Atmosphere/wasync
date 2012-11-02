@@ -89,12 +89,12 @@ public class SocketImpl implements Socket {
             }
         } else {
             java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(
-                    (AsyncCompletionHandler<String>) transportInUse);
+                    (AsyncHandler<String>) transportInUse);
 
             try {
                 // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
                 // beginning for streaming and sse, but nothing for long-polling
-                f.get(5, TimeUnit.SECONDS);
+                f.get(2500, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 // Swallow  LOG ME
             }
@@ -131,7 +131,7 @@ public class SocketImpl implements Socket {
         } else if (t.equals(Request.TRANSPORT.SSE)) {
             transports.add(new SSETransport(decoder, functions));
         } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-            transports.add(new LongPollingTransport(decoder, functions));
+            transports.add(new LongPollingTransport(decoder, functions, request, asyncHttpClient));
         } else if (t.equals(Request.TRANSPORT.STREAMING)) {
             transports.add(new StreamTransport(decoder, functions));
         }

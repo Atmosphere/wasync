@@ -17,29 +17,55 @@ package org.atmosphere.client.transport;
 
 
 import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
+import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import org.atmosphere.client.Decoder;
-import org.atmosphere.client.Function;
 import org.atmosphere.client.FunctionWrapper;
-import org.atmosphere.client.Future;
 import org.atmosphere.client.Request;
-import org.atmosphere.client.Socket;
-import org.atmosphere.client.Transport;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LongPollingTransport<T> extends StreamTransport {
 
-    public LongPollingTransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
+    private final Request request;
+    private final AsyncHttpClient asyncHttpClient;
+    private final AtomicBoolean hasSucceedOnce = new AtomicBoolean(false);
+
+    public LongPollingTransport(Decoder<?> decoder, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient) {
         super(decoder, functions);
+        this.request = request;
+        this.asyncHttpClient = asyncHttpClient;
     }
 
     @Override
     public Request.TRANSPORT name() {
         return Request.TRANSPORT.LONG_POLLING;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        hasSucceedOnce.set(true);
+        return super.onStatusReceived(responseStatus);
+    }
+
+    @Override
+    public String onCompleted() throws Exception {
+        if (hasSucceedOnce.get()) {
+            RequestBuilder r = new RequestBuilder();
+            r.setUrl(request.uri())
+                    .setMethod(request.method().name())
+                    .setHeaders(request.headers());
+
+            java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(this);
+        }
+
+        return "";
     }
 }
 

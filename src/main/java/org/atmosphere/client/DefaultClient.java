@@ -50,7 +50,7 @@ public class DefaultClient implements Client {
 
     public Socket create() {
         AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-        config.setFollowRedirects(true);
+        config.setFollowRedirects(true).setRequestTimeoutInMs(-1);
         asyncHttpClient = new AsyncHttpClient();
         return new SocketImpl(asyncHttpClient);
     }

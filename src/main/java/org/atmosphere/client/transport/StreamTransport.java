@@ -16,24 +16,22 @@
 package org.atmosphere.client.transport;
 
 
-import com.ning.http.client.AsyncCompletionHandler;
+import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
-import com.ning.http.client.websocket.WebSocketUpgradeHandler;
 import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
 import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.Future;
 import org.atmosphere.client.Request;
-import org.atmosphere.client.Socket;
 import org.atmosphere.client.Transport;
 
 import java.util.List;
 import java.util.Map;
 
-public class StreamTransport<T> extends AsyncCompletionHandler<String> implements Transport {
+public class StreamTransport<T> implements AsyncHandler<String>,Transport {
     private final static String DEFAULT_CHARSET = "ISO-8859-1";
 
     protected Future f;
@@ -113,7 +111,7 @@ public class StreamTransport<T> extends AsyncCompletionHandler<String> implement
     }
 
     @Override
-    public String onCompleted(Response response) throws Exception {
+    public String onCompleted() throws Exception {
         return "";
     }
 

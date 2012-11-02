@@ -65,7 +65,7 @@ public class StreamingTests {
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
-        port = 8080;
+        port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
     }
 

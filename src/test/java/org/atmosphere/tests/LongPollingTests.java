@@ -1,9 +1,9 @@
 package org.atmosphere.tests;
 
 import org.atmosphere.client.AtmosphereClientFactory;
+import org.atmosphere.client.AtmosphereRequest;
 import org.atmosphere.client.Client;
 import org.atmosphere.client.Decoder;
-import org.atmosphere.client.DefaultRequest;
 import org.atmosphere.client.Encoder;
 import org.atmosphere.client.Function;
 import org.atmosphere.client.Request;
@@ -32,13 +32,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
-public class WebSocketTests {
+public class LongPollingTests {
     private final static String RESUME = "Resume";
 
     protected Nettosphere server;
     private String targetUrl;
-    private String wsUrl;
-    protected static final Logger logger = LoggerFactory.getLogger(WebSocketTests.class);
+    protected static final Logger logger = LoggerFactory.getLogger(LongPollingTests.class);
     public String urlTarget;
     public int port;
 
@@ -67,11 +66,10 @@ public class WebSocketTests {
     public void start() throws IOException {
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
-        wsUrl = "ws://127.0.0.1:" + port;
     }
 
     @Test
-    public void basicWebSocketTest() throws Exception {
+    public void basicLongPollingTest() throws Exception {
         final CountDownLatch l = new CountDownLatch(1);
 
         Config config = new Config.Builder()
@@ -94,7 +92,7 @@ public class WebSocketTests {
                     public void onStateChange(AtmosphereResourceEvent r) throws IOException {
                         if (!r.isResuming() || !r.isCancelled()) {
                             r.getResource().getResponse().getWriter().print(r.getMessage());
-                            r.getResource().resume();
+                            r.getResource().getResponse().getWriter().flush();
                         }
                     }
 
@@ -112,10 +110,10 @@ public class WebSocketTests {
         final AtomicReference<String> response = new AtomicReference<String>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        AtmosphereRequest.Builder request = new AtmosphereRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
         socket.on("message", new Function<String>() {
@@ -135,7 +133,7 @@ public class WebSocketTests {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         assertEquals(response.get(), RESUME);
         socket.close();
     }
@@ -183,10 +181,10 @@ public class WebSocketTests {
 
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        AtmosphereRequest.Builder request = new AtmosphereRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
         socket.on(new Function<String>() {
@@ -247,10 +245,10 @@ public class WebSocketTests {
 
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        AtmosphereRequest.Builder request = new AtmosphereRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
         socket.on(new Function<Integer>() {
@@ -270,7 +268,7 @@ public class WebSocketTests {
         }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
-        assertEquals(status.get(), 101);
+        assertEquals(status.get(), 200);
         assertNotNull(map.get());
         assertEquals(map.get().getClass().getInterfaces()[0], Map.class);
 
@@ -283,10 +281,10 @@ public class WebSocketTests {
         final AtomicReference<ConnectException> response = new AtomicReference<ConnectException>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        AtmosphereRequest.Builder request = new AtmosphereRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
         socket.on(new Function<ConnectException>() {
@@ -346,16 +344,16 @@ public class WebSocketTests {
         final AtomicReference<String> response = new AtomicReference<String>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        AtmosphereRequest.Builder request = new AtmosphereRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
+                .uri(targetUrl + "/suspend")
                 .encoder(new Encoder<String>() {
                     @Override
                     public String encode(Object s) {
                         return "<-" + s.toString() + "->";
                     }
                 })
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
         socket.on("message", new Function<String>() {
@@ -421,16 +419,16 @@ public class WebSocketTests {
         final AtomicReference<POJO> response = new AtomicReference<POJO>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        AtmosphereRequest.Builder request = new AtmosphereRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
+                .uri(targetUrl + "/suspend")
                 .decoder(new Decoder() {
                     @Override
                     public POJO decode(String s) {
                         return new POJO(s);
                     }
                 })
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
         socket.on("message", new Function<POJO>() {
