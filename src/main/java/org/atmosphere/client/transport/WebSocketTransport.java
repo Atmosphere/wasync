@@ -38,19 +38,19 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final AtomicBoolean ok = new AtomicBoolean(false);
     private Future f;
     private final List<FunctionWrapper> functions;
-    private final Decoder<?> decoder;
+    private final List<Decoder<?, ?>> decoders;
 
-    public WebSocketTransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
+    public WebSocketTransport(List<Decoder<?, ?>> decoders, List<FunctionWrapper> functions) {
         super(new Builder());
-        if (decoder == null) {
-            decoder = new Decoder<Object>() {
+        if (decoders.size() == 0) {
+            decoders.add(new Decoder<String, Object>() {
                 @Override
                 public Object decode(String s) {
                     return s;
                 }
-            };
+            });
         }
-        this.decoder = decoder;
+        this.decoders = decoders;
         this.functions = functions;
     }
 
@@ -59,7 +59,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public void onThrowable(Throwable t) {
-        TransportsUtil.invokeFunction(functions, t.getClass(), t, Function.MESSAGE.error.name());
+        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name());
     }
 
     @Override
@@ -79,7 +79,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        TransportsUtil.invokeFunction(functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name());
+        TransportsUtil.invokeFunction(decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name());
 
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
@@ -93,7 +93,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name());
+        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name());
 
         return STATE.CONTINUE;
     }
@@ -120,8 +120,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         WebSocketTextListener l = new WebSocketTextListener() {
             @Override
             public void onMessage(String message) {
-                Object m = decoder.decode(message);
-                TransportsUtil.invokeFunction(functions, m.getClass(), m, Function.MESSAGE.message.name());
+                TransportsUtil.invokeFunction(decoders, functions, message.getClass(), message, Function.MESSAGE.message.name());
             }
 
             @Override
@@ -130,17 +129,17 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             @Override
             public void onOpen(WebSocket websocket) {
-                TransportsUtil.invokeFunction(functions, String.class, "Open",Function.MESSAGE.open.name());
+                TransportsUtil.invokeFunction(decoders, functions, String.class, "Open",Function.MESSAGE.open.name());
             }
 
             @Override
             public void onClose(WebSocket websocket) {
-                TransportsUtil.invokeFunction(functions, String.class, "Close", Function.MESSAGE.close.name());
+                TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.close.name());
             }
 
             @Override
             public void onError(Throwable t) {
-                TransportsUtil.invokeFunction(functions, t.getClass(), t, Function.MESSAGE.error.name());
+                TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name());
             }
         };
         webSocket.addWebSocketListener(l);
@@ -169,7 +168,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public final void onFailure(Throwable t) {
-        TransportsUtil.invokeFunction(functions, t.getClass(), t, Function.MESSAGE.error.name());
+        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name());
     }
 
 }

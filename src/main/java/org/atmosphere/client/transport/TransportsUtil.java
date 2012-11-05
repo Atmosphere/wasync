@@ -15,6 +15,7 @@
  */
 package org.atmosphere.client.transport;
 
+import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
 import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.util.TypeResolver;
@@ -23,11 +24,16 @@ import java.util.List;
 
 public class TransportsUtil {
 
-    static void invokeFunction(List<FunctionWrapper> functions, Class<?> implementedType, Object instanceType, String functionName) {
+    static void invokeFunction(List<Decoder<? extends Object, ?>> decoders, List<FunctionWrapper> functions, Class<?> implementedType, Object instanceType, String functionName) {
         for (FunctionWrapper wrapper : functions) {
             Function f = wrapper.function();
             String fn = wrapper.functionName();
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
+
+            if (typeArguments.length > 0) {
+                instanceType = matchDecoder(instanceType, decoders);
+                implementedType = instanceType.getClass();
+            }
 
             if (typeArguments.length > 0 && typeArguments[0].equals(implementedType)) {
                 if (fn.isEmpty() || fn.equalsIgnoreCase(functionName)) {
@@ -35,5 +41,15 @@ public class TransportsUtil {
                 }
             }
         }
+    }
+
+    static Object matchDecoder(Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
+        for (Decoder d : decoders) {
+            Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
+            if (typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
+                instanceType = d.decode(instanceType);
+            }
+        }
+        return instanceType;
     }
 }

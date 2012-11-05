@@ -36,20 +36,20 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
 
     protected Future f;
     protected final List<FunctionWrapper> functions;
-    protected final Decoder<?> decoder;
+    private final List<Decoder<? extends Object,?>> decoders;
     //TODO fix me
     protected String charSet = DEFAULT_CHARSET;
 
-    public StreamTransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
-        if (decoder == null) {
-            decoder = new Decoder<Object>() {
+    public StreamTransport(List<Decoder<? extends Object,?>>decoders, List<FunctionWrapper> functions) {
+        if (decoders.size() == 0) {
+            decoders.add(new Decoder<String, Object>() {
                 @Override
                 public Object decode(String s) {
                     return s;
                 }
-            };
+            });
         }
-        this.decoder = decoder;
+        this.decoders = decoders;
         this.functions = functions;
     }
 
@@ -71,7 +71,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
     @Override
     public void onThrowable(Throwable t) {
         t.printStackTrace();
-        TransportsUtil.invokeFunction(functions, t.getClass(), t, Function.MESSAGE.error.name());
+        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name());
     }
 
     /**
@@ -81,8 +81,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
         if (!m.isEmpty()) {
-            Object m2 = decoder.decode(m);
-            TransportsUtil.invokeFunction(functions, m2.getClass(), m2, Function.MESSAGE.message.name());
+            TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name());
         }
         return STATE.CONTINUE;
     }
@@ -92,7 +91,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name());
+        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name());
 
         // TODO: Parse charset
         return STATE.CONTINUE;
@@ -104,8 +103,8 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         f.done();
-        TransportsUtil.invokeFunction(functions, String.class, "Open", Function.MESSAGE.open.name());
-        TransportsUtil.invokeFunction(functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name());
+        TransportsUtil.invokeFunction(decoders, functions, String.class, "Open", Function.MESSAGE.open.name());
+        TransportsUtil.invokeFunction(decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name());
 
         return STATE.CONTINUE;
     }
@@ -122,7 +121,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
 
     @Override
     public void close() {
-        TransportsUtil.invokeFunction(functions, String.class, "Close", Function.MESSAGE.open.name());
+        TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.open.name());
     }
 }
 

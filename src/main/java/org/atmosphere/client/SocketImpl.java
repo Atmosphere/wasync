@@ -137,25 +137,16 @@ public class SocketImpl implements Socket {
 
     protected List<Transport> getTransport(Request request) throws IOException {
         List<Transport> transports = new ArrayList<Transport>();
-        Decoder<?> decoder = request.decoder();
-        if (decoder == null) {
-            decoder = new Decoder<String>() {
-                @Override
-                public String decode(String s) {
-                    return s;
-                }
-            };
-        }
 
         for (Request.TRANSPORT t : request.transport()) {
             if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
-                transports.add(new WebSocketTransport(decoder, functions));
+                transports.add(new WebSocketTransport(request.decoders(), functions));
             } else if (t.equals(Request.TRANSPORT.SSE)) {
-                transports.add(new SSETransport(decoder, functions));
+                transports.add(new SSETransport(request.decoders(), functions));
             } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-                transports.add(new LongPollingTransport(decoder, functions, request, asyncHttpClient));
+                transports.add(new LongPollingTransport(request.decoders(), functions, request, asyncHttpClient));
             } else if (t.equals(Request.TRANSPORT.STREAMING)) {
-                transports.add(new StreamTransport(decoder, functions));
+                transports.add(new StreamTransport(request.decoders(), functions));
             }
         }
         return transports;
@@ -188,7 +179,7 @@ public class SocketImpl implements Socket {
         public InternalSocket write(Request request, Object data) throws IOException {
 
             // Execute encoder
-            Object object = request.encoder() == null ? data : request.encoder().encode(data);
+            Object object = request.encoders().size() == 0 ? data : request.encoders().get(0).encode(data);
             if (webSocket != null) {
                 if (InputStream.class.isAssignableFrom(object.getClass())) {
                     InputStream is = (InputStream) object;

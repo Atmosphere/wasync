@@ -34,8 +34,8 @@ public class LongPollingTransport<T> extends StreamTransport {
     private final AsyncHttpClient asyncHttpClient;
     private final AtomicBoolean hasSucceedOnce = new AtomicBoolean(false);
 
-    public LongPollingTransport(Decoder<?> decoder, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient) {
-        super(decoder, functions);
+    public LongPollingTransport(List<Decoder<?,?>>decoders, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient) {
+        super(decoders, functions);
         this.request = request;
         this.asyncHttpClient = asyncHttpClient;
     }

@@ -15,8 +15,8 @@
  */
 package org.atmosphere.client;
 
-public interface Decoder<T> {
+public interface Decoder<U extends Object, T> {
 
-    T decode(String s);
+    T decode(U s);
 
 }

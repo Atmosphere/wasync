@@ -36,9 +36,9 @@ public interface Request {
 
     Map<String, Collection<String>> queryString();
 
-    Encoder<?> encoder();
+    List<Encoder<?>> encoders();
 
-    Decoder<?> decoder();
+    List<Decoder<?,?>> decoders();
 
     String uri();
 

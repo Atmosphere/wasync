@@ -425,7 +425,7 @@ public abstract class BaseTests {
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
-                .decoder(new Decoder() {
+                .decoder(new Decoder<String,POJO>() {
                     @Override
                     public POJO decode(String s) {
                         return new POJO(s);
@@ -448,11 +448,96 @@ public abstract class BaseTests {
         socket.close();
     }
 
+
+    @Test
+    public void chainingDecoder() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(r.getRequest().getReader().readLine());
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (!r.isResuming() || !r.isCancelled()) {
+                            r.getResource().getResponse().getWriter().print(r.getMessage());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<POJO> response = new AtomicReference<POJO>();
+        Client client = AtmosphereClientFactory.getDefault().newclient();
+
+        DefaultRequest.Builder request = new DefaultRequest.Builder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .decoder(new Decoder<String, POJO>() {
+                    @Override
+                    public POJO decode(String s) {
+                        return new POJO(s);
+                    }
+                })
+                .decoder(new Decoder<POJO, POJO2>() {
+                    @Override
+                    public POJO2 decode(POJO s) {
+                        return new POJO2(s);
+                    }
+                })
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on("message", new Function<POJO2>() {
+            @Override
+            public void on(POJO2 t) {
+                response.set(t.message);
+                latch.countDown();
+            }
+        }).open(request.build()).fire("echo");
+
+        latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
+        assertNotNull(response.get());
+        assertEquals(response.get().getClass(), POJO.class);
+    }
+
     public final static class POJO {
 
         private final String message;
 
         public POJO(String message) {
+            this.message = message;
+        }
+    }
+
+    public final static class POJO2 {
+
+        public final POJO message;
+
+        public POJO2(POJO message) {
             this.message = message;
         }
     }

@@ -24,9 +24,9 @@ import java.util.Map;
 
 public class DefaultRequest implements Request {
 
-    private final Builder builder;
+    protected final Builder builder;
 
-    private DefaultRequest(Builder builder) {
+    protected DefaultRequest(Builder builder) {
         this.builder = builder;
     }
 
@@ -51,13 +51,13 @@ public class DefaultRequest implements Request {
     }
 
     @Override
-    public Encoder<?> encoder() {
-        return builder.encoder;
+    public List<Encoder<?>> encoders() {
+        return builder.encoders;
     }
 
     @Override
-    public Decoder<?> decoder() {
-        return builder.decoder;
+    public List<Decoder<?,?>> decoders() {
+        return builder.decoders;
     }
 
     @Override
@@ -65,15 +65,15 @@ public class DefaultRequest implements Request {
         return builder.uri;
     }
 
-    public final static class Builder {
+    public static class Builder {
 
-        private final List<TRANSPORT> transports = new ArrayList<TRANSPORT>();
-        private METHOD method = METHOD.GET;
-        private String uri = "http://localhost:8080";
-        private Encoder<?> encoder = null;
-        private Decoder<?> decoder = null;
-        private final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
-        private final Map<String, Collection<String>> queryString = new HashMap<String, Collection<String>>();
+        protected final List<TRANSPORT> transports = new ArrayList<TRANSPORT>();
+        protected METHOD method = METHOD.GET;
+        protected String uri = "http://localhost:8080";
+        protected final List<Encoder<?>> encoders = new ArrayList<Encoder<?>>();
+        protected final List<Decoder<?, ?>> decoders = new ArrayList<Decoder<?,?>>();
+        protected final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
+        protected final Map<String, Collection<String>> queryString = new HashMap<String, Collection<String>>();
 
         public Builder() {
         }
@@ -94,12 +94,12 @@ public class DefaultRequest implements Request {
         }
 
         public Builder encoder(Encoder e) {
-            encoder = e;
+            encoders.add(e);
             return this;
         }
 
         public Builder decoder(Decoder d) {
-            decoder = d;
+            decoders.add(d);
             return this;
         }
 

@@ -32,8 +32,8 @@ import java.util.List;
 
 public class SSETransport<T> extends StreamTransport {
 
-    public SSETransport(Decoder<?> decoder, List<FunctionWrapper> functions) {
-        super(decoder, functions);
+    public SSETransport(List<Decoder<?,?>>decoders, List<FunctionWrapper> functions) {
+        super(decoders, functions);
     }
 
     @Override
