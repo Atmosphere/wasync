@@ -1,6 +1,6 @@
 package org.atmosphere.tests;
 
-import org.atmosphere.wasync.AtmosphereClientFactory;
+import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
@@ -113,7 +113,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> response = new AtomicReference<String>();
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -185,7 +185,7 @@ public abstract class BaseTest {
         final CountDownLatch latch = new CountDownLatch(2);
         final StringBuilder builder = new StringBuilder();
 
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -249,7 +249,7 @@ public abstract class BaseTest {
         final AtomicInteger status = new AtomicInteger();
         final AtomicReference<Map> map = new AtomicReference<Map>();
 
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -286,7 +286,7 @@ public abstract class BaseTest {
     public void basicConnectExceptionTest() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<ConnectException> response = new AtomicReference<ConnectException>();
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -349,7 +349,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> response = new AtomicReference<String>();
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -425,7 +425,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<POJO> response = new AtomicReference<POJO>();
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -495,7 +495,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<POJO> response = new AtomicReference<POJO>();
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -571,7 +571,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> response = new AtomicReference<String>();
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)

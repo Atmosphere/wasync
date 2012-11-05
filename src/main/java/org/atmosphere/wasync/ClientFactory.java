@@ -16,13 +16,13 @@
 package org.atmosphere.wasync;
 
 import org.atmosphere.wasync.impl.DefaultClient;
-import org.atmosphere.wasync.impl.DefaultClient;
 
-public class AtmosphereClientFactory {
 
-    private final static AtmosphereClientFactory factory = new AtmosphereClientFactory();
+public class ClientFactory {
 
-    public final static AtmosphereClientFactory getDefault(){
+    private final static ClientFactory factory = new ClientFactory();
+
+    public final static ClientFactory getDefault(){
         return factory;
     }
 
