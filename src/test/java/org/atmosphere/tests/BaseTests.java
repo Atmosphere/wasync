@@ -32,14 +32,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
-public class WebSocketTests {
+public abstract class BaseTests {
     private final static String RESUME = "Resume";
 
     protected Nettosphere server;
     private String targetUrl;
-    private String wsUrl;
-    protected static final Logger logger = LoggerFactory.getLogger(WebSocketTests.class);
-    public String urlTarget;
+    protected static final Logger logger = LoggerFactory.getLogger(BaseTests.class);
     public int port;
 
     public int findFreePort() throws IOException {
@@ -63,11 +61,14 @@ public class WebSocketTests {
         }
     }
 
+    abstract Request.TRANSPORT transport();
+
+    abstract int statusCode();
+
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
-        wsUrl = "ws://127.0.0.1:" + port;
     }
 
     @Test
@@ -114,8 +115,8 @@ public class WebSocketTests {
 
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
 
         Socket socket = client.create();
         socket.on("message", new Function<String>() {
@@ -185,8 +186,8 @@ public class WebSocketTests {
 
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
 
         Socket socket = client.create();
         socket.on(new Function<String>() {
@@ -249,8 +250,8 @@ public class WebSocketTests {
 
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
 
         Socket socket = client.create();
         socket.on(new Function<Integer>() {
@@ -270,7 +271,7 @@ public class WebSocketTests {
         }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
-        assertEquals(status.get(), 101);
+        assertEquals(status.get(), statusCode());
         assertNotNull(map.get());
         assertEquals(map.get().getClass().getInterfaces()[0], Map.class);
 
@@ -285,8 +286,8 @@ public class WebSocketTests {
 
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
 
         Socket socket = client.create();
         socket.on(new Function<ConnectException>() {
@@ -348,14 +349,14 @@ public class WebSocketTests {
 
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
+                .uri(targetUrl + "/suspend")
                 .encoder(new Encoder<String>() {
                     @Override
                     public String encode(Object s) {
                         return "<-" + s.toString() + "->";
                     }
                 })
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .transport(transport());
 
         Socket socket = client.create();
         socket.on("message", new Function<String>() {
@@ -423,14 +424,14 @@ public class WebSocketTests {
 
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
-                .uri(wsUrl + "/suspend")
+                .uri(targetUrl + "/suspend")
                 .decoder(new Decoder() {
                     @Override
                     public POJO decode(String s) {
                         return new POJO(s);
                     }
                 })
-                .transport(Request.TRANSPORT.WEBSOCKET);
+                .transport(transport());
 
         Socket socket = client.create();
         socket.on("message", new Function<POJO>() {

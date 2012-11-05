@@ -78,6 +78,7 @@ public class SocketImpl implements Socket {
         transportInUse.future(f);
 
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
+            r.setUrl(request.uri().replace("http", "ws"));
             java.util.concurrent.Future<WebSocket> w = asyncHttpClient.prepareRequest(r.build()).execute(
                     (AsyncHandler<WebSocket>) transportInUse);
 

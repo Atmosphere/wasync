@@ -23,8 +23,6 @@ import java.util.List;
 
 public class TransportsUtil {
 
-
-
     static void invokeFunction(List<FunctionWrapper> functions, Class<?> implementedType, Object instanceType, String functionName) {
         for (FunctionWrapper wrapper : functions) {
             Function f = wrapper.function();
