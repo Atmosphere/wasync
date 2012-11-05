@@ -33,11 +33,11 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 public abstract class BaseTests {
-    private final static String RESUME = "Resume";
+    public final static String RESUME = "Resume";
 
-    protected Nettosphere server;
-    private String targetUrl;
-    protected static final Logger logger = LoggerFactory.getLogger(BaseTests.class);
+    public Nettosphere server;
+    public String targetUrl;
+    public static final Logger logger = LoggerFactory.getLogger(BaseTests.class);
     public int port;
 
     public int findFreePort() throws IOException {

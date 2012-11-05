@@ -15,7 +15,6 @@
  */
 package org.atmosphere.client;
 
-import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.RequestBuilder;
@@ -25,6 +24,8 @@ import org.atmosphere.client.transport.SSETransport;
 import org.atmosphere.client.transport.StreamTransport;
 import org.atmosphere.client.transport.WebSocketTransport;
 import org.atmosphere.client.util.ReaderInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,9 +34,12 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class SocketImpl implements Socket {
+
+    private final Logger logger = LoggerFactory.getLogger(SocketImpl.class);
 
     private Request request;
     private InternalSocket socket;
@@ -69,26 +73,44 @@ public class SocketImpl implements Socket {
                 .setMethod(request.method().name())
                 .setHeaders(request.headers());
 
-        List<Transport> transports = getPrimaryTransport(request);
+        List<Transport> transports = getTransport(request);
 
-        transportInUse = transports.get(0);
-        // TODO: Fallback implementation
+        return connect(r, transports);
+    }
+
+    protected Socket connect(RequestBuilder r,  List<Transport> transports) throws IOException {
+
+        if (transports.size() > 0) {
+            transportInUse = transports.remove(0);
+        } else {
+            throw new IOException("No suitable transport supported");
+        }
 
         Future f = new Future(this);
         transportInUse.future(f);
-
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             r.setUrl(request.uri().replace("http", "ws"));
-            java.util.concurrent.Future<WebSocket> w = asyncHttpClient.prepareRequest(r.build()).execute(
-                    (AsyncHandler<WebSocket>) transportInUse);
-
             try {
+                java.util.concurrent.Future<WebSocket> w = asyncHttpClient.prepareRequest(r.build()).execute(
+                        (AsyncHandler<WebSocket>) transportInUse);
+
                 socket = new InternalSocket(w.get());
+            } catch (ExecutionException t) {
+                Throwable e = t.getCause();
+                if (e != null) {
+                    if (e.getMessage() != null && e.getMessage().equalsIgnoreCase("Invalid handshake response")) {
+                        logger.info("WebSocket not supported, downgrading to an HTTP based transport.");
+                        return connect(r, transports);
+                    }
+                }
+                transportInUse.onThrowable(t);
+                return new VoidSocket();
             } catch (Throwable t) {
                 transportInUse.onThrowable(t);
                 return new VoidSocket();
             }
         } else {
+            r.setUrl(request.uri().replace("ws", "http"));
             java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(
                     (AsyncHandler<String>) transportInUse);
 
@@ -102,7 +124,6 @@ public class SocketImpl implements Socket {
 
             socket = new InternalSocket(asyncHttpClient);
         }
-
         return this;
     }
 
@@ -114,9 +135,8 @@ public class SocketImpl implements Socket {
         }
     }
 
-    protected List<Transport> getPrimaryTransport(Request request) {
+    protected List<Transport> getTransport(Request request) throws IOException {
         List<Transport> transports = new ArrayList<Transport>();
-        Request.TRANSPORT t = request.transport().get(0);
         Decoder<?> decoder = request.decoder();
         if (decoder == null) {
             decoder = new Decoder<String>() {
@@ -127,14 +147,16 @@ public class SocketImpl implements Socket {
             };
         }
 
-        if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
-            transports.add(new WebSocketTransport(decoder, functions));
-        } else if (t.equals(Request.TRANSPORT.SSE)) {
-            transports.add(new SSETransport(decoder, functions));
-        } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-            transports.add(new LongPollingTransport(decoder, functions, request, asyncHttpClient));
-        } else if (t.equals(Request.TRANSPORT.STREAMING)) {
-            transports.add(new StreamTransport(decoder, functions));
+        for (Request.TRANSPORT t : request.transport()) {
+            if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
+                transports.add(new WebSocketTransport(decoder, functions));
+            } else if (t.equals(Request.TRANSPORT.SSE)) {
+                transports.add(new SSETransport(decoder, functions));
+            } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
+                transports.add(new LongPollingTransport(decoder, functions, request, asyncHttpClient));
+            } else if (t.equals(Request.TRANSPORT.STREAMING)) {
+                transports.add(new StreamTransport(decoder, functions));
+            }
         }
         return transports;
     }
