@@ -24,6 +24,7 @@ import org.atmosphere.client.transport.SSETransport;
 import org.atmosphere.client.transport.StreamTransport;
 import org.atmosphere.client.transport.WebSocketTransport;
 import org.atmosphere.client.util.ReaderInputStream;
+import org.atmosphere.client.util.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class SocketImpl implements Socket {
+public class DefaultSocket implements Socket {
 
-    private final Logger logger = LoggerFactory.getLogger(SocketImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultSocket.class);
 
     private Request request;
     private InternalSocket socket;
@@ -47,7 +48,7 @@ public class SocketImpl implements Socket {
     private final AsyncHttpClient asyncHttpClient;
     private Transport transportInUse;
 
-    public SocketImpl(AsyncHttpClient asyncHttpClient) {
+    public DefaultSocket(AsyncHttpClient asyncHttpClient) {
         this.asyncHttpClient = asyncHttpClient;
     }
 
@@ -176,10 +177,21 @@ public class SocketImpl implements Socket {
             }
         }
 
+        Object invokeEncoder(List<Encoder<? extends Object, ?>> encoders, Object instanceType) {
+            for (Encoder e : encoders) {
+                Class<?>[] typeArguments = TypeResolver.resolveArguments(e.getClass(), Encoder.class);
+
+                if (typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
+                    instanceType = e.encode(instanceType);
+                }
+            }
+            return instanceType;
+        }
+
         public InternalSocket write(Request request, Object data) throws IOException {
 
             // Execute encoder
-            Object object = request.encoders().size() == 0 ? data : request.encoders().get(0).encode(data);
+            Object object = invokeEncoder(request.encoders(), data);
             if (webSocket != null) {
                 if (InputStream.class.isAssignableFrom(object.getClass())) {
                     InputStream is = (InputStream) object;

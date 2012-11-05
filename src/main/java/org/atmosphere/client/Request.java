@@ -36,7 +36,7 @@ public interface Request {
 
     Map<String, Collection<String>> queryString();
 
-    List<Encoder<?>> encoders();
+    List<Encoder<?,?>> encoders();
 
     List<Decoder<?,?>> decoders();
 

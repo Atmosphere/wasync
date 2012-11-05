@@ -27,4 +27,5 @@ public class WebSocketsTests extends BaseTests {
     int statusCode() {
         return 101;
     }
+
 }

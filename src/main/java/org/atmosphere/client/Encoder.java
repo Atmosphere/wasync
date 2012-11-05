@@ -15,8 +15,8 @@
  */
 package org.atmosphere.client;
 
-public interface Encoder<T> {
+public interface Encoder<U extends Object, T> {
 
-    T encode(Object s);
+    T encode(U s);
 
 }

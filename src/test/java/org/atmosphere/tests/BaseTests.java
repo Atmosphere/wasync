@@ -20,6 +20,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.util.Map;
@@ -350,9 +352,9 @@ public abstract class BaseTests {
         DefaultRequest.Builder request = new DefaultRequest.Builder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
-                .encoder(new Encoder<String>() {
+                .encoder(new Encoder<String, String>() {
                     @Override
-                    public String encode(Object s) {
+                    public String encode(String s) {
                         return "<-" + s.toString() + "->";
                     }
                 })
@@ -524,9 +526,91 @@ public abstract class BaseTests {
         assertEquals(response.get().getClass(), POJO.class);
     }
 
+
+    @Test
+    public void encodersChainingTests() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(r.getRequest().getReader().readLine());
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (!r.isResuming() || !r.isCancelled()) {
+                            r.getResource().getResponse().getWriter().print(r.getMessage());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<String> response = new AtomicReference<String>();
+        Client client = AtmosphereClientFactory.getDefault().newclient();
+
+        DefaultRequest.Builder request = new DefaultRequest.Builder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .encoder(new Encoder<String, POJO>() {
+                    @Override
+                    public POJO encode(String s) {
+                        return new POJO("<-" + s + "->");
+                    }
+                })
+                .encoder(new Encoder<POJO, Reader>() {
+                    @Override
+                    public Reader encode(POJO s) {
+                        return new StringReader(s.message);
+                    }
+                })
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                response.set(t);
+                latch.countDown();
+            }
+        }).on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+        }).open(request.build()).fire("echo");
+
+        latch.await(5, TimeUnit.SECONDS);
+        assertEquals(response.get(), "<-echo->");
+        socket.close();
+    }
+
     public final static class POJO {
 
-        private final String message;
+        public final String message;
 
         public POJO(String message) {
             this.message = message;

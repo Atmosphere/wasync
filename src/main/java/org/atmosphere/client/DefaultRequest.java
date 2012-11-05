@@ -51,7 +51,7 @@ public class DefaultRequest implements Request {
     }
 
     @Override
-    public List<Encoder<?>> encoders() {
+    public List<Encoder<?,?>> encoders() {
         return builder.encoders;
     }
 
@@ -70,7 +70,7 @@ public class DefaultRequest implements Request {
         protected final List<TRANSPORT> transports = new ArrayList<TRANSPORT>();
         protected METHOD method = METHOD.GET;
         protected String uri = "http://localhost:8080";
-        protected final List<Encoder<?>> encoders = new ArrayList<Encoder<?>>();
+        protected final List<Encoder<?,?>> encoders = new ArrayList<Encoder<?,?>>();
         protected final List<Decoder<?, ?>> decoders = new ArrayList<Decoder<?,?>>();
         protected final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
         protected final Map<String, Collection<String>> queryString = new HashMap<String, Collection<String>>();
