@@ -28,7 +28,7 @@ public class ClientFactory {
     private final static ClientFactory factory = new ClientFactory();
     private final String clientClassName;
 
-    public ClientFactory{
+    public ClientFactory(){
         clientClassName = System.getProperty("wasync.client");
     }
 
