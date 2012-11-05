@@ -13,14 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.impl;
+package org.atmosphere.wasync;
 
-import org.atmosphere.client.RequestBuilder;
+/**
+ * @author Jeanfrancois Arcand
+ */
+public interface Transport<T> {
 
-public class DefaultRequestBuilder extends RequestBuilder {
+    Request.TRANSPORT name();
 
-    @Override
-    public DefaultRequest build() {
-        return new DefaultRequest(this);
-    }
+    Transport future(Future f);
+
+    Transport registerF(FunctionWrapper function);
+
+    void onThrowable(Throwable t);
+
+    void close();
 }

@@ -13,21 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.transport;
+package org.atmosphere.wasync.transport;
 
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
-import org.atmosphere.client.Decoder;
-import org.atmosphere.client.Function;
-import org.atmosphere.client.FunctionResolver;
-import org.atmosphere.client.FunctionWrapper;
-import org.atmosphere.client.Future;
-import org.atmosphere.client.Request;
-import org.atmosphere.client.Socket;
-import org.atmosphere.client.Transport;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.FunctionResolver;
 
 import java.util.List;
 

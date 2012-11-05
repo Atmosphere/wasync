@@ -13,13 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.transport;
+package org.atmosphere.wasync.transport;
 
-import org.atmosphere.client.Decoder;
-import org.atmosphere.client.Function;
-import org.atmosphere.client.FunctionResolver;
-import org.atmosphere.client.FunctionWrapper;
-import org.atmosphere.client.util.TypeResolver;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.util.TypeResolver;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.util.TypeResolver;
 
 import java.util.List;
 

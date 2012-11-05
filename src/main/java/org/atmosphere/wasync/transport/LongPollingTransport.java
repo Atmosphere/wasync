@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.transport;
+package org.atmosphere.wasync.transport;
 
 
 import com.ning.http.client.AsyncCompletionHandler;
@@ -21,10 +21,14 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
-import org.atmosphere.client.Decoder;
-import org.atmosphere.client.FunctionResolver;
-import org.atmosphere.client.FunctionWrapper;
-import org.atmosphere.client.Request;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Request;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

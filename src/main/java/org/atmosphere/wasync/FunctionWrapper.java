@@ -13,20 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync;
 
-/**
- * @author Jeanfrancois Arcand
- */
-public interface Transport<T> {
+public class FunctionWrapper {
 
-    Request.TRANSPORT name();
+    private final String functionName;
+    private final Function<?> function;
 
-    Transport future(Future f);
+    public FunctionWrapper(String functionName, Function<?> function) {
+        this.functionName = functionName;
+        this.function = function;
+    }
 
-    Transport registerF(FunctionWrapper function);
+    public Function<?> function(){
+        return function;
+    }
 
-    void onThrowable(Throwable t);
-
-    void close();
+    public String functionName() {
+        return functionName;
+    }
 }

@@ -13,13 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.impl;
+package org.atmosphere.wasync.impl;
 
-import org.atmosphere.client.Decoder;
-import org.atmosphere.client.Encoder;
-import org.atmosphere.client.FunctionResolver;
-import org.atmosphere.client.Request;
-import org.atmosphere.client.RequestBuilder;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.RequestBuilder;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.Request;
 
 import java.util.ArrayList;
 import java.util.Collection;

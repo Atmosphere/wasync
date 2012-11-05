@@ -15,12 +15,12 @@
  */
 package org.atmosphere.tests;
 
-import org.atmosphere.client.AtmosphereClientFactory;
-import org.atmosphere.client.Client;
-import org.atmosphere.client.Function;
-import org.atmosphere.client.Request;
-import org.atmosphere.client.RequestBuilder;
-import org.atmosphere.client.Socket;
+import org.atmosphere.wasync.AtmosphereClientFactory;
+import org.atmosphere.wasync.Client;
+import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.RequestBuilder;
+import org.atmosphere.wasync.Socket;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;

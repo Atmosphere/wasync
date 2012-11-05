@@ -13,23 +13,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync;
 
-public class FunctionWrapper {
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-    private final String functionName;
-    private final Function<?> function;
+/**
+ * @author Jeanfrancois Arcand
+ */
+public interface Request {
 
-    public FunctionWrapper(String functionName, Function<?> function) {
-        this.functionName = functionName;
-        this.function = function;
-    }
+    public enum METHOD {GET, POST, TRACE, PUT, DELETE, OPTIONS}
+    public enum TRANSPORT {WEBSOCKET, SSE, STREAMING, LONG_POLLING}
 
-    public Function<?> function(){
-        return function;
-    }
+    List<TRANSPORT> transport();
 
-    public String functionName() {
-        return functionName;
-    }
+    METHOD method();
+
+    Map<String, Collection<String>> headers();
+
+    Map<String, Collection<String>> queryString();
+
+    List<Encoder<?,?>> encoders();
+
+    List<Decoder<?,?>> decoders();
+
+    String uri();
+
+    FunctionResolver functionResolver();
+
 }

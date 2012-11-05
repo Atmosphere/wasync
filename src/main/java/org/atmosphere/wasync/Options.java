@@ -13,20 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync;
 
-import org.atmosphere.client.impl.DefaultClient;
-
-public class AtmosphereClientFactory {
-
-    private final static AtmosphereClientFactory factory = new AtmosphereClientFactory();
-
-    public final static AtmosphereClientFactory getDefault(){
-        return factory;
-    }
-
-    public Client newclient() {
-        return new DefaultClient();
-    }
-
+public class Options {
 }

@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.impl;
+package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
-import org.atmosphere.client.Client;
-import org.atmosphere.client.Options;
-import org.atmosphere.client.RequestBuilder;
-import org.atmosphere.client.Socket;
+import org.atmosphere.wasync.Client;
+import org.atmosphere.wasync.Options;
+import org.atmosphere.wasync.RequestBuilder;
+import org.atmosphere.wasync.Socket;
 
 public class DefaultClient implements Client {
 

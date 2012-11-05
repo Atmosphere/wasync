@@ -13,34 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+public interface Function<T extends Object> {
 
-/**
- * @author Jeanfrancois Arcand
- */
-public interface Request {
+    enum MESSAGE {error, open, close, message, status, headers, bytes}
 
-    public enum METHOD {GET, POST, TRACE, PUT, DELETE, OPTIONS}
-    public enum TRANSPORT {WEBSOCKET, SSE, STREAMING, LONG_POLLING}
-
-    List<TRANSPORT> transport();
-
-    METHOD method();
-
-    Map<String, Collection<String>> headers();
-
-    Map<String, Collection<String>> queryString();
-
-    List<Encoder<?,?>> encoders();
-
-    List<Decoder<?,?>> decoders();
-
-    String uri();
-
-    FunctionResolver functionResolver();
+    void on(T t);
 
 }

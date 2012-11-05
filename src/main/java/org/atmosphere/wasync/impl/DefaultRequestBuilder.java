@@ -13,25 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync.impl;
 
-import java.io.IOException;
+import org.atmosphere.wasync.RequestBuilder;
 
-/**
- * @author Jeanfrancois Arcand
- */
-public interface Socket {
+public class DefaultRequestBuilder extends RequestBuilder {
 
-    enum EVENT {CLOSE, ERROR, HEADER, STATUS, MESSAGE}
-
-    Future fire(Object data) throws IOException;
-
-    Socket on(Function<? extends Object> function);
-
-    Socket on(String functionMessage, Function<? extends Object> function);
-
-    Socket open(Request request) throws IOException;
-
-    void close();
-
+    @Override
+    public DefaultRequest build() {
+        return new DefaultRequest(this);
+    }
 }

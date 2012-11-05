@@ -1,6 +1,6 @@
 package org.atmosphere.tests;
 
-import org.atmosphere.client.Request;
+import org.atmosphere.wasync.Request;
 
 public class StreamingTest extends BaseTest {
 

@@ -31,7 +31,7 @@
 /**
  * This class is from https://github.com/jhalterman/typetools
  */
-package org.atmosphere.client.util;
+package org.atmosphere.wasync.util;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;

@@ -13,25 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.impl;
+package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
-import org.atmosphere.client.Encoder;
-import org.atmosphere.client.Function;
-import org.atmosphere.client.FunctionWrapper;
-import org.atmosphere.client.Future;
-import org.atmosphere.client.Request;
-import org.atmosphere.client.Socket;
-import org.atmosphere.client.Transport;
-import org.atmosphere.client.transport.LongPollingTransport;
-import org.atmosphere.client.transport.SSETransport;
-import org.atmosphere.client.transport.StreamTransport;
-import org.atmosphere.client.transport.WebSocketTransport;
-import org.atmosphere.client.util.ReaderInputStream;
-import org.atmosphere.client.util.TypeResolver;
+import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.transport.LongPollingTransport;
+import org.atmosphere.wasync.transport.SSETransport;
+import org.atmosphere.wasync.transport.StreamTransport;
+import org.atmosphere.wasync.transport.WebSocketTransport;
+import org.atmosphere.wasync.util.ReaderInputStream;
+import org.atmosphere.wasync.util.TypeResolver;
+import org.atmosphere.wasync.transport.SSETransport;
+import org.atmosphere.wasync.util.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

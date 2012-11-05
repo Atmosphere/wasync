@@ -13,12 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync;
 
-public interface Function<T extends Object> {
+import java.io.IOException;
 
-    enum MESSAGE {error, open, close, message, status, headers, bytes}
+/**
+ * @author Jeanfrancois Arcand
+ */
+public interface Socket {
 
-    void on(T t);
+    enum EVENT {CLOSE, ERROR, HEADER, STATUS, MESSAGE}
+
+    Future fire(Object data) throws IOException;
+
+    Socket on(Function<? extends Object> function);
+
+    Socket on(String functionMessage, Function<? extends Object> function);
+
+    Socket open(Request request) throws IOException;
+
+    void close();
 
 }

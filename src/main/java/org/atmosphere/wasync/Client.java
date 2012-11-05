@@ -13,17 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.impl;
+package org.atmosphere.wasync;
 
-import org.atmosphere.client.FunctionResolver;
-import org.atmosphere.client.FunctionWrapper;
+public interface Client {
 
-public class DefaultFunctionResolver implements FunctionResolver {
-    @Override
-    public boolean resolve(String message, Object functionName, FunctionWrapper fn) {
-        if (fn.functionName().isEmpty() || functionName.toString().equalsIgnoreCase(fn.functionName())) {
-            return true;
-        }
-        return false;
-    }
+    Socket create();
+
+    Socket create(Options options);
+
+    RequestBuilder newRequestBuilder();
+
+    RequestBuilder newRequestBuilder(Class<? extends RequestBuilder> clazz);
+
 }

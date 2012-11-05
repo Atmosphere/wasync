@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync;
 
-import org.atmosphere.client.impl.DefaultFunctionResolver;
+import org.atmosphere.wasync.impl.DefaultFunctionResolver;
+import org.atmosphere.wasync.impl.DefaultFunctionResolver;
 
 import java.util.ArrayList;
 import java.util.Collection;

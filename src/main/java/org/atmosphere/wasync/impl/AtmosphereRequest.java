@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client.impl;
+package org.atmosphere.wasync.impl;
 
-import org.atmosphere.client.Request;
-import org.atmosphere.client.RequestBuilder;
-import org.atmosphere.client.impl.DefaultRequest;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.RequestBuilder;
+import org.atmosphere.wasync.impl.DefaultRequest;
 
 import java.util.ArrayList;
 import java.util.List;

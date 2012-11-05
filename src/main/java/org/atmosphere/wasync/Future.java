@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.wasync;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
