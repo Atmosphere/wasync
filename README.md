@@ -40,3 +40,12 @@ As simple as:
 
         }).open(request.build()).fire("echo");
 ```
+You can download the jar or use Maven
+```xml
+          <dependency>
+              <groupId>org.atmosphere</groupId>
+              <artifactId>wasync</artifactId>
+              <version>1.0.0</version>
+          </dependency>
+
+```
