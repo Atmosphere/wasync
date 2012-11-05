@@ -13,19 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.tests;
+package org.atmosphere.client.impl;
 
-import org.atmosphere.client.Request;
+import org.atmosphere.client.FunctionResolver;
+import org.atmosphere.client.FunctionWrapper;
 
-public class WebSocketsTests extends BaseTests {
+public class DefaultFunctionResolver implements FunctionResolver {
     @Override
-    Request.TRANSPORT transport() {
-        return Request.TRANSPORT.WEBSOCKET;
+    public boolean resolve(String message, Object functionName, FunctionWrapper fn) {
+        if (fn.functionName().isEmpty() || functionName.toString().equalsIgnoreCase(fn.functionName())) {
+            return true;
+        }
+        return false;
     }
-
-    @Override
-    int statusCode() {
-        return 101;
-    }
-
 }

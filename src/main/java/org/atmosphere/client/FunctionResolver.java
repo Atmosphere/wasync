@@ -15,18 +15,7 @@
  */
 package org.atmosphere.client;
 
-import org.atmosphere.client.impl.DefaultClient;
+public interface FunctionResolver {
 
-public class AtmosphereClientFactory {
-
-    private final static AtmosphereClientFactory factory = new AtmosphereClientFactory();
-
-    public final static AtmosphereClientFactory getDefault(){
-        return factory;
-    }
-
-    public Client newclient() {
-        return new DefaultClient();
-    }
-
+    boolean resolve(String message, Object functionName, FunctionWrapper fn);
 }

@@ -17,6 +17,7 @@ package org.atmosphere.client.transport;
 
 import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
+import org.atmosphere.client.FunctionResolver;
 import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.util.TypeResolver;
 
@@ -24,10 +25,16 @@ import java.util.List;
 
 public class TransportsUtil {
 
-    static void invokeFunction(List<Decoder<? extends Object, ?>> decoders, List<FunctionWrapper> functions, Class<?> implementedType, Object instanceType, String functionName) {
+    static void invokeFunction(List<Decoder<? extends Object, ?>> decoders,
+                               List<FunctionWrapper> functions,
+                               Class<?> implementedType,
+                               Object instanceType,
+                               String functionName,
+                               FunctionResolver resolver) {
+
+        String originalMessage = instanceType.toString();
         for (FunctionWrapper wrapper : functions) {
             Function f = wrapper.function();
-            String fn = wrapper.functionName();
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
 
             if (typeArguments.length > 0) {
@@ -35,8 +42,8 @@ public class TransportsUtil {
                 implementedType = instanceType.getClass();
             }
 
-            if (typeArguments.length > 0 && typeArguments[0].equals(implementedType)) {
-                if (fn.isEmpty() || fn.equalsIgnoreCase(functionName)) {
+            if (typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {
+                if (resolver.resolve(originalMessage, functionName, wrapper)) {
                     f.on(instanceType);
                 }
             }

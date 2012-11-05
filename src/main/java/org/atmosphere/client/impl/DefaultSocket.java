@@ -13,12 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.client.impl;
 
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
+import org.atmosphere.client.Encoder;
+import org.atmosphere.client.Function;
+import org.atmosphere.client.FunctionWrapper;
+import org.atmosphere.client.Future;
+import org.atmosphere.client.Request;
+import org.atmosphere.client.Socket;
+import org.atmosphere.client.Transport;
 import org.atmosphere.client.transport.LongPollingTransport;
 import org.atmosphere.client.transport.SSETransport;
 import org.atmosphere.client.transport.StreamTransport;
@@ -141,13 +148,13 @@ public class DefaultSocket implements Socket {
 
         for (Request.TRANSPORT t : request.transport()) {
             if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
-                transports.add(new WebSocketTransport(request.decoders(), functions));
+                transports.add(new WebSocketTransport(request.decoders(), functions, request.functionResolver()));
             } else if (t.equals(Request.TRANSPORT.SSE)) {
-                transports.add(new SSETransport(request.decoders(), functions));
+                transports.add(new SSETransport(request.decoders(), functions, request.functionResolver()));
             } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-                transports.add(new LongPollingTransport(request.decoders(), functions, request, asyncHttpClient));
+                transports.add(new LongPollingTransport(request.decoders(), functions, request, asyncHttpClient, request.functionResolver()));
             } else if (t.equals(Request.TRANSPORT.STREAMING)) {
-                transports.add(new StreamTransport(request.decoders(), functions));
+                transports.add(new StreamTransport(request.decoders(), functions, request.functionResolver()));
             }
         }
         return transports;

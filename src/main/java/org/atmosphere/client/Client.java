@@ -21,4 +21,8 @@ public interface Client {
 
     Socket create(Options options);
 
+    RequestBuilder newRequestBuilder();
+
+    RequestBuilder newRequestBuilder(Class<? extends RequestBuilder> clazz);
+
 }

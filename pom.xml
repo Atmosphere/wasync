@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -59,7 +60,6 @@
         </dependency>
     </dependencies>
     <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <extensions>
             <!-- Enabling the use of SSH -->
@@ -73,8 +73,76 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>${source.property}</source>
+                    <target>${target.property}</target>
+                    <maxmem>1024m</maxmem>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.8.1</version>
+                <configuration>
+                    <redirectTestOutputToFile>${surefire.redirectTestOutputToFile}</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.4.3</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}/META-INF</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/works</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/overlays</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>*.log</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
                 <configuration>
                     <aggregate>true</aggregate>
                     <source>1.6</source>
@@ -96,138 +164,10 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.3</version>
                 <configuration>
-                    <source>${source.property}</source>
-                    <target>${target.property}</target>
-                    <maxmem>1024m</maxmem>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>all</shadedClassifierName>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>commons-codec:commons-codec</exclude>
-                                    <exclude>commons-lang:commons-lang</exclude>
-                                    <exclude>commons-logging:commons-logging</exclude>
-                                    <exclude>junit:junit</exclude>
-                                    <exclude>log4j:log4j</exclude>
-                                    <exclude>commons-httpclient:commons-httpclient</exclude>
-                                    <exclude>org.scala-lang:scala-library</exclude>
-                                    <exclude>org.scala-lang:scala-compiler</exclude>
-                                </excludes>
-                            </artifactSet>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.4</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <manifestLocation>META-INF</manifestLocation>
-                    <instructions>
-                        <Bundle-Version>$(replace;$(project.version);-SNAPSHOT;.$(tstamp;yyyyMMdd-HHmm))
-                        </Bundle-Version>
-                        <Bundle-Vendor>jfarcand</Bundle-Vendor>
-                        <Import-Package>
-                            *
-                        </Import-Package>
-                        <Export-Package>
-                            org.jfarcand.*;version="$(replace;$(project.version);-SNAPSHOT;"")"
-                        </Export-Package>
-                    </instructions>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>osgi-bundle</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.4.3</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>2.15.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <jvmArgs>
-                        <jvmArg>-Xmx384m</jvmArg>
-                    </jvmArgs>
-                    <args>
-                        <arg>-target:jvm-1.5</arg>
-                        <arg>-deprecation</arg>
-                    </args>
-                    <launchers>
-                        <launcher>
-                            <id>run-scalatest</id>
-                            <mainClass>org.scalatest.tools.Runner</mainClass>
-                            <args>
-                                <arg>-p</arg>
-                                <arg>${project.build.testOutputDirectory}</arg>
-                            </args>
-                            <jvmArgs>
-                                <jvmArg>-Xmx512m</jvmArg>
-                            </jvmArgs>
-                        </launcher>
-                    </launchers>
+                    <aggregate>true</aggregate>
                 </configuration>
             </plugin>
         </plugins>
@@ -236,38 +176,49 @@
         <outputDirectory>target/site</outputDirectory>
         <plugins>
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <aggregate>true</aggregate>
+                    <debug>true</debug>
+                    <links>
+                        <link>http://docs.oracle.com/javaee/6/docs/api/</link>
+                        <link>http://docs.oracle.com/javase/6/docs/api/</link>
+                    </links>
+                    <excludePackageNames/>
+                </configuration>
             </plugin>
             <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.8.1</version>
-            <configuration>
-                <aggregate>true</aggregate>
-                <source>1.6</source>
-                <encoding>UTF-8</encoding>
-                <maxmemory>1g</maxmemory>
-                <links>
-                    <link>http://java.sun.com/javase/6/docs/api/</link>
-                </links>
-                <bootclasspath>${sun.boot.class.path}</bootclasspath>
-                <doclet>com.google.doclava.Doclava</doclet>
-                <useStandardDocletOptions>false</useStandardDocletOptions>
-                <additionalJOption>-J-Xmx1024m</additionalJOption>
-                <docletArtifact>
-                    <groupId>com.google.doclava</groupId>
-                    <artifactId>doclava</artifactId>
-                    <version>1.0.3</version>
-                </docletArtifact>
-                <additionalparam>
-                    -hdf project.name "${project.name} ${project.version}"
-                    -d ${project.reporting.outputDirectory}/apidocs
-                </additionalparam>
-            </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>project-team</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
         </plugins>
     </reporting>
+    <repositories>
+        <repository>
+            <id>oss.sonatype.org</id>
+            <url>http://oss.sonatype.org/content/repositories/releases</url>
+        </repository>
+        <repository>
+            <id>oss.sonatype.org-snapshot</id>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
     <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
@@ -282,9 +233,12 @@
     </distributionManagement>
     <properties>
         <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
-        <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
+        <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.6</source.property>
         <target.property>1.6</target.property>
+        <atmosphere.version>1.1.0.beta1</atmosphere.version>
     </properties>
 </project>
+
+
 

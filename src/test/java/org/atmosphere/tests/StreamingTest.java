@@ -2,7 +2,7 @@ package org.atmosphere.tests;
 
 import org.atmosphere.client.Request;
 
-public class StreamingTests extends BaseTests {
+public class StreamingTest extends BaseTest {
 
     @Override
     Request.TRANSPORT transport() {

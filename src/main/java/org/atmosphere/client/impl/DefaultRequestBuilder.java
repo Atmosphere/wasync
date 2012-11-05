@@ -13,20 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.client.impl;
 
-import org.atmosphere.client.impl.DefaultClient;
+import org.atmosphere.client.RequestBuilder;
 
-public class AtmosphereClientFactory {
+public class DefaultRequestBuilder extends RequestBuilder {
 
-    private final static AtmosphereClientFactory factory = new AtmosphereClientFactory();
-
-    public final static AtmosphereClientFactory getDefault(){
-        return factory;
+    @Override
+    public DefaultRequest build() {
+        return new DefaultRequest(this);
     }
-
-    public Client newclient() {
-        return new DefaultClient();
-    }
-
 }

@@ -3,10 +3,10 @@ package org.atmosphere.tests;
 import org.atmosphere.client.AtmosphereClientFactory;
 import org.atmosphere.client.Client;
 import org.atmosphere.client.Decoder;
-import org.atmosphere.client.DefaultRequest;
 import org.atmosphere.client.Encoder;
 import org.atmosphere.client.Function;
 import org.atmosphere.client.Request;
+import org.atmosphere.client.RequestBuilder;
 import org.atmosphere.client.Socket;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -34,12 +34,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
-public abstract class BaseTests {
+public abstract class BaseTest {
     public final static String RESUME = "Resume";
 
     public Nettosphere server;
     public String targetUrl;
-    public static final Logger logger = LoggerFactory.getLogger(BaseTests.class);
+    public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
 
     public int findFreePort() throws IOException {
@@ -115,7 +115,7 @@ public abstract class BaseTests {
         final AtomicReference<String> response = new AtomicReference<String>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
@@ -139,8 +139,9 @@ public abstract class BaseTests {
         }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
-        assertEquals(response.get(), RESUME);
         socket.close();
+
+        assertEquals(response.get(), RESUME);
     }
 
     @Test
@@ -186,7 +187,7 @@ public abstract class BaseTests {
 
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
@@ -250,7 +251,7 @@ public abstract class BaseTests {
 
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
@@ -273,11 +274,12 @@ public abstract class BaseTests {
         }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
         assertEquals(status.get(), statusCode());
         assertNotNull(map.get());
         assertEquals(map.get().getClass().getInterfaces()[0], Map.class);
 
-        socket.close();
     }
 
     @Test
@@ -286,7 +288,7 @@ public abstract class BaseTests {
         final AtomicReference<ConnectException> response = new AtomicReference<ConnectException>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
@@ -303,8 +305,8 @@ public abstract class BaseTests {
         }).open(request.build());
 
         latch.await(5, TimeUnit.SECONDS);
-        assertEquals(response.get().getClass(), ConnectException.class);
         socket.close();
+        assertEquals(response.get().getClass(), ConnectException.class);
     }
 
     @Test
@@ -349,7 +351,7 @@ public abstract class BaseTests {
         final AtomicReference<String> response = new AtomicReference<String>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .encoder(new Encoder<String, String>() {
@@ -378,8 +380,9 @@ public abstract class BaseTests {
         }).open(request.build()).fire("echo");
 
         latch.await(5, TimeUnit.SECONDS);
-        assertEquals(response.get(), "<-echo->");
         socket.close();
+
+        assertEquals(response.get(), "<-echo->");
     }
 
     @Test
@@ -424,7 +427,7 @@ public abstract class BaseTests {
         final AtomicReference<POJO> response = new AtomicReference<POJO>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String,POJO>() {
@@ -445,9 +448,10 @@ public abstract class BaseTests {
         }).open(request.build()).fire("echo");
 
         latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
         assertNotNull(response.get());
         assertEquals(response.get().getClass(), POJO.class);
-        socket.close();
     }
 
 
@@ -493,7 +497,7 @@ public abstract class BaseTests {
         final AtomicReference<POJO> response = new AtomicReference<POJO>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
@@ -569,7 +573,7 @@ public abstract class BaseTests {
         final AtomicReference<String> response = new AtomicReference<String>();
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
-        DefaultRequest.Builder request = new DefaultRequest.Builder()
+        RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .encoder(new Encoder<String, POJO>() {
@@ -604,8 +608,9 @@ public abstract class BaseTests {
         }).open(request.build()).fire("echo");
 
         latch.await(5, TimeUnit.SECONDS);
-        assertEquals(response.get(), "<-echo->");
         socket.close();
+
+        assertEquals(response.get(), "<-echo->");
     }
 
     public final static class POJO {

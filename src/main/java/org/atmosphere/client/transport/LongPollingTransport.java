@@ -22,6 +22,7 @@ import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import org.atmosphere.client.Decoder;
+import org.atmosphere.client.FunctionResolver;
 import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.Request;
 
@@ -34,8 +35,8 @@ public class LongPollingTransport<T> extends StreamTransport {
     private final AsyncHttpClient asyncHttpClient;
     private final AtomicBoolean hasSucceedOnce = new AtomicBoolean(false);
 
-    public LongPollingTransport(List<Decoder<?,?>>decoders, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient) {
-        super(decoders, functions);
+    public LongPollingTransport(List<Decoder<?,?>>decoders, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient, FunctionResolver resolver) {
+        super(decoders, functions, resolver);
         this.request = request;
         this.asyncHttpClient = asyncHttpClient;
     }

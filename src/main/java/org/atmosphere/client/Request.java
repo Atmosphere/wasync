@@ -15,7 +15,6 @@
  */
 package org.atmosphere.client;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -41,5 +40,7 @@ public interface Request {
     List<Decoder<?,?>> decoders();
 
     String uri();
+
+    FunctionResolver functionResolver();
 
 }

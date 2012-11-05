@@ -22,6 +22,7 @@ import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
 import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
+import org.atmosphere.client.FunctionResolver;
 import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.Future;
 import org.atmosphere.client.Request;
@@ -32,8 +33,8 @@ import java.util.List;
 
 public class SSETransport<T> extends StreamTransport {
 
-    public SSETransport(List<Decoder<?,?>>decoders, List<FunctionWrapper> functions) {
-        super(decoders, functions);
+    public SSETransport(List<Decoder<?,?>>decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
+        super(decoders, functions, resolver);
     }
 
     @Override

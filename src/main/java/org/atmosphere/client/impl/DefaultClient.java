@@ -13,16 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.client.impl;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
+import org.atmosphere.client.Client;
+import org.atmosphere.client.Options;
+import org.atmosphere.client.RequestBuilder;
+import org.atmosphere.client.Socket;
 
 public class DefaultClient implements Client {
 
     private AsyncHttpClient asyncHttpClient;
 
-    protected DefaultClient() {
+    public DefaultClient() {
     }
 
     public Socket create() {
@@ -39,4 +43,21 @@ public class DefaultClient implements Client {
         return new DefaultSocket(asyncHttpClient);
     }
 
+    @Override
+    public RequestBuilder newRequestBuilder() {
+        RequestBuilder b = new DefaultRequestBuilder();
+        return b.resolver(new DefaultFunctionResolver());
+    }
+
+    @Override
+    public RequestBuilder newRequestBuilder(Class<? extends RequestBuilder> clazz) {
+        RequestBuilder b = null;
+        try {
+            b = clazz.newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return b.resolver(new DefaultFunctionResolver());    }
 }

@@ -13,23 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.client;
+package org.atmosphere.client.impl;
+
+import org.atmosphere.client.Request;
+import org.atmosphere.client.RequestBuilder;
+import org.atmosphere.client.impl.DefaultRequest;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AtmosphereRequest extends DefaultRequest {
 
-    protected AtmosphereRequest(DefaultRequest.Builder builder) {
+    protected AtmosphereRequest(DefaultRequestBuilder builder) {
         super(builder);
     }
 
-    public final static class Builder extends DefaultRequest.Builder{
+    public static class AtmosphereRequestBuilder extends DefaultRequestBuilder {
 
-        public Builder() {
+        public AtmosphereRequestBuilder() {
 
             List<String> l = new ArrayList<String>();
             l.add("1.0");
@@ -44,7 +45,7 @@ public class AtmosphereRequest extends DefaultRequest {
             headers.put("X-Cache-Date", l);
         }
 
-        public Builder transport(TRANSPORT t) {
+        public RequestBuilder transport(TRANSPORT t) {
             List<String> l = new ArrayList<String>();
             if (t.equals(TRANSPORT.LONG_POLLING)) {
                 l.add("long-polling");
@@ -55,6 +56,11 @@ public class AtmosphereRequest extends DefaultRequest {
             headers.put("X-Atmosphere-Transport", l);
             transports.add(t);
             return this;
+        }
+
+        @Override
+        public DefaultRequest build() {
+            return new DefaultRequest(this);
         }
     }
 }

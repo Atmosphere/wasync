@@ -23,6 +23,7 @@ import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.Response;
 import org.atmosphere.client.Decoder;
 import org.atmosphere.client.Function;
+import org.atmosphere.client.FunctionResolver;
 import org.atmosphere.client.FunctionWrapper;
 import org.atmosphere.client.Future;
 import org.atmosphere.client.Request;
@@ -31,16 +32,18 @@ import org.atmosphere.client.Transport;
 import java.util.List;
 import java.util.Map;
 
-public class StreamTransport<T> implements AsyncHandler<String>,Transport {
+public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     private final static String DEFAULT_CHARSET = "ISO-8859-1";
 
     protected Future f;
     protected final List<FunctionWrapper> functions;
-    private final List<Decoder<? extends Object,?>> decoders;
+    private final List<Decoder<? extends Object, ?>> decoders;
     //TODO fix me
     protected String charSet = DEFAULT_CHARSET;
+    private final FunctionResolver resolver;
 
-    public StreamTransport(List<Decoder<? extends Object,?>>decoders, List<FunctionWrapper> functions) {
+
+    public StreamTransport(List<Decoder<? extends Object, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
                 @Override
@@ -51,6 +54,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
         }
         this.decoders = decoders;
         this.functions = functions;
+        this.resolver = resolver;
     }
 
     @Override
@@ -70,8 +74,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
      */
     @Override
     public void onThrowable(Throwable t) {
-        t.printStackTrace();
-        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name());
+        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver);
     }
 
     /**
@@ -81,7 +84,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
         if (!m.isEmpty()) {
-            TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name());
+            TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
         }
         return STATE.CONTINUE;
     }
@@ -91,7 +94,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name());
+        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name(), resolver);
 
         // TODO: Parse charset
         return STATE.CONTINUE;
@@ -103,8 +106,8 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         f.done();
-        TransportsUtil.invokeFunction(decoders, functions, String.class, "Open", Function.MESSAGE.open.name());
-        TransportsUtil.invokeFunction(decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name());
+        TransportsUtil.invokeFunction(decoders, functions, String.class, "Open", Function.MESSAGE.open.name(), resolver);
+        TransportsUtil.invokeFunction(decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
 
         return STATE.CONTINUE;
     }
@@ -121,7 +124,7 @@ public class StreamTransport<T> implements AsyncHandler<String>,Transport {
 
     @Override
     public void close() {
-        TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.open.name());
+        TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.open.name(), resolver);
     }
 }
 
