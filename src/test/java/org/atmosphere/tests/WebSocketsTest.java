@@ -91,7 +91,7 @@ public class WebSocketsTest extends BaseTest {
           final AtomicInteger status = new AtomicInteger();
           final AtomicReference<Map> map = new AtomicReference<Map>();
 
-          Client client = ClientFactory.getDefault().newclient();
+          Client client = ClientFactory.getDefault().newClient();
 
           RequestBuilder request = client.newRequestBuilder()
                   .method(Request.METHOD.GET)

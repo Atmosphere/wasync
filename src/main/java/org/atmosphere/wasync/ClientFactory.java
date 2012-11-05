@@ -17,17 +17,42 @@ package org.atmosphere.wasync;
 
 import org.atmosphere.wasync.impl.DefaultClient;
 
-
+/**
+ * Create a {@link Client}. By default, the {@link DefaultClient} will be returned. To override the {@link DefaultClient},
+ * just specify the provider using the -Dwasync.client property.
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class ClientFactory {
 
     private final static ClientFactory factory = new ClientFactory();
+    private final String clientClassName;
 
+    public ClientFactory{
+        clientClassName = System.getProperty("wasync.client");
+    }
+
+    /**
+     * Return the default Factory.
+     * @return this
+     */
     public final static ClientFactory getDefault(){
         return factory;
     }
 
-    public Client newclient() {
-        return new DefaultClient();
+    /**
+     * Return a new {@link Client} instance
+     * @return a new {@link Client} instance
+     */
+    public Client newClient() {
+        if (clientClassName == null) {
+            return new DefaultClient();
+        } else {
+            try {
+                return (Client) Thread.currentThread().getContextClassLoader().loadClass(clientClassName).newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
-
 }

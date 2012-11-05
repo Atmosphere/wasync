@@ -113,7 +113,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> response = new AtomicReference<String>();
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -185,7 +185,7 @@ public abstract class BaseTest {
         final CountDownLatch latch = new CountDownLatch(2);
         final StringBuilder builder = new StringBuilder();
 
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -249,7 +249,7 @@ public abstract class BaseTest {
         final AtomicInteger status = new AtomicInteger();
         final AtomicReference<Map> map = new AtomicReference<Map>();
 
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -286,7 +286,7 @@ public abstract class BaseTest {
     public void basicConnectExceptionTest() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<ConnectException> response = new AtomicReference<ConnectException>();
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -349,7 +349,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> response = new AtomicReference<String>();
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -425,7 +425,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<POJO> response = new AtomicReference<POJO>();
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -495,7 +495,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<POJO> response = new AtomicReference<POJO>();
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
@@ -571,7 +571,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> response = new AtomicReference<String>();
-        Client client = ClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
