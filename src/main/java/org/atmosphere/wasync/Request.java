@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *
+ * Define a request for {@link Socket}. This class cannot be instantiated. Instead, use the {@link RequestBuilder}
+ *
  * @author Jeanfrancois Arcand
  */
 public interface Request {
@@ -27,20 +30,52 @@ public interface Request {
     public enum METHOD {GET, POST, TRACE, PUT, DELETE, OPTIONS}
     public enum TRANSPORT {WEBSOCKET, SSE, STREAMING, LONG_POLLING}
 
+    /**
+     * The list of transports to try
+     * @return a {@link TRANSPORT}
+     */
     List<TRANSPORT> transport();
 
+    /**
+     * The method
+     * @return a {@link METHOD}
+     */
     METHOD method();
 
+    /**
+     * Return the list of headers
+     * @return a Map of headers
+     */
     Map<String, Collection<String>> headers();
 
+    /**
+     * Return the list of query params
+     * @return a Map of headers
+     */
     Map<String, Collection<String>> queryString();
 
+    /**
+     * The list of {@link Encoder} to use before the request is sent.
+     * @return The list of {@link Encoder}
+     */
     List<Encoder<?,?>> encoders();
 
+    /**
+     * The list of {@link Decoder} to use before the request is sent.
+     * @return The list of {@link Decoder}
+     */
     List<Decoder<?,?>> decoders();
 
+    /**
+     * The targetted URI
+     * @return the targetted URI
+     */
     String uri();
 
+    /**
+     * The {@link FunctionResolver} associated with that request.
+     * @return The {@link FunctionResolver}
+     */
     FunctionResolver functionResolver();
 
 }

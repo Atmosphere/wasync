@@ -15,5 +15,23 @@
  */
 package org.atmosphere.wasync;
 
+/**
+ * Configure the underlying WebSocket/HTTP provider
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class Options {
+
+    private final OptionsBuilder b;
+
+    private Options(OptionsBuilder b) {
+        this.b = b;
+    }
+
+    public final static class OptionsBuilder {
+
+        public OptionsBuilder registerTransport(Transport t) {
+            return this;
+        }
+    }
 }

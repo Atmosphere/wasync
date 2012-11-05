@@ -17,7 +17,6 @@ package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.FunctionResolver;
 
 public class DefaultFunctionResolver implements FunctionResolver {
     @Override

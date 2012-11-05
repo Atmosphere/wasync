@@ -15,10 +15,59 @@
  */
 package org.atmosphere.wasync;
 
+/**
+ * A function is asynchronously invoked when a response is received, complete or not.
+ *
+ * This library supports predefined life cycle's events (@link #MESSAGE} that can be used. For example, a Function
+ * can be defined for handling IOException:
+ * <blockquote>
+ *
+ *     class Function<IOException>() {
+ *
+ *         public void on(IOEXception ex) {
+ *
+ *         }
+ *     }
+ * </blockquote>
+ * This function can be registered using the {@link Socket#on(Function)} as
+ * <blockquote>
+ *
+ *     socket.on(new Function<IOEXception>() {
+ *         ....
+ *     }
+ * </blockquote>
+ * This is the equivalent of doing
+ * <blockquote>
+ *
+ *     socket.on(MESSAGE.error, new Function<IOEXception>() {
+ *         ....
+ *     }
+ * </blockquote>
+ * Anonymous functions call also be invoked if a {@link Decoder} match its type
+ * <blockquote>
+ *
+ *     socket
+ *     .decoder(new Decoder<String, POJO>(){
+ *         public POJO decode(String message) {
+ *             return new POJO(message);
+ *         }
+ *     }
+ *
+ *     .on(new Function<POJO>() {
+ *         ....
+ *     }
+ * </blockquote>
+ * @param <T>
+ * @author Jeanfrancois Arcand
+ */
 public interface Function<T extends Object> {
 
     enum MESSAGE {error, open, close, message, status, headers, bytes}
 
+    /**
+     * A function that will be invoked when a
+     * @param t
+     */
     void on(T t);
 
 }

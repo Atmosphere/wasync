@@ -20,7 +20,6 @@ import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
-import com.ning.http.client.Response;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
@@ -28,12 +27,6 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Future;
-import org.atmosphere.wasync.Request;
 
 import java.util.List;
 import java.util.Map;
@@ -131,6 +124,11 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     @Override
     public void close() {
         TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.open.name(), resolver);
+    }
+
+    @Override
+    public boolean canHandle(Request request) {
+        return true;
     }
 }
 

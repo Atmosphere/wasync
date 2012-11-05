@@ -15,7 +15,22 @@
  */
 package org.atmosphere.wasync;
 
+/**
+ * FunctionResolver are useful for mapping received message with a {@link Function}. By default, only the predefined
+ * function {@link Function.MESSAGE} are automatically mapped to Function. An application can define its own
+ * Function.MESSAGE be writing the appropriate FunctionWrapper.
+ *
+ * By default, the {@link org.atmosphere.wasync.impl.DefaultFunctionResolver} is used.
+ *
+ * @author Jeanfrancois Arcand
+ */
 public interface FunctionResolver {
-
+    /**
+     * Resolve the current message with
+     * @param message the original response's body received
+     * @param functionName the default function name taken from {@link Function.MESSAGE}
+     * @param fn The current {@link FunctionWrapper}
+     * @return true if the {@link Function} can be invoked.
+     */
     boolean resolve(String message, Object functionName, FunctionWrapper fn);
 }

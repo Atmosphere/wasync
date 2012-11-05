@@ -15,8 +15,21 @@
  */
 package org.atmosphere.wasync;
 
+/**
+ * A decoder can be used to 'decode' the response's body. Decoder can be chained amongst themselves in order to create
+ * plain Java Object. Decoder's can be used to decode the response body and match them with {@link Function}'s implementation.
+ * Tis library will try to match the decoded Object to its associated Function.
+ *
+ * @param <U>
+ * @param <T>
+ * @author Jeanfrancois Arcand
+ */
 public interface Decoder<U extends Object, T> {
-
+    /**
+     * Decode the specified object of type U into object of type T
+     * @param s a object of type U
+     * @return a new object of type T
+     */
     T decode(U s);
 
 }

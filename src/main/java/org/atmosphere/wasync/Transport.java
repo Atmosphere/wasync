@@ -16,17 +16,48 @@
 package org.atmosphere.wasync;
 
 /**
+ * Define a supported {@link Transport}. Default are websocket, streaming, server-side events and long-polling.
+ * Use this interface only if you want to define another transport. New transport can be registered using the {@link Options}
+ * class.
+ *
  * @author Jeanfrancois Arcand
  */
 public interface Transport<T> {
-
+    /**
+     * The transport name
+     * @return transport name
+     */
     Request.TRANSPORT name();
 
+    /**
+     * The current {@link Socket}'s Future
+     * @param f
+     * @return this
+     */
     Transport future(Future f);
 
+    /**
+     * Register a new {@link FunctionResolver}
+     * @param function {@link FunctionResolver}
+     * @return this;
+     */
     Transport registerF(FunctionWrapper function);
 
+    /**
+     * Called when an unexpected exception ocurred.
+     * @param t a {@link Throwable}
+     */
     void onThrowable(Throwable t);
 
+    /**
+     * Close the underlying transport}
+     */
     void close();
+
+    /**
+     * Return true if the transport can handle the request.
+     * @param request {@link Request}
+     * @return true if the transport can handle the request.
+     */
+    boolean canHandle(Request request);
 }

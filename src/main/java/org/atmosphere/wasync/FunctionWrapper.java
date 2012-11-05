@@ -15,6 +15,18 @@
  */
 package org.atmosphere.wasync;
 
+/**
+ * A tupple which contains a {@link Function} and its associated functionName. The values are passed from
+ * <blockquote>
+ *
+ *     socket.on("message, new Function<String>() {
+ *         ....
+ *     }
+ * </blockquote>
+ * This class is only used by {@link Transport} implementation.
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class FunctionWrapper {
 
     private final String functionName;

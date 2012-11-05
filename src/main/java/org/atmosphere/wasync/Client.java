@@ -15,14 +15,35 @@
  */
 package org.atmosphere.wasync;
 
+/**
+ * An asynchronous client's implementation used to create {@link Socket} and {@link Request}.
+ *
+ * @author Jeanfrancois Arcand
+ */
 public interface Client {
 
+    /**
+     * Create a {@link Socket}
+     * @return {@link Socket}
+     */
     Socket create();
-
+    /**
+     * Create a {@link Socket} configured using the {@link Options}
+     * @return {@link Socket}
+     */
     Socket create(Options options);
 
+    /**
+     * Return a {@link RequestBuilder}
+     * @return a {@link RequestBuilder}
+     */
     RequestBuilder newRequestBuilder();
 
+    /**
+     * Create a new {@link RequestBuilder} based on the class' implementation.
+     * @param clazz an impplementation of {@link RequestBuilder}
+     * @return  a {@link RequestBuilder}
+     */
     RequestBuilder newRequestBuilder(Class<? extends RequestBuilder> clazz);
 
 }

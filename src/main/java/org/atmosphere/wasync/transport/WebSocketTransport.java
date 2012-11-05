@@ -28,13 +28,6 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Future;
-import org.atmosphere.wasync.Request;
-import org.atmosphere.wasync.Transport;
 
 import java.util.List;
 import java.util.Map;
@@ -74,6 +67,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
     @Override
     public void close() {
+    }
+
+    @Override
+    public boolean canHandle(Request request) {
+        return true;
     }
 
     /**

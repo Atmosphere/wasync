@@ -21,6 +21,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * An internal {@link Future} implementation used by {@link Transport} to notify {@link Socket} when the
+ * transport has connected and available.
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class Future implements java.util.concurrent.Future<Socket> {
 
     private final Socket socket;

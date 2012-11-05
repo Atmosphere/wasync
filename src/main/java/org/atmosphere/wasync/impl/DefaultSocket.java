@@ -32,8 +32,6 @@ import org.atmosphere.wasync.transport.StreamTransport;
 import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.atmosphere.wasync.util.ReaderInputStream;
 import org.atmosphere.wasync.util.TypeResolver;
-import org.atmosphere.wasync.transport.SSETransport;
-import org.atmosphere.wasync.util.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

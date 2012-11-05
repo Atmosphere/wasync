@@ -20,8 +20,6 @@ import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.util.TypeResolver;
-import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.util.TypeResolver;
 
 import java.util.List;
 

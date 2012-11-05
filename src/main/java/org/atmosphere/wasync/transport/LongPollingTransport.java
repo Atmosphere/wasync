@@ -16,15 +16,9 @@
 package org.atmosphere.wasync.transport;
 
 
-import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
-import com.ning.http.client.Response;
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;

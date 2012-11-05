@@ -24,6 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Construct a {@link Request}
+ *
+ * @author jeanfrancois Arcand
+ */
 public abstract class RequestBuilder {
 
     public final List<Request.TRANSPORT> transports = new ArrayList<Request.TRANSPORT>();
@@ -35,31 +40,63 @@ public abstract class RequestBuilder {
     public final Map<String, Collection<String>> queryString = new HashMap<String, Collection<String>>();
     public FunctionResolver resolver = new DefaultFunctionResolver();
 
+    /**
+     * The {@link Request.TRANSPORT} to use. This method can be invoked several time and the library will loop over the list
+     * until one {@link Request.TRANSPORT} succeed.
+     * @param t
+     * @return this
+     */
     public RequestBuilder transport(Request.TRANSPORT t) {
         transports.add(t);
         return this;
     }
 
+    /**
+     * The method to use for connecting tho the remote server. It is recommended to always use {@link Request.METHOD.GET}
+     * @param method
+     * @return this
+     */
     public RequestBuilder method(Request.METHOD method) {
         this.method = method;
         return this;
     }
 
+    /**
+     * The URI to connect to.
+     * @param uri  a uri to connect to
+     * @return this
+     */
     public RequestBuilder uri(String uri) {
         this.uri = uri;
         return this;
     }
 
+    /**
+     * Add an {@link Encoder}. Several Encoder can be added and will be invoked the order they were added.
+     * @param e an {@link Encoder}
+     * @return this
+     */
     public RequestBuilder encoder(Encoder e) {
         encoders.add(e);
         return this;
     }
 
+    /**
+     * Add a {@link Decoder}. Several Decoder can be added and will be invoked the order they were added.
+     * @param d a {@link Decoder}
+     * @return this
+     */
     public RequestBuilder decoder(Decoder d) {
         decoders.add(d);
         return this;
     }
 
+    /**
+     * Add a header.
+     * @param name header name
+     * @param value header value
+     * @return this
+     */
     public RequestBuilder header(String name, String value) {
         Collection<String> l = headers.get(name);
         if (l == null) {
@@ -70,6 +107,12 @@ public abstract class RequestBuilder {
         return this;
     }
 
+    /**
+     * Add a query param.
+     * @param name header name
+     * @param value header value
+     * @return this
+     */
     public RequestBuilder queryString(String name, String value) {
         Collection<String> l = queryString.get(name);
         if (l == null) {
@@ -80,6 +123,11 @@ public abstract class RequestBuilder {
         return this;
     }
 
+    /**
+     * Add a {@link FunctionResolver}
+     * @param resolver  a {@link FunctionResolver}
+     * @return this
+     */
     public RequestBuilder resolver(FunctionResolver resolver) {
         this.resolver = resolver;
         return this;
