@@ -201,7 +201,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("PING");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(builder.toString(), "Open" + RESUME + "Close");

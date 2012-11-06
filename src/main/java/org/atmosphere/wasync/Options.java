@@ -16,7 +16,7 @@
 package org.atmosphere.wasync;
 
 /**
- * Configure the underlying WebSocket/HTTP provider
+ * Configure the underlying WebSocket/HTTP client.
  *
  * @author Jeanfrancois Arcand
  */
