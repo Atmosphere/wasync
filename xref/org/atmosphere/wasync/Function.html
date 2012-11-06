@@ -32,7 +32,7 @@
 <a class="jxr_linenumber" name="22" href="#22">22</a>  <em class="jxr_javadoccomment"> * can be defined for handling IOException:</em>
 <a class="jxr_linenumber" name="23" href="#23">23</a>  <em class="jxr_javadoccomment"> * &lt;blockquote&gt;&lt;pre&gt;</em>
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <em class="jxr_javadoccomment"> *</em>
-<a class="jxr_linenumber" name="25" href="#25">25</a>  <em class="jxr_javadoccomment"> *     class Function&lt;IOException&gt;() {</em>
+<a class="jxr_linenumber" name="25" href="#25">25</a>  <em class="jxr_javadoccomment"> *     class Function&amp;lt;IOException&amp;gt;() {</em>
 <a class="jxr_linenumber" name="26" href="#26">26</a>  <em class="jxr_javadoccomment"> *</em>
 <a class="jxr_linenumber" name="27" href="#27">27</a>  <em class="jxr_javadoccomment"> *         public void on(IOEXception ex) {</em>
 <a class="jxr_linenumber" name="28" href="#28">28</a>  <em class="jxr_javadoccomment"> *</em>
@@ -56,8 +56,8 @@
 <a class="jxr_linenumber" name="46" href="#46">46</a>  <em class="jxr_javadoccomment"> * Anonymous functions call also be invoked if a {@link Decoder} match its type</em>
 <a class="jxr_linenumber" name="47" href="#47">47</a>  <em class="jxr_javadoccomment"> * &lt;blockquote&gt;&lt;pre&gt;</em>
 <a class="jxr_linenumber" name="48" href="#48">48</a>  <em class="jxr_javadoccomment"> *</em>
-<a class="jxr_linenumber" name="49" href="#49">49</a>  <em class="jxr_javadoccomment"> *     socket</em>
-<a class="jxr_linenumber" name="50" href="#50">50</a>  <em class="jxr_javadoccomment"> *     .decoder(new Decoder&amp;lt;String, POJO&amp;gt;(){</em>
+<a class="jxr_linenumber" name="49" href="#49">49</a>  <em class="jxr_javadoccomment"> *     socket.decoder(new Decoder&amp;lt;String, POJO&amp;gt;(){</em>
+<a class="jxr_linenumber" name="50" href="#50">50</a>  <em class="jxr_javadoccomment"> *         &amp;#64;Override</em>
 <a class="jxr_linenumber" name="51" href="#51">51</a>  <em class="jxr_javadoccomment"> *         public POJO decode(String message) {</em>
 <a class="jxr_linenumber" name="52" href="#52">52</a>  <em class="jxr_javadoccomment"> *             return new POJO(message);</em>
 <a class="jxr_linenumber" name="53" href="#53">53</a>  <em class="jxr_javadoccomment"> *         }</em>
