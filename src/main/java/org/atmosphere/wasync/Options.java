@@ -36,10 +36,20 @@ public class Options {
         return b.reconnect;
     }
 
+    public int reconnectInSeconds(){
+        return b.reconnectInSecond;
+    }
+
+    public long waitBeforeUnlocking() {
+        return b.waitBeforeUnlocking;
+    }
+
     public final static class OptionsBuilder {
 
         private Transport transport;
         private boolean reconnect = true;
+        private int reconnectInSecond = 1;
+        public long waitBeforeUnlocking = 2500;
 
         public OptionsBuilder registerTransport(Transport transport) {
             this.transport = transport;
@@ -48,6 +58,16 @@ public class Options {
 
         public OptionsBuilder reconnect(boolean reconnect) {
             this.reconnect = reconnect;
+            return this;
+        }
+
+        public OptionsBuilder pauseBeforeReconnectInSeconds(int reconnectInSecond) {
+            this.reconnectInSecond = reconnectInSecond;
+            return this;
+        }
+
+        public OptionsBuilder waitBeforeUnlocking(long waitBeforeUnlocking) {
+            this.waitBeforeUnlocking = waitBeforeUnlocking;
             return this;
         }
 

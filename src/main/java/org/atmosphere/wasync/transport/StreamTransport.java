@@ -25,6 +25,7 @@ import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
 
@@ -40,9 +41,9 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     //TODO fix me
     protected String charSet = DEFAULT_CHARSET;
     private final FunctionResolver resolver;
+    private final Options options;
 
-
-    public StreamTransport(List<Decoder<? extends Object, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
+    public StreamTransport(Options options, List<Decoder<? extends Object, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
                 @Override
@@ -54,6 +55,7 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
         this.decoders = decoders;
         this.functions = functions;
         this.resolver = resolver;
+        this.options = options;
     }
 
     @Override

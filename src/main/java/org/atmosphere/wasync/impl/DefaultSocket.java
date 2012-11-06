@@ -17,8 +17,12 @@ package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
+import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
+import com.ning.http.client.websocket.WebSocketListener;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
@@ -43,6 +47,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -89,7 +94,7 @@ public class DefaultSocket implements Socket {
         return connect(r, transports);
     }
 
-    protected Socket connect(RequestBuilder r,  List<Transport> transports) throws IOException {
+    protected Socket connect(final RequestBuilder r, final List<Transport> transports) throws IOException {
 
         if (transports.size() > 0) {
             transportInUse = transports.remove(0);
@@ -102,10 +107,39 @@ public class DefaultSocket implements Socket {
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             r.setUrl(request.uri().replace("http", "ws"));
             try {
-                java.util.concurrent.Future<WebSocket> w = asyncHttpClient.prepareRequest(r.build()).execute(
+                java.util.concurrent.Future<WebSocket> fw = asyncHttpClient.prepareRequest(r.build()).execute(
                         (AsyncHandler<WebSocket>) transportInUse);
 
-                socket = new InternalSocket(w.get());
+                WebSocket w = fw.get();
+                w.addWebSocketListener(new WebSocketListener() {
+                    @Override
+                    public void onOpen(WebSocket websocket) {
+                    }
+
+                    @Override
+                    public void onClose(WebSocket websocket) {
+                        if (options.reconnect()) {
+                            asyncHttpClient.getConfig().reaper().schedule(new Callable<String>() {
+                                @Override
+                                public String call() throws Exception {
+                                    try {
+                                        DefaultSocket.this.connect(r, transports);
+                                    } catch (IOException e) {
+                                        logger.trace("", e);
+                                    }
+                                    return "";
+                                }
+                            }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        logger.trace("", t);
+                    }
+                });
+
+                socket = new InternalSocket(w);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
                 if (e != null) {
@@ -123,12 +157,51 @@ public class DefaultSocket implements Socket {
         } else {
             r.setUrl(request.uri().replace("ws", "http"));
             java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(
-                    (AsyncHandler<String>) transportInUse);
+                    new AsyncHandler<String>(){
+
+                        @Override
+                        public void onThrowable(Throwable t) {
+                            transportInUse.onThrowable(t);
+                        }
+
+                        @Override
+                        public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+                            return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        }
+
+                        @Override
+                        public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+                            return ((AsyncHandler<String>)transportInUse).onStatusReceived(responseStatus);
+                        }
+
+                        @Override
+                        public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+                            return ((AsyncHandler<String>)transportInUse).onHeadersReceived(headers);
+                        }
+
+                        @Override
+                        public String onCompleted() throws Exception {
+                            if (options.reconnect()) {
+                                asyncHttpClient.getConfig().reaper().schedule(new Callable<String>() {
+                                    @Override
+                                    public String call() throws Exception {
+                                        try {
+                                            DefaultSocket.this.connect(r, transports);
+                                        } catch (IOException e) {
+                                            logger.debug("", e);
+                                        }
+                                        return "";
+                                    }
+                                }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                            }
+                            return ((AsyncHandler<String>)transportInUse).onCompleted();
+                        }
+                    });
 
             try {
                 // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
                 // beginning for streaming and sse, but nothing for long-polling
-                f.get(2500, TimeUnit.MILLISECONDS);
+                f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 // Swallow  LOG ME
             }
@@ -151,13 +224,13 @@ public class DefaultSocket implements Socket {
 
         for (Request.TRANSPORT t : request.transport()) {
             if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
-                transports.add(new WebSocketTransport(request.decoders(), functions, request.functionResolver()));
+                transports.add(new WebSocketTransport(options, request.decoders(), functions, request.functionResolver()));
             } else if (t.equals(Request.TRANSPORT.SSE)) {
-                transports.add(new SSETransport(request.decoders(), functions, request.functionResolver()));
+                transports.add(new SSETransport(options, request.decoders(), functions, request.functionResolver()));
             } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-                transports.add(new LongPollingTransport(request.decoders(), functions, request, asyncHttpClient, request.functionResolver()));
+                transports.add(new LongPollingTransport(options, request.decoders(), functions, request, asyncHttpClient, request.functionResolver()));
             } else if (t.equals(Request.TRANSPORT.STREAMING)) {
-                transports.add(new StreamTransport(request.decoders(), functions, request.functionResolver()));
+                transports.add(new StreamTransport(options, request.decoders(), functions, request.functionResolver()));
             }
         }
         return transports;

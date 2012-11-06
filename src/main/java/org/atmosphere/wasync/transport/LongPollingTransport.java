@@ -22,6 +22,7 @@ import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 
 import java.util.List;
@@ -29,14 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LongPollingTransport<T> extends StreamTransport {
 
-    private final Request request;
-    private final AsyncHttpClient asyncHttpClient;
-    private final AtomicBoolean hasSucceedOnce = new AtomicBoolean(false);
-
-    public LongPollingTransport(List<Decoder<?,?>>decoders, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient, FunctionResolver resolver) {
-        super(decoders, functions, resolver);
-        this.request = request;
-        this.asyncHttpClient = asyncHttpClient;
+    public LongPollingTransport(Options options, List<Decoder<?,?>>decoders, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient, FunctionResolver resolver) {
+        super(options, decoders, functions, resolver);
     }
 
     @Override
@@ -44,27 +39,5 @@ public class LongPollingTransport<T> extends StreamTransport {
         return Request.TRANSPORT.LONG_POLLING;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        hasSucceedOnce.set(true);
-        return super.onStatusReceived(responseStatus);
-    }
-
-    @Override
-    public String onCompleted() throws Exception {
-        if (hasSucceedOnce.get()) {
-            RequestBuilder r = new RequestBuilder();
-            r.setUrl(request.uri())
-                    .setMethod(request.method().name())
-                    .setHeaders(request.headers());
-
-            java.util.concurrent.Future<String> s = asyncHttpClient.prepareRequest(r.build()).execute(this);
-        }
-
-        return "";
-    }
 }
 

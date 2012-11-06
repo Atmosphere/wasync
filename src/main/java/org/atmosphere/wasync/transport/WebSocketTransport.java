@@ -26,6 +26,7 @@ import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
 
@@ -41,8 +42,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final List<FunctionWrapper> functions;
     private final List<Decoder<?, ?>> decoders;
     private final FunctionResolver resolver;
+    private final Options options;
 
-    public WebSocketTransport(List<Decoder<?, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
+    public WebSocketTransport(Options options, List<Decoder<?, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
         super(new Builder());
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
@@ -55,6 +57,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.decoders = decoders;
         this.functions = functions;
         this.resolver = resolver;
+        this.options = options;
     }
 
     /**
@@ -143,6 +146,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             @Override
             public void onClose(WebSocket websocket) {
                 TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.close.name(), resolver);
+                if (options.reconnect()) {
+
+                }
             }
 
             @Override
