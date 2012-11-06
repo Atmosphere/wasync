@@ -32,14 +32,14 @@ package org.atmosphere.wasync;
  * This function can be registered using the {@link Socket#on(Function)} as
  * <blockquote><pre>
  *
- *     socket.on(new Function<IOEXception>() {
+ *     socket.on(new Function&lt;IOEXception&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
  * This is the equivalent of doing
  * <blockquote><pre>
  *
- *     socket.on(MESSAGE.error, new Function<IOEXception>() {
+ *     socket.on(MESSAGE.error, new Function&lt;IOEXception&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
@@ -47,13 +47,13 @@ package org.atmosphere.wasync;
  * <blockquote><pre>
  *
  *     socket
- *     .decoder(new Decoder<String, POJO>(){
+ *     .decoder(new Decoder&lt;String, POJO&gt;(){
  *         public POJO decode(String message) {
  *             return new POJO(message);
  *         }
  *     }
  *
- *     .on(new Function<POJO>() {
+ *     .on(new Function&lt;POJO&gt;() {
  *         ....
  *     }
  * </pre></blockquote>

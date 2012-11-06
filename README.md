@@ -26,7 +26,7 @@ You can browser the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As s
                 .transport(LONG_POLLING);                    // Fallback to Long-Polling
 
         Socket socket = client.create();
-        socket.on("message", new Function<String>() {
+        socket.on(new Function<Reader>() {
             @Override
             public void on(Reader r) {
                 // Read the response
@@ -40,6 +40,34 @@ You can browser the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As s
 
         }).open(request.build()).fire("echo");
 ```
+By default, the [FunctionResolver](http://atmosphere.github.com/wasync/apidocs/org/atmosphere/wasync/FunctionResolver.html) will associate the Decoder's type will be used to invoke the appropriate Function, if defined. For
+example,
+
+```java
+   Decoder<String, POJO> d = new Decoder<String, POJO>() {
+             @Override
+             public POJO decode(String s) {
+                 return new POJO(s);
+             }
+         }
+```
+will be associated to
+```java
+   Function<String> f = new Function<POJO>() {
+             @Override
+             public void on(POJO t) {
+
+             }
+        }
+```
+You can also implement your own FunctionResolver to associate the Function with Decoder
+```java
+         Socket socket = client.create();
+         socket.on("myEvent", new Function<Reader>() { ...}
+```
+where myEvent could be read from the response's body.
+
+
 You can download the jar or use Maven
 ```xml
           <dependency>

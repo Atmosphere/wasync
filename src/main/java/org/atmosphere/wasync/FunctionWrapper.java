@@ -19,7 +19,7 @@ package org.atmosphere.wasync;
  * A tupple which contains a {@link Function} and its associated functionName. The values are passed from
  * <blockquote><pre>
  *
- *     socket.on("message, new Function<String>() {
+ *     socket.on("message, new Function&lt;String&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
