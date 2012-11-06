@@ -98,7 +98,7 @@ public class WebSocketsTest extends BaseTest {
                   .uri(targetUrl + "/suspend")
                   .transport(transport());
 
-          Socket socket = client.create();
+          Socket socket = client.create(options);
           socket.on(new Function<Integer>() {
               @Override
               public void on(Integer statusCode) {

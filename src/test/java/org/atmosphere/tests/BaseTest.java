@@ -5,6 +5,7 @@ import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
@@ -41,6 +42,7 @@ public abstract class BaseTest {
     public String targetUrl;
     public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
+    public final Options options = new Options.OptionsBuilder().reconnect(false).build();
 
     public int findFreePort() throws IOException {
         ServerSocket socket = null;
@@ -69,7 +71,7 @@ public abstract class BaseTest {
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
-        port = findFreePort();
+        port = 8080;
         targetUrl = "http://127.0.0.1:" + port;
     }
 
@@ -120,7 +122,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
@@ -192,7 +194,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on(new Function<String>() {
             @Override
             public void on(String m) {
@@ -256,7 +258,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {
@@ -293,7 +295,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on(new Function<ConnectException>() {
 
             @Override
@@ -362,7 +364,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
@@ -438,7 +440,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on("message", new Function<POJO>() {
             @Override
             public void on(POJO t) {
@@ -514,7 +516,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on("message", new Function<POJO2>() {
             @Override
             public void on(POJO2 t) {
@@ -590,7 +592,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(options);;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
