@@ -20,7 +20,7 @@ package org.atmosphere.wasync;
  *
  * This library supports predefined life cycle's events (@link #MESSAGE} that can be used. For example, a Function
  * can be defined for handling IOException:
- * <blockquote>
+ * <blockquote><pre>
  *
  *     class Function<IOException>() {
  *
@@ -28,23 +28,23 @@ package org.atmosphere.wasync;
  *
  *         }
  *     }
- * </blockquote>
+ * </pre></blockquote>
  * This function can be registered using the {@link Socket#on(Function)} as
- * <blockquote>
+ * <blockquote><pre>
  *
  *     socket.on(new Function<IOEXception>() {
  *         ....
  *     }
- * </blockquote>
+ * </pre></blockquote>
  * This is the equivalent of doing
- * <blockquote>
+ * <blockquote><pre>
  *
  *     socket.on(MESSAGE.error, new Function<IOEXception>() {
  *         ....
  *     }
- * </blockquote>
+ * </pre></blockquote>
  * Anonymous functions call also be invoked if a {@link Decoder} match its type
- * <blockquote>
+ * <blockquote><pre>
  *
  *     socket
  *     .decoder(new Decoder<String, POJO>(){
@@ -56,7 +56,7 @@ package org.atmosphere.wasync;
  *     .on(new Function<POJO>() {
  *         ....
  *     }
- * </blockquote>
+ * </pre></blockquote>
  * @param <T>
  * @author Jeanfrancois Arcand
  */

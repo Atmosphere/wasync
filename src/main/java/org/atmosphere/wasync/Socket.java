@@ -20,7 +20,7 @@ import java.io.IOException;
 /**
  * A Socket represent a connection to a remote server. A Socket abstract the transport used, the client will negotiate
  * the best {@link org.atmosphere.wasync.Request#transport()} to communicate with the remote Server. As simple as
- * <blockquote>
+ * <blockquote><pre>
      Client client = AtmosphereClientFactory.getDefault().newclient();
 
      RequestBuilder request = client.newRequestBuilder()
@@ -55,7 +55,7 @@ import java.io.IOException;
          }
 
      }).open(request.build()).fire("echo");
- * </blockquote>
+ * </pre></blockquote>
  *
  * @author Jeanfrancois Arcand
  */

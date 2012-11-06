@@ -17,8 +17,54 @@ package org.atmosphere.wasync;
 
 /**
  * FunctionResolver are useful for mapping received message with a {@link Function}. By default, only the predefined
- * function {@link Function.MESSAGE} are automatically mapped to Function. An application can define its own
- * Function.MESSAGE be writing the appropriate FunctionWrapper.
+ * function {@link Function.MESSAGE} are automatically mapped to Function,
+ * <blockquote><pre>
+     Client client = ClientFactory.getDefault().newClient();
+
+     RequestBuilder request = client.newRequestBuilder()
+             .method(Request.METHOD.GET)
+             .uri(targetUrl + "/suspend")
+             .decoder(new Decoder<String, POJO>() {
+                 @Override
+                 public POJO decode(String s) {
+                     return new POJO(s);
+                 }
+             })
+             .transport(Request.TRANSPORT.WEBSOCKET);
+
+     Socket socket = client.create();
+     socket.on(Function.MESSAGE.message.name(), new Function<POJO>() {
+         @Override
+         public void on(POJO t) {
+             response.set(t);
+         }
+     })
+ * </pre></blockquote>
+ * or when a {@link Decoder} share the same type as the
+ * defined Function. For example:
+ * <blockquote><pre>
+     Client client = ClientFactory.getDefault().newClient();
+
+     RequestBuilder request = client.newRequestBuilder()
+             .method(Request.METHOD.GET)
+             .uri(targetUrl + "/suspend")
+             .decoder(new Decoder<String, POJO>() {
+                 @Override
+                 public POJO decode(String s) {
+                     return new POJO(s);
+                 }
+             })
+             .transport(Request.TRANSPORT.WEBSOCKET);
+
+     Socket socket = client.create();
+     socket.on(new Function<POJO>() {
+         @Override
+         public void on(POJO t) {
+             response.set(t);
+         }
+     })
+ * </pre></blockquote>
+ * An application can define its own Function.MESSAGE be writing the appropriate FunctionResolver.
  *
  * By default, the {@link org.atmosphere.wasync.impl.DefaultFunctionResolver} is used.
  *

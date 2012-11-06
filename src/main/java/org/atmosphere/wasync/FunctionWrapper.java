@@ -17,12 +17,12 @@ package org.atmosphere.wasync;
 
 /**
  * A tupple which contains a {@link Function} and its associated functionName. The values are passed from
- * <blockquote>
+ * <blockquote><pre>
  *
  *     socket.on("message, new Function<String>() {
  *         ....
  *     }
- * </blockquote>
+ * </pre></blockquote>
  * This class is only used by {@link Transport} implementation.
  *
  * @author Jeanfrancois Arcand
