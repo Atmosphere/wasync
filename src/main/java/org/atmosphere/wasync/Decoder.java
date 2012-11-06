@@ -18,8 +18,26 @@ package org.atmosphere.wasync;
 /**
  * A decoder can be used to 'decode' the response's body. Decoder can be chained amongst themselves in order to create
  * plain Java Object. Decoder's can be used to decode the response body and match them with {@link Function}'s implementation.
- * Tis library will try to match the decoded Object to its associated Function.
+ * This library will try to match the decoded Object to its associated Function.  For example, the Decoder's type will
+ * be mapped, by the {@link FunctionResolver} to the Function of the same type:
  *
+ * <blockquote><pre>
+
+   Decoder<String, POJO> d = new Decoder<String, POJO>() {
+             @Override
+             public POJO decode(String s) {
+                 return new POJO(s);
+             }
+         }
+
+   Function<String> f = new Function<POJO>() {
+             @Override
+             public void on(POJO t) {
+
+             }
+        }
+
+ * </pre></blockquote>
  * @param <U>
  * @param <T>
  * @author Jeanfrancois Arcand

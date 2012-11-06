@@ -16,8 +16,21 @@
 package org.atmosphere.wasync;
 
 /**
- * An asynchronous client's implementation used to create {@link Socket} and {@link Request}.
- *
+ * An asynchronous client's implementation used to create {@link Socket} and {@link Request}. As simple as as
+ * <blockquote><pre>
+     Client client = ClientFactory.getDefault().newClient();
+
+     RequestBuilder request = client.newRequestBuilder()
+             .method(Request.METHOD.GET)
+             .uri(targetUrl + "/suspend")
+             .decoder(new Decoder<String, POJO>() {
+                 @Override
+                 public POJO decode(String s) {
+                     return new POJO(s);
+                 }
+             })
+             .transport(Request.TRANSPORT.WEBSOCKET);
+ * </pre></blockquote>
  * @author Jeanfrancois Arcand
  */
 public interface Client {

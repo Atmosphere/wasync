@@ -17,6 +17,7 @@ package org.atmosphere.wasync;
 
 /**
  * Encode the request's body (or transform) of type U into an object of type T.
+ *
  * @param <U>
  * @param <T>
  * @author Jeanfrancois Arcand
