@@ -23,15 +23,15 @@ package org.atmosphere.wasync;
  *
  * <blockquote><pre>
 
-   Decoder<String, POJO> d = new Decoder&lt;String, POJO&gt;() {
-             @Override
+   Decoder&lt;String, POJO&gt; d = new Decoder&lt;String, POJO&gt;() {
+             &#64;Override
              public POJO decode(String s) {
                  return new POJO(s);
              }
          }
 
-   Function<String> f = new Function&lt;POJO&gt;() {
-             @Override
+   Function&lt;POJO&gt; f = new Function&lt;POJO&gt;() {
+             &#64;Override
              public void on(POJO t) {
 
              }

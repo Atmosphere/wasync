@@ -24,7 +24,7 @@ package org.atmosphere.wasync;
              .method(Request.METHOD.GET)
              .uri(targetUrl + "/suspend")
              .decoder(new Decoder&lt;String, POJO&gt;() {
-                 @Override
+                 &#64;Override
                  public POJO decode(String s) {
                      return new POJO(s);
                  }

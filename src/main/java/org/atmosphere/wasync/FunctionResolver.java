@@ -25,7 +25,7 @@ package org.atmosphere.wasync;
              .method(Request.METHOD.GET)
              .uri(targetUrl + "/suspend")
              .decoder(new Decoder&lt;String, POJO&gt;() {
-                 @Override
+                 &#64;Override
                  public POJO decode(String s) {
                      return new POJO(s);
                  }
@@ -34,7 +34,7 @@ package org.atmosphere.wasync;
 
      Socket socket = client.create();
      socket.on(Function.MESSAGE.message.name(), new Function&lt;POJO&gt;() {
-         @Override
+         &#64;Override
          public void on(POJO t) {
              response.set(t);
          }
@@ -49,7 +49,7 @@ package org.atmosphere.wasync;
              .method(Request.METHOD.GET)
              .uri(targetUrl + "/suspend")
              .decoder(new Decoder&lt;String, POJO&gt;() {
-                 @Override
+                 &#64;Override
                  public POJO decode(String s) {
                      return new POJO(s);
                  }
@@ -58,7 +58,7 @@ package org.atmosphere.wasync;
 
      Socket socket = client.create();
      socket.on(new Function&lt;POJO&gt;() {
-         @Override
+         &#64;Override
          public void on(POJO t) {
              response.set(t);
          }

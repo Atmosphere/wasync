@@ -27,13 +27,13 @@ import java.io.IOException;
              .method(Request.METHOD.GET)
              .uri(targetUrl + "/suspend")
              .encoder(new Encoder&lt;String, Reader&gt;() {        // Stream the request body
-                 @Override
+                 &#64;Override
                  public Reader encode(String s) {
                      return new StringReader(s);
                  }
              })
              .decoder(new Decoder&lt;String, Reader&gt;() {
-                 @Override
+                  &#64;Override
                  public Reader decode(String s) {
                      return new StringReader(s);
                  }
@@ -43,13 +43,13 @@ import java.io.IOException;
 
      Socket socket = client.create();
      socket.on("message", new Function&lt;String&gt;() {
-         @Override
+         &#64;Override
          public void on(Reader r) {
              // Read the response
          }
      }).on(new Function&lt;IOException&gt;() {
 
-         @Override
+         &#64;Override
          public void on(Throwable t) {
              // Some IOException occurred
          }

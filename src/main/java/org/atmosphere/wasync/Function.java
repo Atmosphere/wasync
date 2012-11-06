@@ -22,7 +22,7 @@ package org.atmosphere.wasync;
  * can be defined for handling IOException:
  * <blockquote><pre>
  *
- *     class Function<IOException>() {
+ *     class Function&lt;IOException&gt;() {
  *
  *         public void on(IOEXception ex) {
  *
@@ -46,8 +46,8 @@ package org.atmosphere.wasync;
  * Anonymous functions call also be invoked if a {@link Decoder} match its type
  * <blockquote><pre>
  *
- *     socket
- *     .decoder(new Decoder&lt;String, POJO&gt;(){
+ *     socket.decoder(new Decoder&lt;String, POJO&gt;(){
+ *         &#64;Override
  *         public POJO decode(String message) {
  *             return new POJO(message);
  *         }
