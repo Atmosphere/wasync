@@ -51,21 +51,45 @@ public class Options {
         private int reconnectInSecond = 1;
         public long waitBeforeUnlocking = 2500;
 
+        /**
+         * Register a new {@link Transport} implementation. Register a transport only if you are planning to use
+         * a different transport than the supported one.
+         * @param transport {@link Transport}
+         * @return this
+         */
         public OptionsBuilder registerTransport(Transport transport) {
             this.transport = transport;
             return this;
         }
 
+        /**
+         * Automatically reconnect in case the connection get closed. Default is <tt>true</tt>
+         * @param reconnect reconnect in case the connection get closed. Default is <tt>true</tt>
+         * @return this
+         */
         public OptionsBuilder reconnect(boolean reconnect) {
             this.reconnect = reconnect;
             return this;
         }
 
+        /**
+         * The time in second, before the reconnection occurs. Default is 1 second
+         * @param reconnectInSecond time in second, before the reconnection occurs. Default is 1 second
+         * @return this
+         */
         public OptionsBuilder pauseBeforeReconnectInSeconds(int reconnectInSecond) {
             this.reconnectInSecond = reconnectInSecond;
             return this;
         }
 
+        /**
+         * For streaming and long-polling, the server may not send the headers so the client never knows
+         * if the connection succeeded or not. By defaul the library will wait for 2500 milliseconds before
+         * considering the connection established.
+         *
+         * @param waitBeforeUnlocking the time in millisecond
+         * @return this
+         */
         public OptionsBuilder waitBeforeUnlocking(long waitBeforeUnlocking) {
             this.waitBeforeUnlocking = waitBeforeUnlocking;
             return this;
