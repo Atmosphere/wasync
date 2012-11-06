@@ -28,10 +28,31 @@ public class Options {
         this.b = b;
     }
 
+    public Transport transport() {
+        return b.transport;
+    }
+
+    public boolean reconnect(){
+        return b.reconnect;
+    }
+
     public final static class OptionsBuilder {
 
-        public OptionsBuilder registerTransport(Transport t) {
+        private Transport transport;
+        private boolean reconnect = true;
+
+        public OptionsBuilder registerTransport(Transport transport) {
+            this.transport = transport;
             return this;
+        }
+
+        public OptionsBuilder reconnect(boolean reconnect) {
+            this.reconnect = reconnect;
+            return this;
+        }
+
+        public Options build(){
+            return new Options(this);
         }
     }
 }

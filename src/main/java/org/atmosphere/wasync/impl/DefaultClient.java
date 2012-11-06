@@ -31,16 +31,20 @@ public class DefaultClient implements Client {
 
     public Socket create() {
         AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-        config.setFollowRedirects(true).setRequestTimeoutInMs(-1);
-        asyncHttpClient = new AsyncHttpClient();
-        return new DefaultSocket(asyncHttpClient);
+        config.setFollowRedirects(true).setRequestTimeoutInMs(-1).setUserAgent("wAsync/1.0");
+        asyncHttpClient = new AsyncHttpClient(config.build());
+        return new DefaultSocket(asyncHttpClient, new Options.OptionsBuilder().build());
     }
 
     public Socket create(Options options) {
         // TODO
         AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
+        config.setFollowRedirects(true)
+                .setRequestTimeoutInMs(-1)
+                .setUserAgent("wAsync/1.0");
+
         asyncHttpClient = new AsyncHttpClient(config.build());
-        return new DefaultSocket(asyncHttpClient);
+        return new DefaultSocket(asyncHttpClient, options);
     }
 
     @Override
@@ -59,5 +63,6 @@ public class DefaultClient implements Client {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return b.resolver(new DefaultFunctionResolver());    }
+        return b.resolver(new DefaultFunctionResolver());
+    }
 }

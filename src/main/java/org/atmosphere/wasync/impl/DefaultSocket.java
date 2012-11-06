@@ -23,6 +23,7 @@ import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
@@ -54,9 +55,11 @@ public class DefaultSocket implements Socket {
     private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     private final AsyncHttpClient asyncHttpClient;
     private Transport transportInUse;
+    private final Options options;
 
-    public DefaultSocket(AsyncHttpClient asyncHttpClient) {
+    public DefaultSocket(AsyncHttpClient asyncHttpClient, Options options) {
         this.asyncHttpClient = asyncHttpClient;
+        this.options = options;
     }
 
     public Future fire(Object data) throws IOException {
