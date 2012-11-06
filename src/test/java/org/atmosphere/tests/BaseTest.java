@@ -148,7 +148,7 @@ public abstract class BaseTest {
 
     @Test
     public void allStringFunctionTest() throws Exception {
-        final CountDownLatch l = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(3);
 
         Config config = new Config.Builder()
                 .port(port)
@@ -161,6 +161,7 @@ public abstract class BaseTest {
                     public void onRequest(AtmosphereResource r) throws IOException {
                         if (!b.getAndSet(true)) {
                             r.suspend(-1);
+                            latch.countDown();
                         } else {
                             r.getBroadcaster().broadcast(RESUME);
                         }
@@ -184,7 +185,6 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final CountDownLatch latch = new CountDownLatch(2);
         final StringBuilder builder = new StringBuilder();
 
         Client client = ClientFactory.getDefault().newClient();
@@ -203,7 +203,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("PING");
 
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(builder.toString(), "Open" + RESUME + "Close");
