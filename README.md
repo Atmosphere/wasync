@@ -9,7 +9,7 @@ You can browser the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As s
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
-                .uri(targetUrl + "/suspend")
+                .uri("http://wordnik.com")
                 .encoder(new Encoder<String, Reader>() {        // Stream the request body
                     @Override
                     public Reader encode(String s) {
