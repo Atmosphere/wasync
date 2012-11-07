@@ -1,4 +1,4 @@
-## wAsync: A WebSockets/HTTP Client Library for Asynchronous Communication.
+## wAsync: A WebSockets/HTTP Client Library for Asynchronous Communication
 
 wAsync is a Java based library allowing asynchronous communication with any WebServer supporting the WebSocket or Http Protocol.
 You can browser the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As simple as
