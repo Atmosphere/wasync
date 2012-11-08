@@ -222,6 +222,11 @@ public class DefaultSocket implements Socket {
     protected List<Transport> getTransport(Request request) throws IOException {
         List<Transport> transports = new ArrayList<Transport>();
 
+        if (request.transport().size() == 0) {
+            transports.add(new WebSocketTransport(options, request.decoders(), functions, request.functionResolver()));
+            transports.add(new LongPollingTransport(options, request.decoders(), functions, request, asyncHttpClient, request.functionResolver()));
+        }
+
         for (Request.TRANSPORT t : request.transport()) {
             if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
                 transports.add(new WebSocketTransport(options, request.decoders(), functions, request.functionResolver()));
