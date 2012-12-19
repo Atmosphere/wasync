@@ -69,7 +69,7 @@ public class DefaultSocket implements Socket {
 
     public Future fire(Object data) throws IOException {
         socket.write(request, data);
-        return new Future(this);
+        return new DefaultFuture(this);
     }
 
     public Socket on(Function<? extends Object> function) {
@@ -102,7 +102,7 @@ public class DefaultSocket implements Socket {
             throw new IOException("No suitable transport supported");
         }
 
-        Future f = new Future(this);
+        Future f = new DefaultFuture(this);
         transportInUse.future(f);
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             r.setUrl(request.uri().replace("http", "ws"));
@@ -219,6 +219,10 @@ public class DefaultSocket implements Socket {
         }
     }
 
+    protected InternalSocket internalSocket() {
+        return socket;
+    }
+
     protected List<Transport> getTransport(Request request) throws IOException {
         List<Transport> transports = new ArrayList<Transport>();
 
@@ -242,7 +246,7 @@ public class DefaultSocket implements Socket {
     }
 
 
-    private final static class InternalSocket {
+    protected final static class InternalSocket {
 
         private final WebSocket webSocket;
         private final AsyncHttpClient asyncHttpClient;
@@ -338,6 +342,9 @@ public class DefaultSocket implements Socket {
         }
     }
 
+    protected Request request() {
+        return request;
+    }
 
     private final static class VoidSocket implements Socket {
 

@@ -15,7 +15,6 @@
  */
 package org.atmosphere.wasync.transport;
 
-
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;

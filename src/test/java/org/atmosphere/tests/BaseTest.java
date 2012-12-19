@@ -71,7 +71,7 @@ public abstract class BaseTest {
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
-        port = 8080;
+        port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
     }
 
@@ -630,6 +630,86 @@ public abstract class BaseTest {
 
         public POJO2(POJO message) {
             this.message = message;
+        }
+    }
+
+    @Test
+    public void multipleFireTest() throws Exception {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+                    private final AtomicInteger count = new AtomicInteger(2);
+                    private final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(r.getRequest().getReader().readLine());
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        response.get().append(r.getMessage());
+                        if (count.decrementAndGet() == 0 && (!r.isResuming() || !r.isCancelled())) {
+                            r.getResource().getResponse().write(response.toString());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(2);
+        final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(options);
+
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Function invoked {}", t);
+                response.get().append(t);
+                latch.countDown();
+            }
+        }).on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+        }).open(request.build())
+                .fire("PING")
+                .fire("PONG");
+
+        latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
+        // We can't predict the order of requests send
+        try {
+            assertEquals(response.get().toString(), "PONGPING");
+        } catch (AssertionError e) {
+            assertEquals(response.get().toString(), "PINGPONG");
         }
     }
 }

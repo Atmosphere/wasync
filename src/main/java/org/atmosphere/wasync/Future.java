@@ -15,6 +15,7 @@
  */
 package org.atmosphere.wasync;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -27,52 +28,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Jeanfrancois Arcand
  */
-public class Future implements java.util.concurrent.Future<Socket> {
-
-    private final Socket socket;
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private final AtomicBoolean done = new AtomicBoolean(false);
-
-    public Future(Socket socket) {
-        this.socket = socket;
-    }
-
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        latch.countDown();
-        return true;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return latch.getCount() == 0;
-    }
-
-    @Override
-    public boolean isDone() {
-        return done.get();
-    }
-
-    // TODO: Not public
-    public Future done(){
-        done.set(true);
-        latch.countDown();
-        return this;
-    }
-
-    @Override
-    public Socket get() throws InterruptedException, ExecutionException {
-        latch.await();
-        return socket;
-    }
-
-    @Override
-    public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        latch.await(timeout, unit);
-        return socket;
-    }
-
-    protected Socket socket() {
-        return socket;
-    }
+public interface Future extends java.util.concurrent.Future<Socket> {
+    /**
+     * Send data to the remote Server.
+     * @param data
+     * @return a {@link Future}
+     * @throws java.io.IOException
+     */
+    Future fire(Object data) throws IOException;
+    /**
+     * Mark the future done.
+     */
+    Future done();
 }
