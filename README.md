@@ -4,7 +4,6 @@ wAsync is a Java based library allowing asynchronous communication with any WebS
 You can browser the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As simple as
 
 ```java
-
         Client client = AtmosphereClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
@@ -38,7 +37,9 @@ You can browser the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As s
                 // Some IOException occurred
             }
 
-        }).open(request.build()).fire("echo");
+        }).open(request.build())
+            .fire("echo")
+            .fire("bong");
 ```
 By default, the [FunctionResolver](http://atmosphere.github.com/wasync/apidocs/org/atmosphere/wasync/FunctionResolver.html) will associate the Decoder's type will be used to invoke the appropriate Function, if defined. For
 example,
