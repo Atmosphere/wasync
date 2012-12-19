@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -10,7 +9,7 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>wasync</artifactId>
     <name>wasync</name>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0.beta1</version>
     <packaging>jar</packaging>
     <description>
         wAsync: A WenbSockets/HTTP Client Library
@@ -191,7 +190,7 @@
                         <link>http://docs.oracle.com/javaee/6/docs/api/</link>
                         <link>http://docs.oracle.com/javase/6/docs/api/</link>
                     </links>
-                    <excludePackageNames/>
+                    <excludePackageNames />
                 </configuration>
             </plugin>
             <plugin>
