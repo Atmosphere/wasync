@@ -4,7 +4,7 @@ wAsync is a Java based library allowing asynchronous communication with any WebS
 You can browser the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As simple as
 
 ```java
-        Client client = AtmosphereClientFactory.getDefault().newclient();
+        Client client = ClientFactory.getDefault().newclient();
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
