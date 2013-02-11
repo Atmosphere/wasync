@@ -114,7 +114,6 @@ public class AtmosphereSocket extends DefaultSocket {
         }
 	}
 	
-	int count=0;
 	@Override
 	protected void processOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
 		
@@ -128,12 +127,6 @@ public class AtmosphereSocket extends DefaultSocket {
 			this.cacheValue = parts[1];
 		}
 
-		count++;
-		if(count%6==0) {
-			throw new RuntimeException();
-		}
-		
-		
 		super.processOnBodyPartReceived(bodyPart);
 		
 	}
