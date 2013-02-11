@@ -15,14 +15,17 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.HttpResponseStatus;
-import com.ning.http.client.RequestBuilder;
-import com.ning.http.client.websocket.WebSocket;
-import com.ning.http.client.websocket.WebSocketListener;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
@@ -40,16 +43,14 @@ import org.atmosphere.wasync.util.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
+import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.RequestBuilder;
+import com.ning.http.client.websocket.WebSocket;
+import com.ning.http.client.websocket.WebSocketListener;
 
 public class DefaultSocket implements Socket {
 
@@ -61,6 +62,8 @@ public class DefaultSocket implements Socket {
     private final AsyncHttpClient asyncHttpClient;
     private Transport transportInUse;
     private final Options options;
+    private boolean isExplicitReconnect = false;
+    private boolean isFirstConnect = true;
 
     public DefaultSocket(AsyncHttpClient asyncHttpClient, Options options) {
         this.asyncHttpClient = asyncHttpClient;
@@ -97,7 +100,7 @@ public class DefaultSocket implements Socket {
     protected Socket connect(final RequestBuilder r, final List<Transport> transports) throws IOException {
 
         if (transports.size() > 0) {
-            transportInUse = transports.remove(0);
+            transportInUse = transports.get(0);
         } else {
             throw new IOException("No suitable transport supported");
         }
@@ -119,17 +122,7 @@ public class DefaultSocket implements Socket {
                     @Override
                     public void onClose(WebSocket websocket) {
                         if (options.reconnect()) {
-                            asyncHttpClient.getConfig().reaper().schedule(new Callable<String>() {
-                                @Override
-                                public String call() throws Exception {
-                                    try {
-                                        DefaultSocket.this.connect(r, transports);
-                                    } catch (IOException e) {
-                                        logger.trace("", e);
-                                    }
-                                    return "";
-                                }
-                            }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                        	asyncHttpClient.getConfig().reaper().schedule(getReconnetCallable(socket, r, transports), options.reconnectInSeconds(), TimeUnit.SECONDS);
                         }
                     }
 
@@ -145,6 +138,7 @@ public class DefaultSocket implements Socket {
                 if (e != null) {
                     if (e.getMessage() != null && e.getMessage().equalsIgnoreCase("Invalid handshake response")) {
                         logger.info("WebSocket not supported, downgrading to an HTTP based transport.");
+                        transports.remove(0);
                         return connect(r, transports);
                     }
                 }
@@ -162,10 +156,12 @@ public class DefaultSocket implements Socket {
                         @Override
                         public void onThrowable(Throwable t) {
                             transportInUse.onThrowable(t);
+                            processOnThrowable(t, options, asyncHttpClient, socket, r, transports);
                         }
 
                         @Override
                         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+                        	processOnBodyPartReceived(bodyPart);
                             return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
                         }
 
@@ -176,23 +172,24 @@ public class DefaultSocket implements Socket {
 
                         @Override
                         public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+                        	if(!isFirstConnect && DefaultSocket.this.isExplicitReconnect) {
+                        		isExplicitReconnect = false;
+                        	} else if (!DefaultSocket.this.isExplicitReconnect && !isFirstConnect) {
+                                if (options.reconnect()) {
+                                    asyncHttpClient.getConfig().reaper().schedule(getReconnetCallable(socket, r, transports), options.reconnectInSeconds(), TimeUnit.SECONDS);
+                                }
+                                throw new AsyncReconnectException("asynch-http-client did a reconnect. Dropping this reconnect");
+                        	} else {
+                        		isFirstConnect=false;
+                        	}
+                        	onHeaderReceived(headers, r);
                             return ((AsyncHandler<String>)transportInUse).onHeadersReceived(headers);
                         }
 
                         @Override
                         public String onCompleted() throws Exception {
                             if (options.reconnect()) {
-                                asyncHttpClient.getConfig().reaper().schedule(new Callable<String>() {
-                                    @Override
-                                    public String call() throws Exception {
-                                        try {
-                                            DefaultSocket.this.connect(r, transports);
-                                        } catch (IOException e) {
-                                            logger.debug("", e);
-                                        }
-                                        return "";
-                                    }
-                                }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                            	asyncHttpClient.getConfig().reaper().schedule(getReconnetCallable(socket, r, transports), options.reconnectInSeconds(), TimeUnit.SECONDS);
                             }
                             return ((AsyncHandler<String>)transportInUse).onCompleted();
                         }
@@ -210,6 +207,49 @@ public class DefaultSocket implements Socket {
         }
         return this;
     }
+    
+    
+	protected Callable<String> getReconnetCallable(InternalSocket socket, final RequestBuilder r, final List<Transport> transports) {
+    	Callable<String> callable = null;
+    	if(socket.webSocket != null) {
+    		callable = new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    try {
+                    	DefaultSocket.this.isExplicitReconnect = true;
+                        DefaultSocket.this.connect(r, transports);
+                    } catch (IOException e) {
+                        logger.trace("", e);
+                    }
+                    return "";
+                }
+            };
+    		
+    	} else {
+    		callable = new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    try {
+                    	DefaultSocket.this.isExplicitReconnect = true;
+                        DefaultSocket.this.connect(r, transports);
+                    } catch (IOException e) {
+                        logger.debug("", e);
+                    }
+                    return "";
+                }
+            };
+    	}
+    	return callable;
+    }
+	
+    protected void processOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
+	}
+
+	protected void processOnThrowable(Throwable t, Options options, AsyncHttpClient asyncHttpClient, InternalSocket socket, RequestBuilder r, List<Transport> transports) {
+	}
+
+	protected void onHeaderReceived(HttpResponseHeaders headers, RequestBuilder r) {
+	}
 
     @Override
     public void close() {
@@ -372,5 +412,11 @@ public class DefaultSocket implements Socket {
         public void close() {
             throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
         }
+    }
+    
+    protected static class AsyncReconnectException extends RuntimeException {
+    	public AsyncReconnectException(String message) {
+			super(message);
+		}
     }
 }
