@@ -57,4 +57,22 @@ public class ClientFactory {
             }
         }
     }
+    
+ 
+    /**
+     * Return a new {@link Client} instance
+     * 
+     * @param clientClass the runtime instance class of {@link Client} instance that is returned
+     * 
+     * @return a new {@link Client} instance
+     */
+    public Client newClient(Class<? extends Client> clientClass) {
+    	Client client;
+        try {
+        	client = clientClass.newInstance();
+        	return client;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
