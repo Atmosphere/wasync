@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Request.TRANSPORT;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 
@@ -38,10 +39,9 @@ public class AtmosphereSocket extends DefaultSocket {
 		
 		switch(cacheType) {
 			case HEADER_BROADCAST_CACHE:
-			case HEADER_BROADCAST_CACHE_PLUS:
 				r.setHeader("X-Cache-Date", this.cacheValue);
 				break;
-			case EVENT_BROADCAST_CACHE:
+			case UUID_BROADCASTER_CACHE:
 				r.setHeader("X-Atmosphere-tracking-id", this.cacheValue);
 				break;
 			case SESSION_BROADCAST_CACHE:
@@ -61,10 +61,9 @@ public class AtmosphereSocket extends DefaultSocket {
 		
 		switch(cacheType) {
 			case HEADER_BROADCAST_CACHE:
-			case HEADER_BROADCAST_CACHE_PLUS:
 				this.cacheValue = headersMap.getFirstValue("X-Cache-Date");
 				break;
-			case EVENT_BROADCAST_CACHE:
+			case UUID_BROADCASTER_CACHE:
 				this.cacheValue = headersMap.getFirstValue("X-Atmosphere-tracking-id");
 				break;
 			case SESSION_BROADCAST_CACHE:
@@ -114,33 +113,25 @@ public class AtmosphereSocket extends DefaultSocket {
         }
 	}
 	
-	int count=0;
+	//int count = 0;
 	@Override
 	protected boolean processOnBodyPartReceived(HttpResponseBodyPart bodyPart, boolean isFirstMessage) {
 	
-		String messageWithTime = new String(bodyPart.getBodyPartBytes());
-				
+		String message = new String(bodyPart.getBodyPartBytes());
+		
 		if(isFirstMessage) {
-			System.out.println(new String(bodyPart.getBodyPartBytes()));
-			super.processOnBodyPartReceived(bodyPart, isFirstMessage);
-			return false;
+			System.out.println(message);
+			TRANSPORT transport = request.transport().get(0);
+			switch (transport) {
+				case WEBSOCKET:
+				case LONG_POLLING:
+					break;
+				case SSE:
+				case STREAMING:
+					return false;
+			}
 		}
-	
-		String[] parts = messageWithTime.split("##");
-		
-		AtmosphereRequest atmosphereRequest = (AtmosphereRequest)request;
-		AtmosphereRequest.CACHE cacheType = atmosphereRequest.getCacheType(); 
-
-		if (cacheType.equals(AtmosphereRequest.CACHE.HEADER_BROADCAST_CACHE_PLUS) && parts.length==2) {
-			this.cacheValue = parts[1];
-		}
-
-		count++;
-		if(count%8==0) {
-			throw new RuntimeException();
-		}
-		
-		return super.processOnBodyPartReceived(bodyPart, isFirstMessage);
+		return true;
 		
 		
 	}

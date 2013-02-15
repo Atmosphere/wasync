@@ -165,8 +165,10 @@ public class DefaultSocket implements Socket {
                         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
                         	boolean isFirstMessage = DefaultSocket.this.isFirstMessage;
                         	DefaultSocket.this.isFirstMessage = false;
-                        	processOnBodyPartReceived(bodyPart, isFirstMessage);
-                        	return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        	if(processOnBodyPartReceived(bodyPart, isFirstMessage))
+                        		return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        	return STATE.CONTINUE;
+                        	//return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
                         }
 
                         @Override

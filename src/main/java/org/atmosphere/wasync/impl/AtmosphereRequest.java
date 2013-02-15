@@ -22,7 +22,7 @@ import org.atmosphere.wasync.RequestBuilder;
 
 public class AtmosphereRequest extends DefaultRequest {
 	
-	public enum CACHE {HEADER_BROADCAST_CACHE_PLUS, HEADER_BROADCAST_CACHE, SESSION_BROADCAST_CACHE, EVENT_BROADCAST_CACHE, NO_BROADCAST_CACHE};
+	public enum CACHE {HEADER_BROADCAST_CACHE, UUID_BROADCASTER_CACHE, SESSION_BROADCAST_CACHE, NO_BROADCAST_CACHE};
 
     protected AtmosphereRequest(DefaultRequestBuilder builder) {
         super(builder);
