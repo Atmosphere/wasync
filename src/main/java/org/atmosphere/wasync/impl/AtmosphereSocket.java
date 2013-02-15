@@ -114,10 +114,18 @@ public class AtmosphereSocket extends DefaultSocket {
         }
 	}
 	
+	int count=0;
 	@Override
-	protected void processOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
-		
+	protected boolean processOnBodyPartReceived(HttpResponseBodyPart bodyPart, boolean isFirstMessage) {
+	
 		String messageWithTime = new String(bodyPart.getBodyPartBytes());
+				
+		if(isFirstMessage) {
+			System.out.println(new String(bodyPart.getBodyPartBytes()));
+			super.processOnBodyPartReceived(bodyPart, isFirstMessage);
+			return false;
+		}
+	
 		String[] parts = messageWithTime.split("##");
 		
 		AtmosphereRequest atmosphereRequest = (AtmosphereRequest)request;
@@ -127,7 +135,13 @@ public class AtmosphereSocket extends DefaultSocket {
 			this.cacheValue = parts[1];
 		}
 
-		super.processOnBodyPartReceived(bodyPart);
+		count++;
+		if(count%8==0) {
+			throw new RuntimeException();
+		}
+		
+		return super.processOnBodyPartReceived(bodyPart, isFirstMessage);
+		
 		
 	}
 	

@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.atmosphere.cpr.BroadcastFilter.BroadcastAction.ACTION;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
@@ -49,6 +50,7 @@ import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
+import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.websocket.WebSocket;
 import com.ning.http.client.websocket.WebSocketListener;
 
@@ -64,7 +66,7 @@ public class DefaultSocket implements Socket {
     private final Options options;
     private boolean isExplicitReconnect = false;
     private boolean isFirstConnect = true;
-
+    private boolean isFirstMessage = false;
     public DefaultSocket(AsyncHttpClient asyncHttpClient, Options options) {
         this.asyncHttpClient = asyncHttpClient;
         this.options = options;
@@ -161,8 +163,10 @@ public class DefaultSocket implements Socket {
 
                         @Override
                         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
-                        	processOnBodyPartReceived(bodyPart);
-                            return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        	boolean isFirstMessage = DefaultSocket.this.isFirstMessage;
+                        	DefaultSocket.this.isFirstMessage = false;
+                        	processOnBodyPartReceived(bodyPart, isFirstMessage);
+                        	return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
                         }
 
                         @Override
@@ -172,16 +176,19 @@ public class DefaultSocket implements Socket {
 
                         @Override
                         public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-                        	if(!isFirstConnect && DefaultSocket.this.isExplicitReconnect) {
-                        		isExplicitReconnect = false;
-                        	} else if (!DefaultSocket.this.isExplicitReconnect && !isFirstConnect) {
-                                if (options.reconnect()) {
+                        	if(isFirstConnect) {
+                        		isFirstConnect=false;
+                        		isFirstMessage = true;
+                        	} else if (isExplicitReconnect) {
+                        		isExplicitReconnect=false;
+                        		isFirstMessage = true;
+                        	} else {
+                        		if (options.reconnect()) {
                                     asyncHttpClient.getConfig().reaper().schedule(getReconnetCallable(socket, r, transports), options.reconnectInSeconds(), TimeUnit.SECONDS);
                                 }
                                 throw new AsyncReconnectException("asynch-http-client did a reconnect. Dropping this reconnect");
-                        	} else {
-                        		isFirstConnect=false;
                         	}
+                        	
                         	onHeaderReceived(headers, r);
                             return ((AsyncHandler<String>)transportInUse).onHeadersReceived(headers);
                         }
@@ -242,7 +249,8 @@ public class DefaultSocket implements Socket {
     	return callable;
     }
 	
-    protected void processOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
+    protected boolean processOnBodyPartReceived(HttpResponseBodyPart bodyPart, boolean isFirstMessage) {
+    	return true;
 	}
 
 	protected void processOnThrowable(Throwable t, Options options, AsyncHttpClient asyncHttpClient, InternalSocket socket, RequestBuilder r, List<Transport> transports) {
