@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.atmosphere.cpr.BroadcastFilter.BroadcastAction.ACTION;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
@@ -50,7 +49,6 @@ import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
-import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.websocket.WebSocket;
 import com.ning.http.client.websocket.WebSocketListener;
 
