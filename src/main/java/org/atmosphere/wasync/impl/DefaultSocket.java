@@ -64,7 +64,7 @@ public class DefaultSocket implements Socket {
     private final Options options;
     private boolean isExplicitReconnect = false;
     private boolean isFirstConnect = true;
-
+    private boolean isFirstMessage = false;
     public DefaultSocket(AsyncHttpClient asyncHttpClient, Options options) {
         this.asyncHttpClient = asyncHttpClient;
         this.options = options;
@@ -105,6 +105,8 @@ public class DefaultSocket implements Socket {
             throw new IOException("No suitable transport supported");
         }
 
+        socket = new InternalSocket(asyncHttpClient);
+        
         Future f = new DefaultFuture(this);
         transportInUse.future(f);
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
@@ -161,8 +163,11 @@ public class DefaultSocket implements Socket {
 
                         @Override
                         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
-                        	processOnBodyPartReceived(bodyPart);
-                            return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        	boolean isFirstMessage = DefaultSocket.this.isFirstMessage;
+                        	DefaultSocket.this.isFirstMessage = false;
+                        	if(processOnBodyPartReceived(bodyPart, isFirstMessage))
+                        		return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        	return STATE.CONTINUE;
                         }
 
                         @Override
@@ -172,16 +177,19 @@ public class DefaultSocket implements Socket {
 
                         @Override
                         public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-                        	if(!isFirstConnect && DefaultSocket.this.isExplicitReconnect) {
-                        		isExplicitReconnect = false;
-                        	} else if (!DefaultSocket.this.isExplicitReconnect && !isFirstConnect) {
-                                if (options.reconnect()) {
+                        	if(isFirstConnect) {
+                        		isFirstConnect=false;
+                        		isFirstMessage = true;
+                        	} else if (isExplicitReconnect) {
+                        		isExplicitReconnect=false;
+                        		isFirstMessage = true;
+                        	} else {
+                        		if (options.reconnect()) {
                                     asyncHttpClient.getConfig().reaper().schedule(getReconnetCallable(socket, r, transports), options.reconnectInSeconds(), TimeUnit.SECONDS);
                                 }
                                 throw new AsyncReconnectException("asynch-http-client did a reconnect. Dropping this reconnect");
-                        	} else {
-                        		isFirstConnect=false;
                         	}
+                        	
                         	onHeaderReceived(headers, r);
                             return ((AsyncHandler<String>)transportInUse).onHeadersReceived(headers);
                         }
@@ -203,7 +211,6 @@ public class DefaultSocket implements Socket {
                 // Swallow  LOG ME
             }
 
-            socket = new InternalSocket(asyncHttpClient);
         }
         return this;
     }
@@ -242,7 +249,8 @@ public class DefaultSocket implements Socket {
     	return callable;
     }
 	
-    protected void processOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
+    protected boolean processOnBodyPartReceived(HttpResponseBodyPart bodyPart, boolean isFirstMessage) {
+    	return true;
 	}
 
 	protected void processOnThrowable(Throwable t, Options options, AsyncHttpClient asyncHttpClient, InternalSocket socket, RequestBuilder r, List<Transport> transports) {
