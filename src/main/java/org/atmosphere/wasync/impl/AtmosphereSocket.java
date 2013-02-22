@@ -113,7 +113,6 @@ public class AtmosphereSocket extends DefaultSocket {
         }
 	}
 	
-	//int count = 0;
 	@Override
 	protected boolean processOnBodyPartReceived(HttpResponseBodyPart bodyPart, boolean isFirstMessage) {
 	
