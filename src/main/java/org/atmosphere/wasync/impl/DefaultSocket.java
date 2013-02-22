@@ -168,7 +168,6 @@ public class DefaultSocket implements Socket {
                         	if(processOnBodyPartReceived(bodyPart, isFirstMessage))
                         		return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
                         	return STATE.CONTINUE;
-                        	//return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
                         }
 
                         @Override
@@ -212,7 +211,6 @@ public class DefaultSocket implements Socket {
                 // Swallow  LOG ME
             }
 
-            //socket = new InternalSocket(asyncHttpClient);
         }
         return this;
     }
