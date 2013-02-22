@@ -105,6 +105,8 @@ public class DefaultSocket implements Socket {
             throw new IOException("No suitable transport supported");
         }
 
+        socket = new InternalSocket(asyncHttpClient);
+        
         Future f = new DefaultFuture(this);
         transportInUse.future(f);
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
@@ -210,7 +212,7 @@ public class DefaultSocket implements Socket {
                 // Swallow  LOG ME
             }
 
-            socket = new InternalSocket(asyncHttpClient);
+            //socket = new InternalSocket(asyncHttpClient);
         }
         return this;
     }
