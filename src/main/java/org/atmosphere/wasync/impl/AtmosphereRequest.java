@@ -15,20 +15,26 @@
  */
 package org.atmosphere.wasync.impl;
 
-import org.atmosphere.wasync.Request;
-import org.atmosphere.wasync.RequestBuilder;
-import org.atmosphere.wasync.impl.DefaultRequest;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.atmosphere.wasync.RequestBuilder;
+
 public class AtmosphereRequest extends DefaultRequest {
+	
+	public enum CACHE {HEADER_BROADCAST_CACHE, UUID_BROADCASTER_CACHE, SESSION_BROADCAST_CACHE, NO_BROADCAST_CACHE};
 
     protected AtmosphereRequest(DefaultRequestBuilder builder) {
         super(builder);
     }
+    
+    public AtmosphereRequest.CACHE getCacheType() {
+		return ((AtmosphereRequestBuilder)builder).getCacheType();
+	}
 
     public static class AtmosphereRequestBuilder extends DefaultRequestBuilder {
+    	
+    	private CACHE cacheType = CACHE.NO_BROADCAST_CACHE;	
 
         public AtmosphereRequestBuilder() {
 
@@ -45,6 +51,10 @@ public class AtmosphereRequest extends DefaultRequest {
             headers.put("X-Cache-Date", l);
         }
 
+	    public CACHE getCacheType() {
+			return cacheType;
+		}
+        
         public RequestBuilder transport(TRANSPORT t) {
             List<String> l = new ArrayList<String>();
             if (t.equals(TRANSPORT.LONG_POLLING)) {
@@ -57,10 +67,15 @@ public class AtmosphereRequest extends DefaultRequest {
             transports.add(t);
             return this;
         }
+        
+        public RequestBuilder cache(CACHE c) { //Client application will have access to this method only through AtmosphereRequestBuilder object 
+        	this.cacheType = c;
+        	return this;
+        }
 
         @Override
-        public DefaultRequest build() {
-            return new DefaultRequest(this);
+        public AtmosphereRequest build() {
+            return new AtmosphereRequest(this);
         }
     }
 }
