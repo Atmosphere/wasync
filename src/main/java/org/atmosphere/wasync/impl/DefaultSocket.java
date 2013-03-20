@@ -65,6 +65,9 @@ public class DefaultSocket implements Socket {
     private boolean isExplicitReconnect = false;
     private boolean isFirstConnect = true;
     private boolean isFirstMessage = false;
+    private int currentTransportIndex = 0;
+
+
     public DefaultSocket(AsyncHttpClient asyncHttpClient, Options options) {
         this.asyncHttpClient = asyncHttpClient;
         this.options = options;
@@ -100,7 +103,7 @@ public class DefaultSocket implements Socket {
     protected Socket connect(final RequestBuilder r, final List<Transport> transports) throws IOException {
 
         if (transports.size() > 0) {
-            transportInUse = transports.get(0);
+            transportInUse = transports.get(currentTransportIndex);;
         } else {
             throw new IOException("No suitable transport supported");
         }
@@ -140,7 +143,7 @@ public class DefaultSocket implements Socket {
                 if (e != null) {
                     if (e.getMessage() != null && e.getMessage().equalsIgnoreCase("Invalid handshake response")) {
                         logger.info("WebSocket not supported, downgrading to an HTTP based transport.");
-                        transports.remove(0);
+                        currentTransportIndex++;
                         return connect(r, transports);
                     }
                 }
