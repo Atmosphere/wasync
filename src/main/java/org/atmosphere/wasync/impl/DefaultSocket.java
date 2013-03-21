@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
@@ -89,7 +90,12 @@ public class DefaultSocket implements Socket {
     }
 
     public Socket open(Request request) throws IOException {
-        this.request = request;
+    	return open(request, -1, TimeUnit.MILLISECONDS);
+    }
+    
+    @Override
+	public Socket open(Request request, long timeout, TimeUnit tu) throws IOException {
+    	this.request = request;
         RequestBuilder r = new RequestBuilder();
         r.setUrl(request.uri())
                 .setMethod(request.method().name())
@@ -97,10 +103,14 @@ public class DefaultSocket implements Socket {
 
         List<Transport> transports = getTransport(request);
 
-        return connect(r, transports);
-    }
+        return connect(r, transports, timeout, tu);
+	}
 
     protected Socket connect(final RequestBuilder r, final List<Transport> transports) throws IOException {
+    	return connect(r, transports, -1, TimeUnit.MILLISECONDS);
+    }
+    
+    protected Socket connect(final RequestBuilder r, final List<Transport> transports, long timeout, TimeUnit tu) throws IOException {
 
         if (transports.size() > 0) {
             transportInUse = transports.get(currentTransportIndex);;
@@ -118,7 +128,7 @@ public class DefaultSocket implements Socket {
                 java.util.concurrent.Future<WebSocket> fw = asyncHttpClient.prepareRequest(r.build()).execute(
                         (AsyncHandler<WebSocket>) transportInUse);
 
-                WebSocket w = fw.get();
+                WebSocket w = fw.get(timeout, tu);
                 w.addWebSocketListener(new WebSocketListener() {
                     @Override
                     public void onOpen(WebSocket websocket) {
@@ -144,7 +154,7 @@ public class DefaultSocket implements Socket {
                     if (e.getMessage() != null && e.getMessage().equalsIgnoreCase("Invalid handshake response")) {
                         logger.info("WebSocket not supported, downgrading to an HTTP based transport.");
                         currentTransportIndex++;
-                        return connect(r, transports);
+                        return connect(r, transports, timeout, tu);
                     }
                 }
                 transportInUse.onThrowable(t);
@@ -423,6 +433,11 @@ public class DefaultSocket implements Socket {
         public void close() {
             throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
         }
+
+		@Override
+		public Socket open(Request request, long timeout, TimeUnit tu) throws IOException {
+			throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+		}
     }
     
     protected static class AsyncReconnectException extends RuntimeException {

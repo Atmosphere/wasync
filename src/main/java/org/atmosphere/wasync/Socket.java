@@ -16,6 +16,8 @@
 package org.atmosphere.wasync;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A Socket represent a connection to a remote server. A Socket abstract the transport used, the client will negotiate
@@ -95,6 +97,17 @@ public interface Socket {
      * @throws IOException
      */
     Socket open(Request request) throws IOException;
+    
+    /**
+     * Connect to the remote Server using the {@link Request}'s information, will timeout if the connection failed to open 
+     * within a certain time
+     * @param request a {@link Request}
+     * @param timeout the maximum time to wait
+     * @param unit the time unit of the timeout argument
+     * @return this
+     * @throws IOException
+     */
+    Socket open(Request request, long timeout, TimeUnit tu) throws IOException;
 
     /**
      * Close this Socket
