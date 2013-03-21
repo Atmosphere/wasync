@@ -113,14 +113,12 @@ public class AtmosphereSocket extends DefaultSocket {
         }
 	}
 	
-	//int count = 0;
 	@Override
 	protected boolean processOnBodyPartReceived(HttpResponseBodyPart bodyPart, boolean isFirstMessage) {
 	
 		String message = new String(bodyPart.getBodyPartBytes());
 		
 		if(isFirstMessage) {
-			System.out.println(message);
 			TRANSPORT transport = request.transport().get(0);
 			switch (transport) {
 				case WEBSOCKET:
