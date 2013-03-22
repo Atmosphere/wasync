@@ -15,10 +15,11 @@
  */
 package org.atmosphere.wasync.transport;
 
-import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.HttpResponseStatus;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.atmosphere.wasync.AbstractAsyncHandler;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
@@ -27,12 +28,15 @@ import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.impl.AtmosphereRequest;
 
-import java.util.List;
-import java.util.Map;
+import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
+import com.ning.http.client.HttpResponseStatus;
 
-public class StreamTransport<T> implements AsyncHandler<String>, Transport {
-    private final static String DEFAULT_CHARSET = "ISO-8859-1";
+public class StreamTransport<T> extends AbstractAsyncHandler<String> implements Transport {
+    private final static String DEFAULT_CHARSET = "UTF-8";
+    
 
     protected Future f;
     protected final List<FunctionWrapper> functions;
@@ -84,7 +88,7 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
         if (!m.isEmpty()) {
-            TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
+        	TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
         }
         return STATE.CONTINUE;
     }
@@ -131,5 +135,26 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     public boolean canHandle(Request request) {
         return true;
     }
+
+	@Override
+	public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart, StringBuilder messagesStringBuilder, AtmosphereRequest atmosphereRequest) throws Exception {
+		String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+		
+		if(m.isEmpty()) {
+			return STATE.CONTINUE;
+		}
+
+		messagesStringBuilder.append(m);
+		List<String> messages = atmosphereClientSideHandler(messagesStringBuilder, atmosphereRequest);
+		if(messages==null) {
+			return STATE.CONTINUE;
+		}
+		Iterator<String> it = messages.iterator();
+	    while(it.hasNext()) {
+	    	String message = it.next();
+	        TransportsUtil.invokeFunction(decoders, functions, m.getClass(), message, Function.MESSAGE.message.name(), resolver);
+	    }
+	   return STATE.CONTINUE;
+	}
 }
 
