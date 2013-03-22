@@ -31,10 +31,20 @@ public class AtmosphereRequest extends DefaultRequest {
     public AtmosphereRequest.CACHE getCacheType() {
 		return ((AtmosphereRequestBuilder)builder).getCacheType();
 	}
-
+    
+    public boolean isTrackMessageLength() {
+		return ((AtmosphereRequestBuilder)builder).isTrackeMessageLength();
+	}
+    
+	public String getTrackMessageLengthDelimiter() {
+		return ((AtmosphereRequestBuilder)builder).getTrackMessageLengthDelimiter();
+	}
+    
     public static class AtmosphereRequestBuilder extends DefaultRequestBuilder {
     	
     	private CACHE cacheType = CACHE.NO_BROADCAST_CACHE;	
+    	private boolean trackMessageLength = false;
+    	private String trackMessageLengthDelimiter = "|";
 
         public AtmosphereRequestBuilder() {
 
@@ -51,7 +61,7 @@ public class AtmosphereRequest extends DefaultRequest {
             headers.put("X-Cache-Date", l);
         }
 
-	    public CACHE getCacheType() {
+        private CACHE getCacheType() {
 			return cacheType;
 		}
         
@@ -68,14 +78,34 @@ public class AtmosphereRequest extends DefaultRequest {
             return this;
         }
         
-        public RequestBuilder cache(CACHE c) { //Client application will have access to this method only through AtmosphereRequestBuilder object 
+        public AtmosphereRequestBuilder cache(CACHE c) {  
         	this.cacheType = c;
         	return this;
         }
+        
+        public AtmosphereRequestBuilder trackMessageLength(boolean trackMessageLength) {  
+        	this.trackMessageLength = trackMessageLength;
+        	return this;
+        }
+        
+        public AtmosphereRequestBuilder trackMessageLengthDelimiter(String trackMessageLengthDelimiter) {  
+        	this.trackMessageLengthDelimiter = trackMessageLengthDelimiter;
+        	return this;
+        }
+
+        private boolean isTrackeMessageLength() {
+    		return trackMessageLength;
+    	}
+        
+        private String getTrackMessageLengthDelimiter() {
+			return trackMessageLengthDelimiter;
+		}
 
         @Override
         public AtmosphereRequest build() {
             return new AtmosphereRequest(this);
         }
     }
+
+
 }

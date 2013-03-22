@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
@@ -61,14 +62,11 @@ public class DefaultSocket implements Socket {
     private InternalSocket socket;
     private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     private final AsyncHttpClient asyncHttpClient;
-    private Transport transportInUse;
+    protected Transport transportInUse;
     private final Options options;
     private boolean isExplicitReconnect = false;
     private boolean isFirstConnect = true;
     private boolean isFirstMessage = false;
-    private int currentTransportIndex = 0;
-
-
     public DefaultSocket(AsyncHttpClient asyncHttpClient, Options options) {
         this.asyncHttpClient = asyncHttpClient;
         this.options = options;
@@ -113,7 +111,7 @@ public class DefaultSocket implements Socket {
     protected Socket connect(final RequestBuilder r, final List<Transport> transports, long timeout, TimeUnit tu) throws IOException {
 
         if (transports.size() > 0) {
-            transportInUse = transports.get(currentTransportIndex);;
+            transportInUse = transports.get(0);
         } else {
             throw new IOException("No suitable transport supported");
         }
@@ -153,7 +151,7 @@ public class DefaultSocket implements Socket {
                 if (e != null) {
                     if (e.getMessage() != null && e.getMessage().equalsIgnoreCase("Invalid handshake response")) {
                         logger.info("WebSocket not supported, downgrading to an HTTP based transport.");
-                        currentTransportIndex++;
+                        transports.remove(0);
                         return connect(r, transports, timeout, tu);
                     }
                 }
@@ -178,12 +176,13 @@ public class DefaultSocket implements Socket {
                         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
                         	boolean isFirstMessage = DefaultSocket.this.isFirstMessage;
                         	DefaultSocket.this.isFirstMessage = false;
-                        	if(processOnBodyPartReceived(bodyPart, isFirstMessage))
-                        		return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        	if(processOnBodyPartReceived(bodyPart, isFirstMessage)) {
+                        		return callTransportOnBodyPartReceived(bodyPart);
+                        	}
                         	return STATE.CONTINUE;
                         }
 
-                        @Override
+						@Override
                         public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
                             return ((AsyncHandler<String>)transportInUse).onStatusReceived(responseStatus);
                         }
@@ -223,10 +222,18 @@ public class DefaultSocket implements Socket {
             } catch (Throwable t) {
                 // Swallow  LOG ME
             }
-
+            
+            socket = new InternalSocket(asyncHttpClient);
         }
         return this;
     }
+    
+    protected STATE callTransportOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
+		try {
+			return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+		} catch (Exception e) {}
+		return STATE.ABORT;
+	}
     
     
 	protected Callable<String> getReconnetCallable(InternalSocket socket, final RequestBuilder r, final List<Transport> transports) {
