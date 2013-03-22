@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import org.atmosphere.wasync.AbstractAsyncHandler;
+import org.atmosphere.wasync.AtmosphereSpecificAsyncHandler;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Request.TRANSPORT;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 
+import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
@@ -20,8 +23,9 @@ import com.ning.http.client.RequestBuilder;
 
 public class AtmosphereSocket extends DefaultSocket {
 	
-	private Request request = null;
+	private AtmosphereRequest request = null;
 	private String cacheValue = null;
+	private StringBuilder messagesStringBuilder = new StringBuilder();
 	
 	public AtmosphereSocket(AsyncHttpClient asyncHttpClient, Options options) {
         super(asyncHttpClient, options);
@@ -35,7 +39,6 @@ public class AtmosphereSocket extends DefaultSocket {
 		if(this.cacheValue == null || (this.cacheValue != null && "".equals(this.cacheValue))) {
 			this.cacheValue = "0";
 		}
-
 		
 		switch(cacheType) {
 			case HEADER_BROADCAST_CACHE:
@@ -88,7 +91,10 @@ public class AtmosphereSocket extends DefaultSocket {
 
 	@Override
 	public Socket open(Request request) throws IOException {
-		this.request = request;
+		if(!(request instanceof AtmosphereRequest)) {
+			throw new RuntimeException("AtmosphereSocket must be used with only AtmosphereRequest/AtmosphereRequestBuilder/AtmosphereClient");
+		}
+		this.request = (AtmosphereRequest)request;
 		return super.open(request);
 	}
 	
@@ -116,22 +122,34 @@ public class AtmosphereSocket extends DefaultSocket {
 	@Override
 	protected boolean processOnBodyPartReceived(HttpResponseBodyPart bodyPart, boolean isFirstMessage) {
 	
-		String message = new String(bodyPart.getBodyPartBytes());
+		boolean process = true;;
 		
 		if(isFirstMessage) {
 			TRANSPORT transport = request.transport().get(0);
 			switch (transport) {
 				case WEBSOCKET:
 				case LONG_POLLING:
+					process = true;
 					break;
 				case SSE:
 				case STREAMING:
-					return false;
+					process = false;
+					break;
 			}
 		}
-		return true;
-		
-		
+		return process;
+	}
+	
+	@Override
+	protected STATE callTransportOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
+		try {
+			if(transportInUse instanceof AtmosphereSpecificAsyncHandler) {
+				return ((AtmosphereSpecificAsyncHandler)transportInUse).onBodyPartReceived(bodyPart, messagesStringBuilder , this.request);
+			} else {
+				return super.callTransportOnBodyPartReceived(bodyPart);
+			}
+		} catch (Exception e) {}
+		return STATE.ABORT;
 	}
 	
 }

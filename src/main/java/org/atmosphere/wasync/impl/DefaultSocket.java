@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
@@ -60,7 +61,7 @@ public class DefaultSocket implements Socket {
     private InternalSocket socket;
     private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     private final AsyncHttpClient asyncHttpClient;
-    private Transport transportInUse;
+    protected Transport transportInUse;
     private final Options options;
     private boolean isExplicitReconnect = false;
     private boolean isFirstConnect = true;
@@ -165,12 +166,13 @@ public class DefaultSocket implements Socket {
                         public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
                         	boolean isFirstMessage = DefaultSocket.this.isFirstMessage;
                         	DefaultSocket.this.isFirstMessage = false;
-                        	if(processOnBodyPartReceived(bodyPart, isFirstMessage))
-                        		return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+                        	if(processOnBodyPartReceived(bodyPart, isFirstMessage)) {
+                        		return callTransportOnBodyPartReceived(bodyPart);
+                        	}
                         	return STATE.CONTINUE;
                         }
 
-                        @Override
+						@Override
                         public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
                             return ((AsyncHandler<String>)transportInUse).onStatusReceived(responseStatus);
                         }
@@ -210,10 +212,18 @@ public class DefaultSocket implements Socket {
             } catch (Throwable t) {
                 // Swallow  LOG ME
             }
-
+            
+            socket = new InternalSocket(asyncHttpClient);
         }
         return this;
     }
+    
+    protected STATE callTransportOnBodyPartReceived(HttpResponseBodyPart bodyPart) {
+		try {
+			return ((AsyncHandler<String>)transportInUse).onBodyPartReceived(bodyPart);
+		} catch (Exception e) {}
+		return STATE.ABORT;
+	}
     
     
 	protected Callable<String> getReconnetCallable(InternalSocket socket, final RequestBuilder r, final List<Transport> transports) {
