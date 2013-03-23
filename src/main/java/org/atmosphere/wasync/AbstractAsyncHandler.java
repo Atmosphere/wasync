@@ -15,12 +15,14 @@
  */
 package org.atmosphere.wasync;
 
-import com.ning.http.client.AsyncHandler;
-import org.atmosphere.wasync.impl.AtmosphereRequest;
-
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
+import org.atmosphere.wasync.impl.AtmosphereRequest;
+
+import com.ning.http.client.AsyncHandler;
 
 public abstract class AbstractAsyncHandler<T> implements AsyncHandler<T>, AtmosphereSpecificAsyncHandler {
 
@@ -57,13 +59,19 @@ public abstract class AbstractAsyncHandler<T> implements AsyncHandler<T>, Atmosp
         int delimiterIndex = -1;
         String singleMessage = null;
         while ((delimiterIndex = message.indexOf(delimiter, messageStartIndex)) >= 0) {
+        	if(delimiterIndex==messageStartIndex) {
+        		messageStartIndex = delimiterIndex+1;
+        		continue;
+        	}
             try {
                 messageLength = Integer.valueOf(message.substring(messageStartIndex, delimiterIndex));
                 if (messageLength <= 0) {
-                    continue;
+                    throw new Exception();
                 }
             } catch (Exception e) {
-                continue;
+            	//discard whole message
+    			messageStringBuilder.setLength(0);
+    			throw new Error("Message format is not as expected for tracking message size"); //this error causes invocation of onThrowable of AsyncHandler if not caught in between
             }
 
             messageStartIndex = delimiterIndex < (message.length() - 1) ? delimiterIndex + 1 : message.length();
@@ -87,4 +95,5 @@ public abstract class AbstractAsyncHandler<T> implements AsyncHandler<T>, Atmosp
         }
         return messages;
     }
+    
 }
