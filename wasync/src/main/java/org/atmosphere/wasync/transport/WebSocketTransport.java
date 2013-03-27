@@ -147,7 +147,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             public void onClose(WebSocket websocket) {
                 TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.close.name(), resolver);
                 if (options.reconnect()) {
-
+                    //TODO: Implement this.
                 }
             }
 

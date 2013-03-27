@@ -37,9 +37,11 @@ public class TransportsUtil {
             Function f = wrapper.function();
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
 
-            if (typeArguments.length > 0) {
+            if (typeArguments.length > 0 && instanceType != null) {
                 instanceType = matchDecoder(instanceType, decoders);
-                implementedType = instanceType.getClass();
+                if (instanceType != null) {
+                    implementedType = instanceType.getClass();
+                }
             }
 
             if (typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {

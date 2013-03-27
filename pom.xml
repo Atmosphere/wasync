@@ -41,6 +41,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.atmosphere</groupId>
+                <artifactId>wasync</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.ning</groupId>
                 <artifactId>async-http-client</artifactId>
                 <version>${ahc.version}</version>
