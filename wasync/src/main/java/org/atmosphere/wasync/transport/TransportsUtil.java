@@ -19,6 +19,7 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.util.TypeResolver;
 
 import java.util.List;
@@ -31,6 +32,16 @@ public class TransportsUtil {
                                Object instanceType,
                                String functionName,
                                FunctionResolver resolver) {
+        invokeFunction(Transport.EVENT_TYPE.MESSAGE, decoders, functions, implementedType, instanceType, functionName, resolver);
+    }
+
+    static void invokeFunction(Transport.EVENT_TYPE e,
+                               List<Decoder<? extends Object, ?>> decoders,
+                               List<FunctionWrapper> functions,
+                               Class<?> implementedType,
+                               Object instanceType,
+                               String functionName,
+                               FunctionResolver resolver) {
 
         String originalMessage = instanceType.toString();
         for (FunctionWrapper wrapper : functions) {
@@ -38,7 +49,7 @@ public class TransportsUtil {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
 
             if (typeArguments.length > 0 && instanceType != null) {
-                instanceType = matchDecoder(instanceType, decoders);
+                instanceType = matchDecoder(e, instanceType, decoders);
                 if (instanceType != null) {
                     implementedType = instanceType.getClass();
                 }
@@ -52,11 +63,12 @@ public class TransportsUtil {
         }
     }
 
-    static Object matchDecoder(Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
+    static Object matchDecoder(Transport.EVENT_TYPE e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
         for (Decoder d : decoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
             if (typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
-                instanceType = d.decode(instanceType);
+                // Filter
+                instanceType = d.decode(e, instanceType);
             }
         }
         return instanceType;

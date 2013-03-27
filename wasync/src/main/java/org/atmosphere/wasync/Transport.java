@@ -23,6 +23,9 @@ package org.atmosphere.wasync;
  * @author Jeanfrancois Arcand
  */
 public interface Transport<T> {
+
+    public enum EVENT_TYPE { OPEN, CLOSE, MESSAGE, RECONNECT, ERROR}
+
     /**
      * The transport name
      * @return transport name

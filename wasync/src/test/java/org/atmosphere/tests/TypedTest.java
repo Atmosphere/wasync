@@ -28,6 +28,7 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
@@ -125,7 +126,7 @@ public class TypedTest {
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(String s) {
+                    public POJO decode(Transport.EVENT_TYPE e, String s) {
                         return new POJO(s);
                     }
                 })
@@ -194,7 +195,7 @@ public class TypedTest {
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(String s) {
+                    public POJO decode(Transport.EVENT_TYPE e, String s) {
                         return new POJO(s);
                     }
                 })

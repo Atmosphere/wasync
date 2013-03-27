@@ -33,7 +33,7 @@ package org.atmosphere.wasync;
  * </pre></blockquote>
  * @author Jeanfrancois Arcand
  */
-public interface Client {
+public interface Client<T extends RequestBuilder> {
 
     /**
      * Create a {@link Socket}
@@ -50,13 +50,13 @@ public interface Client {
      * Return a {@link RequestBuilder}
      * @return a {@link RequestBuilder}
      */
-    RequestBuilder newRequestBuilder();
+    T newRequestBuilder();
 
     /**
      * Create a new {@link RequestBuilder} based on the class' implementation.
      * @param clazz an impplementation of {@link RequestBuilder}
      * @return  a {@link RequestBuilder}
      */
-    RequestBuilder newRequestBuilder(Class<? extends RequestBuilder> clazz);
+    T newRequestBuilder(Class<T> clazz);
 
 }

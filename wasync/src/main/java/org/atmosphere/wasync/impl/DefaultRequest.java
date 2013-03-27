@@ -20,22 +20,16 @@ import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.Encoder;
-import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.Request;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DefaultRequest implements Request {
+public class DefaultRequest<T extends RequestBuilder> implements Request {
 
-    protected final DefaultRequestBuilder builder;
+    protected final T builder;
 
-    protected DefaultRequest(DefaultRequestBuilder builder) {
+    protected DefaultRequest(T builder) {
         this.builder = builder;
     }
 

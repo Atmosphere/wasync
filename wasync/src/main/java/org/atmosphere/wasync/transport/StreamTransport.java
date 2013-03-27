@@ -15,10 +15,9 @@
  */
 package org.atmosphere.wasync.transport;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
+import com.ning.http.client.HttpResponseStatus;
 import org.atmosphere.wasync.AbstractAsyncHandler;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Function;
@@ -30,9 +29,9 @@ import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.impl.AtmosphereRequest;
 
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.HttpResponseStatus;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class StreamTransport<T> extends AbstractAsyncHandler<String> implements Transport {
     private final static String DEFAULT_CHARSET = "UTF-8";
@@ -50,7 +49,7 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
                 @Override
-                public Object decode(String s) {
+                public Object decode(Transport.EVENT_TYPE e, String s) {
                     return s;
                 }
             });
@@ -110,7 +109,7 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         f.done();
-        TransportsUtil.invokeFunction(decoders, functions, String.class, "Open", Function.MESSAGE.open.name(), resolver);
+        TransportsUtil.invokeFunction(decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
         TransportsUtil.invokeFunction(decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
 
         return STATE.CONTINUE;
@@ -128,7 +127,7 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
 
     @Override
     public void close() {
-        TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.open.name(), resolver);
+        TransportsUtil.invokeFunction(decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
     }
 
     @Override

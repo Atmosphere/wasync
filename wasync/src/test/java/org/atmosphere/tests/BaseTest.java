@@ -14,6 +14,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.nettosphere.Config;
 import org.atmosphere.nettosphere.Nettosphere;
+import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
@@ -122,7 +123,8 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
@@ -194,7 +196,8 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on(new Function<String>() {
             @Override
             public void on(String m) {
@@ -206,7 +209,7 @@ public abstract class BaseTest {
         latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
-        assertEquals(builder.toString(), "Open" + RESUME + "Close");
+        assertEquals(builder.toString(), "open" + RESUME + "close");
     }
 
     @Test
@@ -258,7 +261,8 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {
@@ -295,7 +299,8 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on(new Function<ConnectException>() {
 
             @Override
@@ -364,7 +369,8 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
@@ -432,15 +438,16 @@ public abstract class BaseTest {
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
-                .decoder(new Decoder<String,POJO>() {
+                .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(String s) {
+                    public POJO decode(Transport.EVENT_TYPE e, String s) {
                         return new POJO(s);
                     }
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on("message", new Function<POJO>() {
             @Override
             public void on(POJO t) {
@@ -504,19 +511,20 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(String s) {
+                    public POJO decode(Transport.EVENT_TYPE e, String s) {
                         return new POJO(s);
                     }
                 })
                 .decoder(new Decoder<POJO, POJO2>() {
                     @Override
-                    public POJO2 decode(POJO s) {
+                    public POJO2 decode(Transport.EVENT_TYPE e, POJO s) {
                         return new POJO2(s);
                     }
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on("message", new Function<POJO2>() {
             @Override
             public void on(POJO2 t) {
@@ -592,7 +600,8 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);;
+        Socket socket = client.create(options);
+        ;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {

@@ -49,7 +49,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
                 @Override
-                public Object decode(String s) {
+                public Object decode(Transport.EVENT_TYPE e, String s) {
                     return s;
                 }
             });
@@ -131,7 +131,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         WebSocketTextListener l = new WebSocketTextListener() {
             @Override
             public void onMessage(String message) {
-                TransportsUtil.invokeFunction(decoders, functions, message.getClass(), message, Function.MESSAGE.message.name(), resolver);
+                TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE, decoders, functions, message.getClass(), message, Function.MESSAGE.message.name(), resolver);
             }
 
             @Override
@@ -140,12 +140,12 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             @Override
             public void onOpen(WebSocket websocket) {
-                TransportsUtil.invokeFunction(decoders, functions, String.class, "Open", Function.MESSAGE.open.name(), resolver);
+                TransportsUtil.invokeFunction(EVENT_TYPE.OPEN, decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
             }
 
             @Override
             public void onClose(WebSocket websocket) {
-                TransportsUtil.invokeFunction(decoders, functions, String.class, "Close", Function.MESSAGE.close.name(), resolver);
+                TransportsUtil.invokeFunction(EVENT_TYPE.CLOSE, decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
                 if (options.reconnect()) {
                     //TODO: Implement this.
                 }

@@ -17,7 +17,15 @@ package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.RequestBuilder;
 
-public class DefaultRequestBuilder extends RequestBuilder {
+public class DefaultRequestBuilder extends RequestBuilder<DefaultRequestBuilder> {
+
+    public DefaultRequestBuilder() {
+        super(DefaultRequestBuilder.class);
+    }
+
+    protected DefaultRequestBuilder(Class<DefaultRequestBuilder> derived) {
+        super(DefaultRequestBuilder.class);
+    }
 
     @Override
     public DefaultRequest build() {

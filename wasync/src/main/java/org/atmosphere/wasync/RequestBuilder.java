@@ -16,7 +16,6 @@
 package org.atmosphere.wasync;
 
 import org.atmosphere.wasync.impl.DefaultFunctionResolver;
-import org.atmosphere.wasync.impl.DefaultFunctionResolver;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +28,7 @@ import java.util.Map;
  *
  * @author jeanfrancois Arcand
  */
-public abstract class RequestBuilder {
+public abstract class RequestBuilder<T extends RequestBuilder<T>> {
 
     public final List<Request.TRANSPORT> transports = new ArrayList<Request.TRANSPORT>();
     public Request.METHOD method = Request.METHOD.GET;
@@ -39,6 +38,11 @@ public abstract class RequestBuilder {
     public final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
     public final Map<String, Collection<String>> queryString = new HashMap<String, Collection<String>>();
     public FunctionResolver resolver = new DefaultFunctionResolver();
+    protected final Class<T> derived;
+
+    protected RequestBuilder(Class<T> derived) {
+        this.derived = derived;
+    }
 
     /**
      * The {@link Request.TRANSPORT} to use. This method can be invoked several time and the library will loop over the list
@@ -46,19 +50,19 @@ public abstract class RequestBuilder {
      * @param t
      * @return this
      */
-    public RequestBuilder transport(Request.TRANSPORT t) {
+    public T transport(Request.TRANSPORT t) {
         transports.add(t);
-        return this;
+        return derived.cast(this);
     }
 
     /**
-     * The method to use for connecting tho the remote server. It is recommended to always use {@link Request.METHOD.GET}
+     * The method to use for connecting tho the remote server. It is recommended to always use {@link Request.METHOD#GET}
      * @param method
      * @return this
      */
-    public RequestBuilder method(Request.METHOD method) {
+    public T method(Request.METHOD method) {
         this.method = method;
-        return this;
+        return derived.cast(this);
     }
 
     /**
@@ -66,9 +70,9 @@ public abstract class RequestBuilder {
      * @param uri  a uri to connect to
      * @return this
      */
-    public RequestBuilder uri(String uri) {
+    public T uri(String uri) {
         this.uri = uri;
-        return this;
+        return derived.cast(this);
     }
 
     /**
@@ -76,9 +80,9 @@ public abstract class RequestBuilder {
      * @param e an {@link Encoder}
      * @return this
      */
-    public RequestBuilder encoder(Encoder e) {
+    public T encoder(Encoder e) {
         encoders.add(e);
-        return this;
+        return derived.cast(this);
     }
 
     /**
@@ -86,9 +90,9 @@ public abstract class RequestBuilder {
      * @param d a {@link Decoder}
      * @return this
      */
-    public RequestBuilder decoder(Decoder d) {
+    public T decoder(Decoder d) {
         decoders.add(d);
-        return this;
+        return derived.cast(this);
     }
 
     /**
@@ -97,14 +101,14 @@ public abstract class RequestBuilder {
      * @param value header value
      * @return this
      */
-    public RequestBuilder header(String name, String value) {
+    public T header(String name, String value) {
         Collection<String> l = headers.get(name);
         if (l == null) {
             l = new ArrayList<String>();
         }
         l.add(value);
         headers.put(name, l);
-        return this;
+        return derived.cast(this);
     }
 
     /**
@@ -113,14 +117,14 @@ public abstract class RequestBuilder {
      * @param value header value
      * @return this
      */
-    public RequestBuilder queryString(String name, String value) {
+    public T queryString(String name, String value) {
         Collection<String> l = queryString.get(name);
         if (l == null) {
             l = new ArrayList<String>();
         }
         l.add(value);
         queryString.put(name, l);
-        return this;
+        return derived.cast(this);
     }
 
     /**
@@ -128,9 +132,9 @@ public abstract class RequestBuilder {
      * @param resolver  a {@link FunctionResolver}
      * @return this
      */
-    public RequestBuilder resolver(FunctionResolver resolver) {
+    public T resolver(FunctionResolver resolver) {
         this.resolver = resolver;
-        return this;
+        return derived.cast(this);
     }
 
     public abstract Request build();

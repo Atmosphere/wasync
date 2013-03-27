@@ -22,7 +22,7 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 
-public class DefaultClient implements Client {
+public class DefaultClient implements Client<RequestBuilder> {
 
     private AsyncHttpClient asyncHttpClient;
 
@@ -54,7 +54,7 @@ public class DefaultClient implements Client {
     }
 
     @Override
-    public RequestBuilder newRequestBuilder(Class<? extends RequestBuilder> clazz) {
+    public RequestBuilder newRequestBuilder(Class<RequestBuilder> clazz) {
         RequestBuilder b = null;
         try {
             b = clazz.newInstance();
