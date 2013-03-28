@@ -15,18 +15,17 @@
  */
 package org.atmosphere.wasync.transport;
 
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.FunctionResolver;
+import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 
 import java.util.List;
 
-public class SSETransport<T> extends StreamTransport {
+public class SSETransport extends StreamTransport {
 
-    public SSETransport(Options options, List<Decoder<?, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
-        super(options, decoders, functions, resolver);
+    public SSETransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
+        super(requestBuilder, options, request, functions);
     }
 
     @Override

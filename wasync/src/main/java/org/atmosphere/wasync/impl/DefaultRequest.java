@@ -35,41 +35,41 @@ public class DefaultRequest<T extends RequestBuilder> implements Request {
 
     @Override
     public List<TRANSPORT> transport() {
-        return builder.transports;
+        return builder.transports();
     }
 
     @Override
     public METHOD method() {
-        return builder.method;
+        return builder.method();
     }
 
     @Override
     public Map<String, Collection<String>> headers() {
-        return builder.headers;
+        return builder.headers();
     }
 
     @Override
-    public Map<String, Collection<String>> queryString() {
-        return builder.queryString;
+    public Map<String, List<String>> queryString() {
+        return builder.queryString();
     }
 
     @Override
     public List<Encoder<?,?>> encoders() {
-        return builder.encoders;
+        return builder.encoders();
     }
 
     @Override
     public List<Decoder<?,?>> decoders() {
-        return builder.decoders;
+        return builder.decoders();
     }
 
     @Override
     public String uri() {
-        return builder.uri;
+        return builder.uri();
     }
 
     @Override
     public FunctionResolver functionResolver() {
-        return builder.resolver;
+        return builder.resolver();
     }
 }

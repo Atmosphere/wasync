@@ -15,6 +15,8 @@
  */
 package org.atmosphere.wasync;
 
+import com.ning.http.client.AsyncHttpClient;
+
 /**
  * Configure the underlying WebSocket/HTTP client.
  *
@@ -44,12 +46,21 @@ public class Options {
         return b.waitBeforeUnlocking;
     }
 
+    public AsyncHttpClient runtime(){
+        return b.client;
+    }
+
+    public void runtime(AsyncHttpClient client){
+        b.client = client;
+    }
+
     public final static class OptionsBuilder {
 
         private Transport transport;
         private boolean reconnect = true;
         private int reconnectInSecond = 1;
-        public long waitBeforeUnlocking = 2500;
+        private long waitBeforeUnlocking = 2500;
+        private AsyncHttpClient client;
 
         /**
          * Register a new {@link Transport} implementation. Register a transport only if you are planning to use
@@ -84,7 +95,7 @@ public class Options {
 
         /**
          * For streaming and long-polling, the server may not send the headers so the client never knows
-         * if the connection succeeded or not. By defaul the library will wait for 2500 milliseconds before
+         * if the connection succeeded or not. By default the library will wait for 2500 milliseconds before
          * considering the connection established.
          *
          * @param waitBeforeUnlocking the time in millisecond
@@ -92,6 +103,17 @@ public class Options {
          */
         public OptionsBuilder waitBeforeUnlocking(long waitBeforeUnlocking) {
             this.waitBeforeUnlocking = waitBeforeUnlocking;
+            return this;
+        }
+
+        /**
+         * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used
+         * by the library.
+         * @param client
+         * @return this;
+         */
+        public OptionsBuilder runtime(AsyncHttpClient client) {
+            this.client = client;
             return this;
         }
 

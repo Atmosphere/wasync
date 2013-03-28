@@ -33,18 +33,23 @@ public class DefaultClient implements Client<RequestBuilder> {
         AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
         config.setFollowRedirects(true).setRequestTimeoutInMs(-1).setUserAgent("wAsync/1.0");
         asyncHttpClient = new AsyncHttpClient(config.build());
-        return getSocket(asyncHttpClient, new Options.OptionsBuilder().build());
+
+        return getSocket(new Options.OptionsBuilder().runtime(asyncHttpClient).build());
     }
 
     public Socket create(Options options) {
-        // TODO
-        AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-        config.setFollowRedirects(true)
-                .setRequestTimeoutInMs(-1)
-                .setUserAgent("wAsync/1.0");
 
-        asyncHttpClient = new AsyncHttpClient(config.build());
-        return getSocket(asyncHttpClient, options);
+        asyncHttpClient = options.runtime();
+        if (asyncHttpClient == null) {
+            AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
+            config.setFollowRedirects(true)
+                    .setRequestTimeoutInMs(-1)
+                    .setUserAgent("wAsync/1.0");
+
+            asyncHttpClient = new AsyncHttpClient(config.build());
+            options.runtime(asyncHttpClient);
+        }
+        return getSocket(options);
     }
 
     @Override
@@ -66,7 +71,7 @@ public class DefaultClient implements Client<RequestBuilder> {
         return b.resolver(new DefaultFunctionResolver());
     }
     
-    protected Socket getSocket(AsyncHttpClient asyncHttpClient, Options options) {
-    	return new DefaultSocket(asyncHttpClient, options);
+    protected Socket getSocket(Options options) {
+    	return new DefaultSocket(options);
     }
 }

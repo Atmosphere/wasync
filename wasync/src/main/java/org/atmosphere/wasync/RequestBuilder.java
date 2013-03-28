@@ -30,14 +30,14 @@ import java.util.Map;
  */
 public abstract class RequestBuilder<T extends RequestBuilder<T>> {
 
-    public final List<Request.TRANSPORT> transports = new ArrayList<Request.TRANSPORT>();
-    public Request.METHOD method = Request.METHOD.GET;
-    public String uri = "http://localhost:8080";
-    public final List<Encoder<?, ?>> encoders = new ArrayList<Encoder<?, ?>>();
-    public final List<Decoder<?, ?>> decoders = new ArrayList<Decoder<?, ?>>();
-    public final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
-    public final Map<String, Collection<String>> queryString = new HashMap<String, Collection<String>>();
-    public FunctionResolver resolver = new DefaultFunctionResolver();
+    protected final List<Request.TRANSPORT> transports = new ArrayList<Request.TRANSPORT>();
+    protected Request.METHOD method = Request.METHOD.GET;
+    protected String uri = "http://localhost:8080";
+    protected final List<Encoder<?, ?>> encoders = new ArrayList<Encoder<?, ?>>();
+    protected final List<Decoder<?, ?>> decoders = new ArrayList<Decoder<?, ?>>();
+    protected final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
+    protected final Map<String, List<String>> queryString = new HashMap<String, List<String>>();
+    protected FunctionResolver resolver = new DefaultFunctionResolver();
     protected final Class<T> derived;
 
     protected RequestBuilder(Class<T> derived) {
@@ -118,7 +118,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * @return this
      */
     public T queryString(String name, String value) {
-        Collection<String> l = queryString.get(name);
+        List<String> l = queryString.get(name);
         if (l == null) {
             l = new ArrayList<String>();
         }
@@ -139,4 +139,35 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
 
     public abstract Request build();
 
+    public List<Request.TRANSPORT> transports() {
+        return transports;
+    }
+
+    public Request.METHOD method() {
+        return method;
+    }
+
+    public Map<String, Collection<String>> headers() {
+        return headers;
+    }
+
+    public Map<String, List<String>> queryString() {
+        return queryString;
+    }
+
+    public List<Encoder<?, ?>> encoders() {
+        return encoders;
+    }
+
+    public List<Decoder<?, ?>> decoders() {
+        return decoders;
+    }
+
+    public String uri() {
+        return uri;
+    }
+
+    public FunctionResolver resolver() {
+        return resolver;
+    }
 }

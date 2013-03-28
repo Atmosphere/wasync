@@ -43,7 +43,7 @@ public abstract class BaseTest {
     public String targetUrl;
     public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
-    public final Options options = new Options.OptionsBuilder().reconnect(false).build();
+    public Options options = new Options.OptionsBuilder().reconnect(false).build();
 
     public int findFreePort() throws IOException {
         ServerSocket socket = null;
@@ -74,6 +74,7 @@ public abstract class BaseTest {
     public void start() throws IOException {
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
+        options = new Options.OptionsBuilder().reconnect(false).build();
     }
 
     @Test
@@ -143,6 +144,7 @@ public abstract class BaseTest {
         }).open(request.build()).fire("PING");
 
         latch.await(5, TimeUnit.SECONDS);
+        server.stop();
         socket.close();
 
         assertEquals(response.get(), RESUME);

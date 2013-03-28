@@ -18,6 +18,7 @@ package org.atmosphere.wasync.transport;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
 import com.ning.http.client.websocket.WebSocketTextListener;
 import com.ning.http.client.websocket.WebSocketUpgradeHandler;
@@ -29,13 +30,19 @@ import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WebSocketTransport extends WebSocketUpgradeHandler implements Transport {
 
+    private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);
     private WebSocket webSocket;
     private final AtomicBoolean ok = new AtomicBoolean(false);
     private Future f;
@@ -43,9 +50,12 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final List<Decoder<?, ?>> decoders;
     private final FunctionResolver resolver;
     private final Options options;
+    private final RequestBuilder requestBuilder;
 
-    public WebSocketTransport(Options options, List<Decoder<?, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
+    public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
+        this.decoders = request.decoders();
+
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
                 @Override
@@ -54,10 +64,10 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                 }
             });
         }
-        this.decoders = decoders;
         this.functions = functions;
-        this.resolver = resolver;
+        this.resolver = request.functionResolver();
         this.options = options;
+        this.requestBuilder = requestBuilder;
     }
 
     /**
@@ -70,11 +80,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
     @Override
     public void close() {
-    }
-
-    @Override
-    public boolean canHandle(Request request) {
-        return true;
     }
 
     /**
@@ -131,7 +136,16 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         WebSocketTextListener l = new WebSocketTextListener() {
             @Override
             public void onMessage(String message) {
-                TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE, decoders, functions, message.getClass(), message, Function.MESSAGE.message.name(), resolver);
+                message = message.trim();
+                if (message.length() > 0) {
+                    TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE,
+                            decoders,
+                            functions,
+                            message.getClass(),
+                            message,
+                            Function.MESSAGE.message.name(),
+                            resolver);
+                }
             }
 
             @Override
@@ -147,7 +161,17 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             public void onClose(WebSocket websocket) {
                 TransportsUtil.invokeFunction(EVENT_TYPE.CLOSE, decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
                 if (options.reconnect()) {
-                    //TODO: Implement this.
+                    ScheduledExecutorService e = options.runtime().getConfig().reaper();
+                    e.schedule(new Runnable() {
+                        public void run() {
+                            try {
+                                options.runtime().executeRequest(requestBuilder.build(), WebSocketTransport.this);
+                            } catch (IOException e) {
+                                logger.error("", e);
+                            }
+                        }
+                    }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+
                 }
             }
 

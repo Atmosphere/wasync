@@ -15,55 +15,63 @@
  */
 package org.atmosphere.wasync.impl;
 
+import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.RequestBuilder;
+import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.AtmosphereRequestBuilder> {
 
-	public enum CACHE {HEADER_BROADCAST_CACHE, UUID_BROADCASTER_CACHE, SESSION_BROADCAST_CACHE, NO_BROADCAST_CACHE};
+    public enum CACHE {HEADER_BROADCAST_CACHE, UUID_BROADCASTER_CACHE, SESSION_BROADCAST_CACHE, NO_BROADCAST_CACHE}
 
     protected AtmosphereRequest(AtmosphereRequestBuilder builder) {
         super(builder);
     }
 
     public AtmosphereRequest.CACHE getCacheType() {
-		return builder.getCacheType();
-	}
+        return builder.getCacheType();
+    }
 
     public boolean isTrackMessageLength() {
-		return builder.isTrackeMessageLength();
-	}
+        return builder.isTrackeMessageLength();
+    }
 
-	public String getTrackMessageLengthDelimiter() {
-		return builder.getTrackMessageLengthDelimiter();
-	}
+    public String getTrackMessageLengthDelimiter() {
+        return builder.getTrackMessageLengthDelimiter();
+    }
 
     public static class AtmosphereRequestBuilder extends RequestBuilder<AtmosphereRequestBuilder> {
 
-    	private CACHE cacheType = CACHE.NO_BROADCAST_CACHE;
-    	private boolean trackMessageLength = false;
-    	private String trackMessageLengthDelimiter = "|";
+        private CACHE cacheType = CACHE.NO_BROADCAST_CACHE;
+        private boolean trackMessageLength = false;
+        private String trackMessageLengthDelimiter = "|";
 
         public AtmosphereRequestBuilder() {
             super(AtmosphereRequestBuilder.class);
             List<String> l = new ArrayList<String>();
             l.add("1.0");
-            headers.put("X-Atmosphere-Framework", l);
+            queryString.put("X-Atmosphere-Framework", l);
 
             l = new ArrayList<String>();
             l.add("0");
-            headers.put("X-Atmosphere-tracking-id", l);
+            queryString.put("X-Atmosphere-tracking-id", l);
 
             l = new ArrayList<String>();
             l.add("0");
-            headers.put("X-Cache-Date", l);
+            queryString.put("X-Cache-Date", l);
+
+            l = new ArrayList<String>();
+            l.add("true");
+            queryString.put("X-atmo-protocol", l);
         }
 
         private CACHE getCacheType() {
-			return cacheType;
-		}
+            return cacheType;
+        }
 
         public AtmosphereRequestBuilder transport(TRANSPORT t) {
             List<String> l = new ArrayList<String>();
@@ -73,36 +81,63 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 l.add(t.name());
             }
 
-            headers.put("X-Atmosphere-Transport", l);
+            queryString.put("X-Atmosphere-Transport", l);
             transports.add(t);
             return derived.cast(this);
         }
 
         public AtmosphereRequestBuilder cache(CACHE c) {
-        	this.cacheType = c;
-        	return this;
+            this.cacheType = c;
+            return this;
         }
 
         public AtmosphereRequestBuilder trackMessageLength(boolean trackMessageLength) {
-        	this.trackMessageLength = trackMessageLength;
-        	return this;
+            this.trackMessageLength = trackMessageLength;
+            return this;
         }
 
         public AtmosphereRequestBuilder trackMessageLengthDelimiter(String trackMessageLengthDelimiter) {
-        	this.trackMessageLengthDelimiter = trackMessageLengthDelimiter;
-        	return this;
+            this.trackMessageLengthDelimiter = trackMessageLengthDelimiter;
+            return this;
         }
 
         private boolean isTrackeMessageLength() {
-    		return trackMessageLength;
-    	}
+            return trackMessageLength;
+        }
 
         private String getTrackMessageLengthDelimiter() {
-			return trackMessageLengthDelimiter;
-		}
+            return trackMessageLengthDelimiter;
+        }
 
         @Override
         public AtmosphereRequest build() {
+
+            if (trackMessageLength) {
+                decoders().add(0, new TrackMessageSizeDecoder());
+            }
+
+            decoders().add(0, new Decoder<String, String>() {
+
+                private AtomicBoolean protocolReceived = new AtomicBoolean();
+
+                @Override
+                public String decode(Transport.EVENT_TYPE e, String s) {
+                    if (e.equals(Transport.EVENT_TYPE.MESSAGE) && !protocolReceived.getAndSet(true)) {
+                        String[] proto = s.split("\\|");
+                        List<String> l = new ArrayList<String>();
+                        l.add(proto[1]);
+                        queryString.put("X-Atmosphere-tracking-id", l);
+                        l = new ArrayList<String>();
+                        l.add(proto[2]);
+                        queryString.put("X-Cache-Date", l);
+
+                        s = null;
+                    }
+                    return s;
+                }
+            });
+
+
             return new AtmosphereRequest(this);
         }
     }

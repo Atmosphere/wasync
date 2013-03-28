@@ -15,10 +15,12 @@
  */
 package org.atmosphere.wasync.transport;
 
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
-import org.atmosphere.wasync.AbstractAsyncHandler;
+import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
@@ -27,15 +29,18 @@ import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
-import org.atmosphere.wasync.impl.AtmosphereRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-public class StreamTransport<T> extends AbstractAsyncHandler<String> implements Transport {
+public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     private final static String DEFAULT_CHARSET = "UTF-8";
-    
+    private final Logger logger = LoggerFactory.getLogger(StreamTransport.class);
 
     protected Future f;
     protected final List<FunctionWrapper> functions;
@@ -44,8 +49,12 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
     protected String charSet = DEFAULT_CHARSET;
     private final FunctionResolver resolver;
     private final Options options;
+    private final RequestBuilder requestBuilder;
+    private final Request request;
 
-    public StreamTransport(Options options, List<Decoder<? extends Object, ?>> decoders, List<FunctionWrapper> functions, FunctionResolver resolver) {
+    public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
+        this.decoders = request.decoders();
+
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
                 @Override
@@ -54,10 +63,11 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
                 }
             });
         }
-        this.decoders = decoders;
         this.functions = functions;
-        this.resolver = resolver;
+        this.resolver = request.functionResolver();
         this.options = options;
+        this.requestBuilder = requestBuilder;
+        this.request = request;
     }
 
     @Override
@@ -87,7 +97,7 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
         if (!m.isEmpty()) {
-        	TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
+            TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
         }
         return STATE.CONTINUE;
     }
@@ -109,14 +119,30 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         f.done();
-        TransportsUtil.invokeFunction(decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
-        TransportsUtil.invokeFunction(decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
+        TransportsUtil.invokeFunction(EVENT_TYPE.OPEN, decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
+        TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
 
         return STATE.CONTINUE;
     }
 
     @Override
     public String onCompleted() throws Exception {
+        if (options.reconnect()) {
+            ScheduledExecutorService e = options.runtime().getConfig().reaper();
+            e.schedule(new Runnable() {
+                public void run() {
+
+                    Map<String, List<String>> c = request.queryString();
+                    FluentStringsMap f = new FluentStringsMap();
+                    f.putAll(c);
+                    try {
+                        options.runtime().executeRequest(requestBuilder.setQueryParameters(f).build(), StreamTransport.this);
+                    } catch (IOException e) {
+                        logger.error("", e);
+                    }
+                }
+            }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+        }
         return "";
     }
 
@@ -129,31 +155,5 @@ public class StreamTransport<T> extends AbstractAsyncHandler<String> implements 
     public void close() {
         TransportsUtil.invokeFunction(decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
     }
-
-    @Override
-    public boolean canHandle(Request request) {
-        return true;
-    }
-
-	@Override
-	public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart, StringBuilder messagesStringBuilder, AtmosphereRequest atmosphereRequest) throws Exception {
-		String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-		
-		if(m.isEmpty()) {
-			return STATE.CONTINUE;
-		}
-
-		messagesStringBuilder.append(m);
-		List<String> messages = atmosphereClientSideHandler(messagesStringBuilder, atmosphereRequest);
-		if(messages==null) {
-			return STATE.CONTINUE;
-		}
-		Iterator<String> it = messages.iterator();
-	    while(it.hasNext()) {
-	    	String message = it.next();
-	        TransportsUtil.invokeFunction(decoders, functions, m.getClass(), message, Function.MESSAGE.message.name(), resolver);
-	    }
-	   return STATE.CONTINUE;
-	}
 }
 

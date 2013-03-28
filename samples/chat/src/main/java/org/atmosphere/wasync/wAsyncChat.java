@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Date;
 
 public class wAsyncChat {
 
@@ -16,7 +17,7 @@ public class wAsyncChat {
     private final static ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) throws IOException {
-        Options options = new Options.OptionsBuilder().reconnect(false).build();
+        Options options = new Options.OptionsBuilder().build();
         AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
         RequestBuilder request = client.newRequestBuilder()
@@ -66,14 +67,15 @@ public class wAsyncChat {
                         }
                     }
                 })
-                .transport(Request.TRANSPORT.WEBSOCKET)
+                //.transport(Request.TRANSPORT.WEBSOCKET)
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create(options);
         socket.on("message", new Function<Chat.Data>() {
             @Override
             public void on(Chat.Data t) {
-                logger.info("Function invoked {}", t);
+                Date d = new Date(t.getTime()) ;
+                logger.info("Author {}: {}", t.getAuthor() + "@ " + d.getHours() + ":" + d.getMinutes(), t.getMessage());
             }
         }).on(new Function<Throwable>() {
 

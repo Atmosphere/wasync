@@ -15,23 +15,17 @@
  */
 package org.atmosphere.wasync.transport;
 
-
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LongPollingTransport<T> extends StreamTransport {
+public class LongPollingTransport extends StreamTransport {
 
-    public LongPollingTransport(Options options, List<Decoder<?,?>>decoders, List<FunctionWrapper> functions, Request request, AsyncHttpClient asyncHttpClient, FunctionResolver resolver) {
-        super(options, decoders, functions, resolver);
+    public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
+        super(requestBuilder, options, request, functions);
     }
 
     @Override

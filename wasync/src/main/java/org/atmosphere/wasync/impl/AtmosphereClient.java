@@ -61,7 +61,8 @@ public class AtmosphereClient implements Client<AtmosphereRequest.AtmosphereRequ
     }
 
 	protected Socket getSocket(AsyncHttpClient asyncHttpClient, Options options) {
-		return new AtmosphereSocket(asyncHttpClient, options);
+        options.runtime(asyncHttpClient);
+		return new DefaultSocket(options);
 	}
 
     @Override

@@ -52,7 +52,7 @@ public interface Request {
      * Return the list of query params
      * @return a Map of headers
      */
-    Map<String, Collection<String>> queryString();
+    Map<String, List<String>> queryString();
 
     /**
      * The list of {@link Encoder} to use before the request is sent.

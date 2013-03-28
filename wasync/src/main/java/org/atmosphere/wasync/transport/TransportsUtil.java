@@ -66,7 +66,7 @@ public class TransportsUtil {
     static Object matchDecoder(Transport.EVENT_TYPE e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
         for (Decoder d : decoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
-            if (typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
+            if (instanceType != null && typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
                 // Filter
                 instanceType = d.decode(e, instanceType);
             }

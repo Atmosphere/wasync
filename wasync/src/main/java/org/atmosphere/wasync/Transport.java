@@ -22,7 +22,7 @@ package org.atmosphere.wasync;
  *
  * @author Jeanfrancois Arcand
  */
-public interface Transport<T> {
+public interface Transport {
 
     public enum EVENT_TYPE { OPEN, CLOSE, MESSAGE, RECONNECT, ERROR}
 
@@ -56,11 +56,4 @@ public interface Transport<T> {
      * Close the underlying transport}
      */
     void close();
-
-    /**
-     * Return true if the transport can handle the request.
-     * @param request {@link Request}
-     * @return true if the transport can handle the request.
-     */
-    boolean canHandle(Request request);
 }
