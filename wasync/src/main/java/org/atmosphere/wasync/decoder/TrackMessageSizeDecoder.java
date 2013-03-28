@@ -15,14 +15,15 @@
  */
 package org.atmosphere.wasync.decoder;
 
-import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.ReplayDecoder;
 import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class TrackMessageSizeDecoder implements Decoder<String, String> {
+public class TrackMessageSizeDecoder implements ReplayDecoder {
 
     private final Logger logger = LoggerFactory.getLogger(TrackMessageSizeDecoder.class);
 
@@ -38,7 +39,7 @@ public class TrackMessageSizeDecoder implements Decoder<String, String> {
     }
 
     @Override
-    public String decode(Transport.EVENT_TYPE type, String message) {
+    public List<String> decode(Transport.EVENT_TYPE type, String message) {
         if (type.equals(Transport.EVENT_TYPE.MESSAGE)) {
             ArrayList<String> messages = new ArrayList<String>();
 
@@ -82,13 +83,11 @@ public class TrackMessageSizeDecoder implements Decoder<String, String> {
                     messagesBuffer.append(messageLength).append(delimiter).append(singleMessage);
                 }
             }
-            if (messages.size() > 1) {
-                // TODO: Add replay support.
-                logger.warn("Multiple message parsed {}", messages);
-            }
-            return messages.get(0);
+            return messages;
         } else {
-            return message;
+            ArrayList<String> l = new ArrayList<String>();
+            l.add(message);
+            return l;
         }
     }
 }

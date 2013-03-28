@@ -19,6 +19,8 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.AtmosphereRequestBuilder> {
 
     public enum CACHE {HEADER_BROADCAST_CACHE, UUID_BROADCASTER_CACHE, SESSION_BROADCAST_CACHE, NO_BROADCAST_CACHE}
+
+    private final static Logger logger = LoggerFactory.getLogger(AtmosphereRequest.class);
 
     protected AtmosphereRequest(AtmosphereRequestBuilder builder) {
         super(builder);
@@ -123,15 +127,20 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 @Override
                 public String decode(Transport.EVENT_TYPE e, String s) {
                     if (e.equals(Transport.EVENT_TYPE.MESSAGE) && !protocolReceived.getAndSet(true)) {
-                        String[] proto = s.split("\\|");
-                        List<String> l = new ArrayList<String>();
-                        l.add(proto[1]);
-                        queryString.put("X-Atmosphere-tracking-id", l);
-                        l = new ArrayList<String>();
-                        l.add(proto[2]);
-                        queryString.put("X-Cache-Date", l);
+                        try {
+                            String[] proto = s.split("\\|");
+                            List<String> l = new ArrayList<String>();
+                            l.add(proto[1]);
+                            queryString.put("X-Atmosphere-tracking-id", l);
+                            l = new ArrayList<String>();
+                            l.add(proto[2]);
+                            queryString.put("X-Cache-Date", l);
 
-                        s = null;
+                            s = null;
+                        } catch (Exception ex) {
+                            logger.warn("Unable to decode the protocol {}", s);
+                            logger.warn("",e);
+                        }
                     }
                     return s;
                 }

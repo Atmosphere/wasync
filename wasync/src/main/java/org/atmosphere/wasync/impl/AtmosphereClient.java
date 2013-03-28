@@ -60,10 +60,10 @@ public class AtmosphereClient implements Client<AtmosphereRequest.AtmosphereRequ
         return AtmosphereRequestBuilder.class.cast(b.resolver(new DefaultFunctionResolver()));
     }
 
-	protected Socket getSocket(AsyncHttpClient asyncHttpClient, Options options) {
+    protected Socket getSocket(AsyncHttpClient asyncHttpClient, Options options) {
         options.runtime(asyncHttpClient);
-		return new DefaultSocket(options);
-	}
+        return new DefaultSocket(options);
+    }
 
     @Override
     public AtmosphereRequestBuilder newRequestBuilder() {

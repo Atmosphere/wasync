@@ -67,7 +67,7 @@ public class wAsyncChat {
                         }
                     }
                 })
-                //.transport(Request.TRANSPORT.WEBSOCKET)
+                .transport(Request.TRANSPORT.WEBSOCKET)
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create(options);

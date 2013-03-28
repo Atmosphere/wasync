@@ -19,9 +19,11 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.ReplayDecoder;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.util.TypeResolver;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransportsUtil {
@@ -67,8 +69,27 @@ public class TransportsUtil {
         for (Decoder d : decoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
             if (instanceType != null && typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
-                // Filter
+                boolean replay = ReplayDecoder.class.isAssignableFrom(d.getClass());
+
                 instanceType = d.decode(e, instanceType);
+
+                if (replay) {
+                    List<?> l = List.class.cast(instanceType);
+                    List<Decoder<? extends Object, ?>> nd = new ArrayList<Decoder<? extends Object, ?>>();
+                    boolean add = false;
+                    for (Decoder d2: decoders) {
+                        if (d2.equals(d)){
+                            add = true;
+                            continue;
+                        }
+
+                        if (add) nd.add(d2);
+                    }
+
+                    for (Object m : l) {
+                        return matchDecoder(e, m, nd);
+                    }
+                }
             }
         }
         return instanceType;
