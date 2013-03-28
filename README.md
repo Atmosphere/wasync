@@ -17,7 +17,7 @@ You can browse the [javadoc](http://atmosphere.github.com/wasync/apidocs/) As si
                 })
                 .decoder(new Decoder<String, Reader>() {
                     @Override
-                    public Reader decode(String s) {
+                    public Reader decode(Transport.EVENT_TYPE type, String s) {
                         return new StringReader(s);
                     }
                 })
@@ -47,8 +47,12 @@ example,
 ```java
    Decoder<String, POJO> d = new Decoder<String, POJO>() {
              @Override
-             public POJO decode(String s) {
-                 return new POJO(s);
+             public POJO decode(Transport.EVENT_TYPE type, String s) {
+                 if (type.equals(Transport.EVENT_TYPE.MESSAGE)) {
+                    return new POJO(s);
+                 } else {
+                    return s;
+                 }
              }
          }
 ```
