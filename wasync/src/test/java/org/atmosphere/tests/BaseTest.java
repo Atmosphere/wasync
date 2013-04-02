@@ -264,7 +264,6 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        ;
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {

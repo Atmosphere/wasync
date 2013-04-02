@@ -17,6 +17,11 @@ public class wAsyncChat {
     private final static ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) throws IOException {
+
+        if (args.length == 0) {
+            args = new String[] {"http://127.0.0.1:8080/chat"};
+        }
+
         Options options = new Options.OptionsBuilder().build();
         AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
@@ -86,10 +91,16 @@ public class wAsyncChat {
 
         }).open(request.build());
 
+        logger.info("Choose Name: ");
+        String name = null;
         String a = "";
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (!(a.equals("quit"))) {
             a = br.readLine();
+            if (name == null) {
+                name = a;
+            }
+            socket.fire(new Chat.Data(name, a));
         }
         socket.close();
     }
