@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
  * A Socket represent a connection to a remote server. A Socket abstract the transport used, the client will negotiate
  * the best {@link org.atmosphere.wasync.Request#transport()} to communicate with the remote Server. As simple as
  * <blockquote><pre>
-     Client client = AtmosphereClientFactory.getDefault().newclient();
+     Client client = AtmosphereClientFactory.getDefault().newClient();
 
      RequestBuilder request = client.newRequestBuilder()
              .method(Request.METHOD.GET)
@@ -40,8 +40,8 @@ import java.util.concurrent.TimeoutException;
                      return new StringReader(s);
                  }
              })
-             .transport(WEBSOCKET)                        // Try WebSocket
-             .transport(LONG_POLLING);                    // Fallback to Long-Polling
+             .transport(Request.TRANSPORT.WEBSOCKET)                        // Try WebSocket
+             .transport(Request.TRANSPORT.LONG_POLLING);                    // Fallback to Long-Polling
 
      Socket socket = client.create();
      socket.on("message", new Function&lt;String&gt;() {
