@@ -19,7 +19,7 @@ public class wAsyncChat {
     public static void main(String[] args) throws IOException {
 
         if (args.length == 0) {
-            args = new String[] {"http://127.0.0.1:8080/chat"};
+            args = new String[] {"http://127.0.0.1:8080"};
         }
 
         Options options = new Options.OptionsBuilder().build();
