@@ -25,18 +25,62 @@
 <a class="jxr_linenumber" name="15" href="#15">15</a>  <em class="jxr_comment"> */</em>
 <a class="jxr_linenumber" name="16" href="#16">16</a>  <strong class="jxr_keyword">package</strong> org.atmosphere.wasync.impl;
 <a class="jxr_linenumber" name="17" href="#17">17</a>  
-<a class="jxr_linenumber" name="18" href="#18">18</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Options;
-<a class="jxr_linenumber" name="19" href="#19">19</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Socket;
-<a class="jxr_linenumber" name="20" href="#20">20</a>  
-<a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.AsyncHttpClient;
-<a class="jxr_linenumber" name="22" href="#22">22</a>  
-<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereClient.html">AtmosphereClient</a> <strong class="jxr_keyword">extends</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultClient.html">DefaultClient</a> {
-<a class="jxr_linenumber" name="24" href="#24">24</a>  
-<a class="jxr_linenumber" name="25" href="#25">25</a>  	@Override
-<a class="jxr_linenumber" name="26" href="#26">26</a>  	<strong class="jxr_keyword">protected</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> getSocket(AsyncHttpClient asyncHttpClient, <a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options) {
-<a class="jxr_linenumber" name="27" href="#27">27</a>  		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereSocket.html">AtmosphereSocket</a>(asyncHttpClient, options);
-<a class="jxr_linenumber" name="28" href="#28">28</a>  	}
-<a class="jxr_linenumber" name="29" href="#29">29</a>  }
+<a class="jxr_linenumber" name="18" href="#18">18</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.AsyncHttpClient;
+<a class="jxr_linenumber" name="19" href="#19">19</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.AsyncHttpClientConfig;
+<a class="jxr_linenumber" name="20" href="#20">20</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Client;
+<a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Options;
+<a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Socket;
+<a class="jxr_linenumber" name="23" href="#23">23</a>  
+<a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
+<a class="jxr_linenumber" name="25" href="#25">25</a>  
+<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereClient.html">AtmosphereClient</a> <strong class="jxr_keyword">implements</strong> Client&lt;AtmosphereRequest.AtmosphereRequestBuilder&gt; {
+<a class="jxr_linenumber" name="27" href="#27">27</a>      <strong class="jxr_keyword">private</strong> AsyncHttpClient asyncHttpClient;
+<a class="jxr_linenumber" name="28" href="#28">28</a>  
+<a class="jxr_linenumber" name="29" href="#29">29</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereClient.html">AtmosphereClient</a>() {
+<a class="jxr_linenumber" name="30" href="#30">30</a>      }
+<a class="jxr_linenumber" name="31" href="#31">31</a>  
+<a class="jxr_linenumber" name="32" href="#32">32</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> create() {
+<a class="jxr_linenumber" name="33" href="#33">33</a>          AsyncHttpClientConfig.Builder config = <strong class="jxr_keyword">new</strong> AsyncHttpClientConfig.Builder();
+<a class="jxr_linenumber" name="34" href="#34">34</a>          config.setFollowRedirects(<strong class="jxr_keyword">true</strong>).setRequestTimeoutInMs(-1).setUserAgent(<span class="jxr_string">"wAsync/1.0"</span>);
+<a class="jxr_linenumber" name="35" href="#35">35</a>          asyncHttpClient = <strong class="jxr_keyword">new</strong> AsyncHttpClient(config.build());
+<a class="jxr_linenumber" name="36" href="#36">36</a>          <strong class="jxr_keyword">return</strong> getSocket(asyncHttpClient, <strong class="jxr_keyword">new</strong> Options.OptionsBuilder().build());
+<a class="jxr_linenumber" name="37" href="#37">37</a>      }
+<a class="jxr_linenumber" name="38" href="#38">38</a>  
+<a class="jxr_linenumber" name="39" href="#39">39</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> create(<a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options) {
+<a class="jxr_linenumber" name="40" href="#40">40</a>          <em class="jxr_comment">// TODO</em>
+<a class="jxr_linenumber" name="41" href="#41">41</a>          AsyncHttpClientConfig.Builder config = <strong class="jxr_keyword">new</strong> AsyncHttpClientConfig.Builder();
+<a class="jxr_linenumber" name="42" href="#42">42</a>          config.setFollowRedirects(<strong class="jxr_keyword">true</strong>)
+<a class="jxr_linenumber" name="43" href="#43">43</a>                  .setRequestTimeoutInMs(-1)
+<a class="jxr_linenumber" name="44" href="#44">44</a>                  .setUserAgent(<span class="jxr_string">"wAsync/1.0"</span>);
+<a class="jxr_linenumber" name="45" href="#45">45</a>  
+<a class="jxr_linenumber" name="46" href="#46">46</a>          asyncHttpClient = <strong class="jxr_keyword">new</strong> AsyncHttpClient(config.build());
+<a class="jxr_linenumber" name="47" href="#47">47</a>          <strong class="jxr_keyword">return</strong> getSocket(asyncHttpClient, options);
+<a class="jxr_linenumber" name="48" href="#48">48</a>      }
+<a class="jxr_linenumber" name="49" href="#49">49</a>  
+<a class="jxr_linenumber" name="50" href="#50">50</a>      @Override
+<a class="jxr_linenumber" name="51" href="#51">51</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereRequest.html">AtmosphereRequestBuilder</a> newRequestBuilder(Class&lt;AtmosphereRequest.AtmosphereRequestBuilder&gt; clazz) {
+<a class="jxr_linenumber" name="52" href="#52">52</a>          <a href="../../../../org/atmosphere/wasync/impl/AtmosphereRequest.html">AtmosphereRequestBuilder</a> b = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="53" href="#53">53</a>          <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="54" href="#54">54</a>              b = clazz.newInstance();
+<a class="jxr_linenumber" name="55" href="#55">55</a>          } <strong class="jxr_keyword">catch</strong> (InstantiationException e) {
+<a class="jxr_linenumber" name="56" href="#56">56</a>              <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(e);
+<a class="jxr_linenumber" name="57" href="#57">57</a>          } <strong class="jxr_keyword">catch</strong> (IllegalAccessException e) {
+<a class="jxr_linenumber" name="58" href="#58">58</a>              <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(e);
+<a class="jxr_linenumber" name="59" href="#59">59</a>          }
+<a class="jxr_linenumber" name="60" href="#60">60</a>          <strong class="jxr_keyword">return</strong> AtmosphereRequestBuilder.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(b.resolver(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultFunctionResolver.html">DefaultFunctionResolver</a>()));
+<a class="jxr_linenumber" name="61" href="#61">61</a>      }
+<a class="jxr_linenumber" name="62" href="#62">62</a>  
+<a class="jxr_linenumber" name="63" href="#63">63</a>      <strong class="jxr_keyword">protected</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> getSocket(AsyncHttpClient asyncHttpClient, <a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options) {
+<a class="jxr_linenumber" name="64" href="#64">64</a>          options.runtime(asyncHttpClient);
+<a class="jxr_linenumber" name="65" href="#65">65</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultSocket.html">DefaultSocket</a>(options);
+<a class="jxr_linenumber" name="66" href="#66">66</a>      }
+<a class="jxr_linenumber" name="67" href="#67">67</a>  
+<a class="jxr_linenumber" name="68" href="#68">68</a>      @Override
+<a class="jxr_linenumber" name="69" href="#69">69</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereRequest.html">AtmosphereRequestBuilder</a> newRequestBuilder() {
+<a class="jxr_linenumber" name="70" href="#70">70</a>          <a href="../../../../org/atmosphere/wasync/impl/AtmosphereRequest.html">AtmosphereRequestBuilder</a> b = <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereRequest.html">AtmosphereRequestBuilder</a>();
+<a class="jxr_linenumber" name="71" href="#71">71</a>          <strong class="jxr_keyword">return</strong> AtmosphereRequestBuilder.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(b.resolver(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultFunctionResolver.html">DefaultFunctionResolver</a>()));
+<a class="jxr_linenumber" name="72" href="#72">72</a>      }
+<a class="jxr_linenumber" name="73" href="#73">73</a>  }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

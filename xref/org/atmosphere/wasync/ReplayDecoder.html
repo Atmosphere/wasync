@@ -2,11 +2,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en_US" lang="en_US">
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-<title>AtmosphereSpecificAsyncHandler xref</title>
+<title>ReplayDecoder xref</title>
 <link type="text/css" rel="stylesheet" href="../../../stylesheet.css" />
 </head>
 <body>
-<div id="overview"><a href="../../../../apidocs/org/atmosphere/wasync/AtmosphereSpecificAsyncHandler.html">View Javadoc</a></div><pre>
+<div id="overview"><a href="../../../../apidocs/org/atmosphere/wasync/ReplayDecoder.html">View Javadoc</a></div><pre>
 
 <a class="jxr_linenumber" name="1" href="#1">1</a>   <em class="jxr_comment">/*</em>
 <a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_comment"> * Copyright 2012 Jeanfrancois Arcand</em>
@@ -25,19 +25,26 @@
 <a class="jxr_linenumber" name="15" href="#15">15</a>  <em class="jxr_comment"> */</em>
 <a class="jxr_linenumber" name="16" href="#16">16</a>  <strong class="jxr_keyword">package</strong> org.atmosphere.wasync;
 <a class="jxr_linenumber" name="17" href="#17">17</a>  
-<a class="jxr_linenumber" name="18" href="#18">18</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.impl.AtmosphereRequest;
+<a class="jxr_linenumber" name="18" href="#18">18</a>  <strong class="jxr_keyword">import</strong> java.util.List;
 <a class="jxr_linenumber" name="19" href="#19">19</a>  
-<a class="jxr_linenumber" name="20" href="#20">20</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.HttpResponseBodyPart;
-<a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.AsyncHandler.STATE;
-<a class="jxr_linenumber" name="22" href="#22">22</a>  
-<a class="jxr_linenumber" name="23" href="#23">23</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="24" href="#24">24</a>  <em class="jxr_javadoccomment"> * Any transport that supports atmosphere must implement {@link AtmosphereSpecificAsyncHandler} interface.</em>
-<a class="jxr_linenumber" name="25" href="#25">25</a>  <em class="jxr_javadoccomment"> * {@link AtmosphereSpecificAsyncHandler} methods are not thread safe.</em>
-<a class="jxr_linenumber" name="26" href="#26">26</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">interface</strong> <a href="../../../org/atmosphere/wasync/AtmosphereSpecificAsyncHandler.html">AtmosphereSpecificAsyncHandler</a> {
-<a class="jxr_linenumber" name="28" href="#28">28</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> STATE onBodyPartReceived(HttpResponseBodyPart bodyPart, <strong class="jxr_keyword">final</strong> StringBuilder messagesStringBuilder, <strong class="jxr_keyword">final</strong> <a href="../../../org/atmosphere/wasync/impl/AtmosphereRequest.html">AtmosphereRequest</a> atmosphereRequest) <strong class="jxr_keyword">throws</strong> Exception;
-<a class="jxr_linenumber" name="29" href="#29">29</a>  
-<a class="jxr_linenumber" name="30" href="#30">30</a>  }
+<a class="jxr_linenumber" name="20" href="#20">20</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="21" href="#21">21</a>  <em class="jxr_javadoccomment"> * A {@link Decoder} that always return a List of message to be dispatched one by one to the remaining list of Decoder.</em>
+<a class="jxr_linenumber" name="22" href="#22">22</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="23" href="#23">23</a>  <em class="jxr_javadoccomment"> * @author Jeanfrancois Arcand</em>
+<a class="jxr_linenumber" name="24" href="#24">24</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">interface</strong> <a href="../../../org/atmosphere/wasync/ReplayDecoder.html">ReplayDecoder</a> <strong class="jxr_keyword">extends</strong> Decoder&lt;String, List&lt;?&gt;&gt; {
+<a class="jxr_linenumber" name="26" href="#26">26</a>  
+<a class="jxr_linenumber" name="27" href="#27">27</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="28" href="#28">28</a>  <em class="jxr_javadoccomment">     * Decode a String into a List of Objects. Each element of the List will be dispatched to the decoders that where</em>
+<a class="jxr_linenumber" name="29" href="#29">29</a>  <em class="jxr_javadoccomment">     * added after an implementation of that interface.</em>
+<a class="jxr_linenumber" name="30" href="#30">30</a>  <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="31" href="#31">31</a>  <em class="jxr_javadoccomment">     * @param e Transport.EVENT_TYPE</em>
+<a class="jxr_linenumber" name="32" href="#32">32</a>  <em class="jxr_javadoccomment">     * @param s a object of type U</em>
+<a class="jxr_linenumber" name="33" href="#33">33</a>  <em class="jxr_javadoccomment">     * @return a List of Object</em>
+<a class="jxr_linenumber" name="34" href="#34">34</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="35" href="#35">35</a>      @Override
+<a class="jxr_linenumber" name="36" href="#36">36</a>      <strong class="jxr_keyword">public</strong> List&lt;?&gt; decode(Transport.EVENT_TYPE e, String s);
+<a class="jxr_linenumber" name="37" href="#37">37</a>  }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

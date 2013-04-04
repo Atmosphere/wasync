@@ -1,4 +1,7 @@
 org.atmosphere.wasync
+org.atmosphere.wasync.andoid
+org.atmosphere.wasync.decoder
 org.atmosphere.wasync.impl
 org.atmosphere.wasync.transport
 org.atmosphere.wasync.util
+org.nettosphere.samples.chat
