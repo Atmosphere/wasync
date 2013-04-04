@@ -41,27 +41,4 @@
             <version>1.0.0</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <executions>
-                    <execution>
-                        <id>distro-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.3</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/distribution.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
