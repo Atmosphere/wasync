@@ -188,6 +188,7 @@
         <module>wasync</module>
         <module>samples/chat</module>
         <module>samples/android-chat</module>
+        <module>samples/node.js</module>
     </modules>
     <reporting>
         <outputDirectory>target/site</outputDirectory>
