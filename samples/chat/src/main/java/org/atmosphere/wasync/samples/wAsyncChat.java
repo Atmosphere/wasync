@@ -26,7 +26,6 @@ import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.atmosphere.wasync.samples.Chat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,16 +52,6 @@ public class wAsyncChat {
                 .method(Request.METHOD.GET)
                 .uri(args[0] + "/chat")
                 .trackMessageLength(true)
-                .encoder(new Encoder<String, Chat.Data>() {
-                    @Override
-                    public Chat.Data encode(String s) {
-                        try {
-                            return mapper.readValue(s, Chat.Data.class);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                })
                 .encoder(new Encoder<Chat.Data, String>() {
                     @Override
                     public String encode(Chat.Data data) {

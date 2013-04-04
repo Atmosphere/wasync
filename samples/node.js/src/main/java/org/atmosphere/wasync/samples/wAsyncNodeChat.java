@@ -51,16 +51,6 @@ public class wAsyncNodeChat {
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(args[0] + "/chat")
-                .encoder(new Encoder<String, Data>() {
-                    @Override
-                    public Data encode(String s) {
-                        try {
-                            return mapper.readValue(s, Data.class);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                })
                 .encoder(new Encoder<Data, String>() {
                     @Override
                     public String encode(Data data) {

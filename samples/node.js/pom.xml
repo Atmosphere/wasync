@@ -9,10 +9,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.atmosphere.wasync.samples</groupId>
-    <artifactId>wasync-chat</artifactId>
+    <artifactId>node.js-chat</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>wAsync Chat</name>
+    <name>wAsync Node.js Chat</name>
     <url>http://maven.apache.org</url>
 
     <dependencies>

@@ -37,16 +37,13 @@ import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Date;
-import java.util.concurrent.CountDownLatch;
 
 public class wAsyncChat extends Activity {
     private Button bt;
     private TextView tv;
     private String serverIpAddress = "http://10.0.2.2:8080";
     private final static ObjectMapper mapper = new ObjectMapper();
-    private final CountDownLatch latch = new CountDownLatch(1);
     private final Handler uiHandler = new Handler();
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,16 +63,6 @@ public class wAsyncChat extends Activity {
                     .method(Request.METHOD.GET)
                     .uri(serverIpAddress + "/chat")
                     .trackMessageLength(true)
-                    .encoder(new Encoder<String, Data>() {
-                        @Override
-                        public Data encode(String s) {
-                            try {
-                                return mapper.readValue(s, Data.class);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    })
                     .encoder(new Encoder<Data, String>() {
                         @Override
                         public String encode(Data data) {
@@ -129,7 +116,6 @@ public class wAsyncChat extends Activity {
                 public void on(Throwable t) {
                     tv.setText("ERROR 3: " + t.getMessage());
                     t.printStackTrace();
-                    latch.countDown();
                 }
 
         }).open(request.build());
@@ -148,13 +134,7 @@ public class wAsyncChat extends Activity {
                         socket.fire(new Data(name, str));
                         et.setText("");
                         Log.d("Client", "Client sent message");
-                    } catch (UnknownHostException e) {
-                        tv.setText("ERROR 1: " + e.getMessage());
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        tv.setText("ERROR 2: " + e.getMessage());
-                        e.printStackTrace();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         tv.setText("ERROR 3: " + e.getMessage());
                         e.printStackTrace();
                     }
