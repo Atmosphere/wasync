@@ -219,7 +219,7 @@ public class DefaultSocket implements Socket {
             for (Encoder e : encoders) {
                 Class<?>[] typeArguments = TypeResolver.resolveArguments(e.getClass(), Encoder.class);
 
-                if (typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
+                if (typeArguments.length > 0 && typeArguments[0].isAssignableFrom(instanceType.getClass())) {
                     instanceType = e.encode(instanceType);
                 }
             }
