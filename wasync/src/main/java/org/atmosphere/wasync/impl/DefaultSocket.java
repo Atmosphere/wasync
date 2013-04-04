@@ -87,19 +87,21 @@ public class DefaultSocket implements Socket {
     public Socket open(Request request, long timeout, TimeUnit tu) throws IOException {
         this.request = request;
         RequestBuilder r = new RequestBuilder();
-
-        Map<String, List<String>> c = request.queryString();
-        FluentStringsMap f = new FluentStringsMap();
-        f.putAll(c);
-
         r.setUrl(request.uri())
                 .setMethod(request.method().name())
                 .setHeaders(request.headers())
-                .setQueryParameters(f);
+                .setQueryParameters(decodeQueryString(request));
 
         List<Transport> transports = getTransport(r, request);
 
         return connect(r, transports, timeout, tu);
+    }
+
+    static FluentStringsMap decodeQueryString(Request request) {
+        Map<String, List<String>> c = request.queryString();
+        FluentStringsMap f = new FluentStringsMap();
+        f.putAll(c);
+        return f;
     }
 
     protected Socket connect(final RequestBuilder r, final List<Transport> transports) throws IOException {
@@ -259,26 +261,23 @@ public class DefaultSocket implements Socket {
                     throw new IllegalStateException("No Encoder for " + data);
                 }
             } else {
+                AsyncHttpClient.BoundRequestBuilder b = asyncHttpClient.preparePost(request.uri())
+                        .setHeaders(request.headers())
+                        .setQueryParameters(decodeQueryString(request))
+                        .setMethod(Request.METHOD.POST.name());
+
                 if (InputStream.class.isAssignableFrom(object.getClass())) {
                     //TODO: Allow reading the response.
-                    asyncHttpClient.preparePost(request.uri())
-                            .setMethod(Request.METHOD.POST.name())
-                            .setBody((InputStream) object).execute();
+                    b.setBody((InputStream) object).execute();
                 } else if (Reader.class.isAssignableFrom(object.getClass())) {
-                    asyncHttpClient.preparePost(request.uri())
-                            .setMethod(Request.METHOD.POST.name())
-                            .setBody(new ReaderInputStream((Reader) object))
+                    b.setBody(new ReaderInputStream((Reader) object))
                             .execute();
                     return this;
                 } else if (String.class.isAssignableFrom(object.getClass())) {
-                    asyncHttpClient.preparePost(request.uri())
-                            .setMethod(Request.METHOD.POST.name())
-                            .setBody((String) object)
+                    b.setBody((String) object)
                             .execute();
                 } else if (byte[].class.isAssignableFrom(object.getClass())) {
-                    asyncHttpClient.preparePost(request.uri())
-                            .setMethod(Request.METHOD.POST.name())
-                            .setBody((byte[]) object)
+                    b.setBody((byte[]) object)
                             .execute();
                 } else {
                     throw new IllegalStateException("No Encoder for " + data);
