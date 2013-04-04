@@ -45,7 +45,7 @@ public class TransportsUtil {
                                String functionName,
                                FunctionResolver resolver) {
 
-        String originalMessage = instanceType.toString();
+        String originalMessage = instanceType == null? "" : instanceType.toString();
         for (FunctionWrapper wrapper : functions) {
             Function f = wrapper.function();
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
