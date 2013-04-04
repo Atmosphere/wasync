@@ -26,7 +26,7 @@ import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.nettosphere.samples.chat.Chat;
+import org.atmosphere.wasync.samples.Chat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
