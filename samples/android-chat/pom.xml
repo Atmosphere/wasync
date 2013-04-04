@@ -54,10 +54,10 @@
                         <debug>true</debug>
                     </run>
                     <sdk>
-                        <platform>4.2.2</platform>
+                        <platform>4.0.3</platform>
                     </sdk>
                     <emulator>
-                        <avd>17</avd>
+                        <avd>15</avd>
                     </emulator>
                     <undeployBeforeDeploy>true</undeployBeforeDeploy>
                 </configuration>
