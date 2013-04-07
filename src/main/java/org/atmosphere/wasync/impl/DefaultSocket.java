@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
@@ -99,7 +100,8 @@ public class DefaultSocket implements Socket {
         RequestBuilder r = new RequestBuilder();
         r.setUrl(request.uri())
                 .setMethod(request.method().name())
-                .setHeaders(request.headers());
+                .setHeaders(request.headers())
+                .setQueryParameters(new FluentStringsMap(request.queryString()));
 
         List<Transport> transports = getTransport(request);
 
