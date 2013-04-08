@@ -54,6 +54,10 @@ public class Options {
         b.client = client;
     }
 
+    public boolean isShared(){
+        return b.runtimeShared;
+    }
+
     public final static class OptionsBuilder {
 
         private Transport transport;
@@ -61,6 +65,8 @@ public class Options {
         private int reconnectInSecond = 1;
         private long waitBeforeUnlocking = 2500;
         private AsyncHttpClient client;
+        private boolean runtimeShared = false;
+
 
         /**
          * Register a new {@link Transport} implementation. Register a transport only if you are planning to use
@@ -107,13 +113,37 @@ public class Options {
         }
 
         /**
+         * Set to true if your AsyncHttpClient is shared between clients.
+         * by the library.
+         * @param runtimeShared true if your AsyncHttpClient is shared between clients.
+         * @return this;
+         */
+        public OptionsBuilder runtimeShared(boolean runtimeShared) {
+            this.runtimeShared = runtimeShared;
+            return this;
+        }
+
+        /**
          * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used
          * by the library.
          * @param client
          * @return this;
          */
         public OptionsBuilder runtime(AsyncHttpClient client) {
+            return runtime(client, false);
+        }
+
+        /**
+         * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used
+         * by the library.
+         * @param client
+         * @param runtimeShared to true if the runtime is shared between clients. If shared, the asyncHttpClient.close()
+         *                      must be invoked by the application itself.
+         * @return this;
+         */
+        public OptionsBuilder runtime(AsyncHttpClient client, boolean runtimeShared) {
             this.client = client;
+            this.runtimeShared = runtimeShared;
             return this;
         }
 

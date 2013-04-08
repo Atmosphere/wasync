@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     private final static String DEFAULT_CHARSET = "UTF-8";
@@ -51,6 +52,7 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     private final Options options;
     private final RequestBuilder requestBuilder;
     private final Request request;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -127,6 +129,8 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
 
     @Override
     public String onCompleted() throws Exception {
+        if (closed.get()) return "";
+
         if (options.reconnect()) {
             ScheduledExecutorService e = options.runtime().getConfig().reaper();
             e.schedule(new Runnable() {
@@ -153,6 +157,8 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
 
     @Override
     public void close() {
+        if (closed.getAndSet(true)) return;
+
         TransportsUtil.invokeFunction(decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
     }
 }

@@ -55,12 +55,10 @@ public class DefaultSocket implements Socket {
     private Request request;
     private InternalSocket socket;
     private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
-    private final AsyncHttpClient asyncHttpClient;
     protected Transport transportInUse;
     private final Options options;
 
     public DefaultSocket(Options options) {
-        this.asyncHttpClient = options.runtime();
         this.options = options;
     }
 
@@ -115,18 +113,18 @@ public class DefaultSocket implements Socket {
         } else {
             throw new IOException("No suitable transport supported");
         }
-        socket = new InternalSocket(asyncHttpClient);
+        socket = new InternalSocket(options);
 
         Future f = new DefaultFuture(this);
         transportInUse.future(f);
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             r.setUrl(request.uri().replace("http", "ws"));
             try {
-                java.util.concurrent.Future<WebSocket> fw = asyncHttpClient.prepareRequest(r.build()).execute(
+                java.util.concurrent.Future<WebSocket> fw = options.runtime().prepareRequest(r.build()).execute(
                         (AsyncHandler<WebSocket>) transportInUse);
 
                 WebSocket w = fw.get(timeout, tu);
-                socket = new InternalSocket(w);
+                socket = new InternalSocket(w, options);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
                 if (e != null) {
@@ -144,7 +142,7 @@ public class DefaultSocket implements Socket {
             }
         } else {
             r.setUrl(request.uri().replace("ws", "http"));
-            asyncHttpClient.prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse);
+            options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse);
 
             try {
                 // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
@@ -154,7 +152,7 @@ public class DefaultSocket implements Socket {
                 // Swallow  LOG ME
             }
 
-            socket = new InternalSocket(asyncHttpClient);
+            socket = new InternalSocket(options);
         }
         return this;
     }
@@ -162,8 +160,8 @@ public class DefaultSocket implements Socket {
     @Override
     public void close() {
         if (socket != null) {
-            socket.close();
             transportInUse.close();
+            socket.close();
         }
     }
 
@@ -197,23 +195,21 @@ public class DefaultSocket implements Socket {
     protected final static class InternalSocket {
 
         private final WebSocket webSocket;
-        private final AsyncHttpClient asyncHttpClient;
+        private final Options options;
 
-        public InternalSocket(WebSocket webSocket) {
+        public InternalSocket(WebSocket webSocket, Options options) {
             this.webSocket = webSocket;
-            this.asyncHttpClient = null;
+            this.options = options;
         }
 
-        public InternalSocket(AsyncHttpClient asyncHttpClient) {
+        public InternalSocket(Options options) {
             this.webSocket = null;
-            this.asyncHttpClient = asyncHttpClient;
+            this.options = options;
         }
 
         public void close() {
-            if (webSocket != null) {
-                webSocket.close();
-            } else {
-                asyncHttpClient.close();
+            if (!options.isShared() && !options.runtime().isClosed()) {
+                options.runtime().close();
             }
         }
 
@@ -261,7 +257,7 @@ public class DefaultSocket implements Socket {
                     throw new IllegalStateException("No Encoder for " + data);
                 }
             } else {
-                AsyncHttpClient.BoundRequestBuilder b = asyncHttpClient.preparePost(request.uri())
+                AsyncHttpClient.BoundRequestBuilder b = options.runtime().preparePost(request.uri())
                         .setHeaders(request.headers())
                         .setQueryParameters(decodeQueryString(request))
                         .setMethod(Request.METHOD.POST.name());

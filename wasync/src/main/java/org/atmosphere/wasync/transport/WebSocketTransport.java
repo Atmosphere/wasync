@@ -51,6 +51,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final FunctionResolver resolver;
     private final Options options;
     private final RequestBuilder requestBuilder;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -80,6 +81,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
     @Override
     public void close() {
+        if(closed.getAndSet(true)) return;
+        TransportsUtil.invokeFunction(EVENT_TYPE.CLOSE, decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
+
+        if (webSocket != null)
+            webSocket.close();
     }
 
     /**
@@ -159,6 +165,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             @Override
             public void onClose(WebSocket websocket) {
+                if (closed.get()) return;
+
                 TransportsUtil.invokeFunction(EVENT_TYPE.CLOSE, decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
                 if (options.reconnect()) {
                     ScheduledExecutorService e = options.runtime().getConfig().reaper();

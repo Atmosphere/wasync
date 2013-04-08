@@ -50,7 +50,7 @@ public class TypedTest {
     public String targetUrl;
     public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
-    public final Options options = new Options.OptionsBuilder().reconnect(false).build();
+    public final Options options = new Options.OptionsBuilder().reconnect(false).runtimeShared(true).build();
 
     public int findFreePort() throws IOException {
         ServerSocket socket = null;

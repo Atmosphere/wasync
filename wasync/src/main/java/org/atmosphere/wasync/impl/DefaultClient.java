@@ -34,7 +34,7 @@ public class DefaultClient implements Client<RequestBuilder> {
         config.setFollowRedirects(true).setRequestTimeoutInMs(-1).setUserAgent("wAsync/1.0");
         asyncHttpClient = new AsyncHttpClient(config.build());
 
-        return getSocket(new Options.OptionsBuilder().runtime(asyncHttpClient).build());
+        return getSocket(new Options.OptionsBuilder().runtime(asyncHttpClient, false).build());
     }
 
     public Socket create(Options options) {
