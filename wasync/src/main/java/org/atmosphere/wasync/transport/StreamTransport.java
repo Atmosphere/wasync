@@ -53,6 +53,7 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     private final RequestBuilder requestBuilder;
     private final Request request;
     private final AtomicBoolean closed = new AtomicBoolean(false);
+    private final boolean isBinary;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -70,6 +71,9 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
         this.options = options;
         this.requestBuilder = requestBuilder;
         this.request = request;
+
+        isBinary = request.headers().get("Content-Type") != null ?
+                request.headers().get("Content-Type").contains("application/octet-stream") : false;
     }
 
     @Override
@@ -97,9 +101,14 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
      */
     @Override
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
-        String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-        if (!m.isEmpty()) {
-            TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
+        if (isBinary) {
+            byte[] payload = bodyPart.getBodyPartBytes();
+            TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, Function.MESSAGE.message.name(), resolver);
+        } else {
+            String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+            if (!m.isEmpty()) {
+                TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
+            }
         }
         return STATE.CONTINUE;
     }
