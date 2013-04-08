@@ -651,10 +651,11 @@ public abstract class BaseTest {
         }).open(request.build()).fire("echo");
 
         latch.await(5, TimeUnit.SECONDS);
-        socket.close();
 
         assertNotNull(response.get());
         assertEquals(response.get().getClass(), POJO.class);
+        socket.close();
+
     }
 
 
@@ -727,10 +728,10 @@ public abstract class BaseTest {
         }).open(request.build()).fire("echo");
 
         latch.await(5, TimeUnit.SECONDS);
-        socket.close();
 
         assertNotNull(response.get());
         assertEquals(response.get().getClass(), POJO.class);
+        socket.close();
     }
 
 
