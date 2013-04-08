@@ -107,7 +107,7 @@ public interface Socket {
      * @return this
      * @throws IOException
      */
-    Socket open(Request request, long timeout, TimeUnit tu) throws IOException;
+    Socket open(Request request, long timeout, TimeUnit tu) throws IOException, TimeoutException;
 
     /**
      * Close this Socket
