@@ -284,12 +284,7 @@ public abstract class BaseTest {
         }).open(request.build()).fire("PING");
 
         latch.await(20, TimeUnit.SECONDS);
-        // Close is asynchronous
-        socket.close();
-
-        Thread.sleep(2000);
-
-        assertEquals(builder.toString(), "open" + RESUME + "close");
+        assertEquals(builder.toString(), "open" + RESUME);
     }
 
     @Test
