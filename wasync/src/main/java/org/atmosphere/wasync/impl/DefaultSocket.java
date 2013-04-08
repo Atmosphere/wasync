@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class DefaultSocket implements Socket {
 
@@ -80,11 +81,16 @@ public class DefaultSocket implements Socket {
     }
 
     public Socket open(Request request) throws IOException {
-        return open(request, -1, TimeUnit.MILLISECONDS);
+    	try{
+    		return open(request, -1, TimeUnit.MILLISECONDS);
+    	}catch(TimeoutException te){
+    		logger.error("Failed to connect with default max timeout");
+    		return this;
+    	}
     }
 
     @Override
-    public Socket open(Request request, long timeout, TimeUnit tu) throws IOException {
+    public Socket open(Request request, long timeout, TimeUnit tu) throws IOException, TimeoutException {
         this.request = request;
         RequestBuilder r = new RequestBuilder();
         r.setUrl(request.uri())
@@ -105,10 +111,15 @@ public class DefaultSocket implements Socket {
     }
 
     protected Socket connect(final RequestBuilder r, final List<Transport> transports) throws IOException {
-        return connect(r, transports, -1, TimeUnit.MILLISECONDS);
+        try {
+			return connect(r, transports, -1, TimeUnit.MILLISECONDS);
+		} catch (TimeoutException e) {
+			logger.error("Failed to connect with default max timeout");
+    		return this;
+		}
     }
 
-    protected Socket connect(final RequestBuilder r, final List<Transport> transports, long timeout, TimeUnit tu) throws IOException {
+    protected Socket connect(final RequestBuilder r, final List<Transport> transports, long timeout, TimeUnit tu) throws IOException, TimeoutException {
 
         if (transports.size() > 0) {
             transportInUse = transports.get(0);
@@ -129,6 +140,9 @@ public class DefaultSocket implements Socket {
                 socket = new InternalSocket(w);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
+                if(e instanceof TimeoutException){
+                	throw new TimeoutException(e.getMessage());
+                }
                 if (e != null) {
                     if (e.getMessage() != null && e.getMessage().equalsIgnoreCase("Invalid handshake response")) {
                         logger.info("WebSocket not supported, downgrading to an HTTP based transport.");
@@ -137,11 +151,12 @@ public class DefaultSocket implements Socket {
                     }
                 }
                 transportInUse.onThrowable(t);
-                return new VoidSocket();
-            } catch (Throwable t) {
-                transportInUse.onThrowable(t);
-                return new VoidSocket();
-            }
+            } catch (InterruptedException e) {
+				logger.error("connect interrupted", e);
+				throw new IOException(e);
+			} catch (TimeoutException e) {
+				throw e;
+			} 
         } else {
             r.setUrl(request.uri().replace("ws", "http"));
             asyncHttpClient.prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse);
@@ -158,12 +173,14 @@ public class DefaultSocket implements Socket {
         }
         return this;
     }
-
+    
     @Override
     public void close() {
         if (socket != null) {
             socket.close();
             transportInUse.close();
+        } else {
+        	asyncHttpClient.close();
         }
     }
 
@@ -289,38 +306,5 @@ public class DefaultSocket implements Socket {
 
     protected Request request() {
         return request;
-    }
-
-    private final static class VoidSocket implements Socket {
-
-        @Override
-        public Future fire(Object data) throws IOException {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
-        }
-
-        @Override
-        public Socket on(Function<? extends Object> function) {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
-        }
-
-        @Override
-        public Socket on(String functionMessage, Function<? extends Object> function) {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
-        }
-
-        @Override
-        public Socket open(Request request) throws IOException {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
-        }
-
-        @Override
-        public void close() {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
-        }
-
-        @Override
-        public Socket open(Request request, long timeout, TimeUnit tu) throws IOException {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
-        }
     }
 }
