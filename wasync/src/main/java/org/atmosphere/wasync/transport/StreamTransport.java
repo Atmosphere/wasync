@@ -97,10 +97,15 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
      */
     @Override
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
-        String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-        if (!m.isEmpty()) {
-            TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
-        }
+    	if(request.headers().get("Content-Type").contains("application/octet-stream")) {
+    		byte[] payload = bodyPart.getBodyPartBytes();
+    		TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, Function.MESSAGE.message.name(), resolver);
+    	} else {
+    		String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+    		if (!m.isEmpty()) {
+    			TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
+    		}
+    	}
         return STATE.CONTINUE;
     }
 
