@@ -56,4 +56,9 @@ public interface Transport {
      * Close the underlying transport}
      */
     void close();
+
+    /**
+     * Return the current {@link org.atmosphere.wasync.Socket.STATUS}
+     */
+    Socket.STATUS status();
 }

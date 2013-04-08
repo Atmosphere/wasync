@@ -1,7 +1,12 @@
 package org.atmosphere.tests;
 
-import org.atmosphere.wasync.ClientFactory;
+import org.atmosphere.cpr.AtmosphereHandler;
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.nettosphere.Config;
+import org.atmosphere.nettosphere.Nettosphere;
 import org.atmosphere.wasync.Client;
+import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
@@ -9,11 +14,6 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
-import org.atmosphere.cpr.AtmosphereHandler;
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResourceEvent;
-import org.atmosphere.nettosphere.Config;
-import org.atmosphere.nettosphere.Nettosphere;
 import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
 public abstract class BaseTest {
     public final static String RESUME = "Resume";
@@ -70,6 +70,8 @@ public abstract class BaseTest {
     abstract Request.TRANSPORT transport();
 
     abstract int statusCode();
+
+    abstract int notFoundCode();
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
@@ -126,7 +128,6 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        ;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
@@ -148,7 +149,7 @@ public abstract class BaseTest {
         socket.close();
         server.stop();
 
-        assertTrue(options.runtime().isClosed());
+        assertEquals(socket.status(), Socket.STATUS.CLOSE);
     }
 
     @Test
@@ -364,6 +365,127 @@ public abstract class BaseTest {
     }
 
     @Test
+    public void status404FunctionTest() throws Exception {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(RESUME);
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (!r.isResuming() || !r.isCancelled()) {
+                            r.getResource().getResponse().getWriter().print(r.getMessage());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicInteger status = new AtomicInteger();
+
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/ratata")
+                .transport(transport());
+
+        final Socket socket = client.create(options);
+        socket.on(new Function<Integer>() {
+            @Override
+            public void on(Integer statusCode) {
+                status.set(statusCode);
+                socket.close();
+                latch.countDown();
+            }
+        }).open(request.build());
+
+        latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
+        assertEquals(status.get(), notFoundCode());
+
+    }
+
+    @Test
+    public void closedFireTest() throws Exception {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicInteger status = new AtomicInteger();
+
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/ratata")
+                .transport(transport());
+
+        try {
+            final Socket socket = client.create(options);
+            socket.on(new Function<Integer>() {
+                @Override
+                public void on(Integer statusCode) {
+                    status.set(statusCode);
+                    socket.close();
+                    latch.countDown();
+                }
+            }).open(request.build());
+
+            latch.await(10, TimeUnit.SECONDS);
+
+            socket.fire("Yo");
+
+            fail();
+        } catch (IOException ex) {
+            assertEquals(ex.getClass(), IOException.class);
+        }
+    }
+
+    @Test
     public void basicConnectExceptionTest() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<ConnectException> response = new AtomicReference<ConnectException>();
@@ -522,7 +644,6 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        ;
         socket.on("message", new Function<POJO>() {
             @Override
             public void on(POJO t) {
@@ -599,7 +720,6 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        ;
         socket.on("message", new Function<POJO2>() {
             @Override
             public void on(POJO2 t) {
@@ -676,7 +796,6 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        ;
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {

@@ -40,6 +40,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.atmosphere.wasync.Socket.STATUS;
+
 public class WebSocketTransport extends WebSocketUpgradeHandler implements Transport {
 
     private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);
@@ -52,6 +54,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final Options options;
     private final RequestBuilder requestBuilder;
     private final AtomicBoolean closed = new AtomicBoolean(false);
+    private STATUS status = STATUS.INIT;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -81,11 +84,19 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
     @Override
     public void close() {
-        if(closed.getAndSet(true)) return;
+        if (closed.getAndSet(true)) return;
+
+        status = STATUS.CLOSE;
+
         TransportsUtil.invokeFunction(EVENT_TYPE.CLOSE, decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
 
         if (webSocket != null)
             webSocket.close();
+    }
+
+    @Override
+    public STATUS status() {
+        return status;
     }
 
     /**
@@ -126,6 +137,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public WebSocket onCompleted() throws Exception {
         if (webSocket == null) {
+            status = STATUS.ERROR;
             throw new IllegalStateException("WebSocket is null");
         }
         return webSocket;
@@ -160,12 +172,25 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             @Override
             public void onOpen(WebSocket websocket) {
-                TransportsUtil.invokeFunction(EVENT_TYPE.OPEN, decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
+                // Could have been closed during the handshake.
+                if (status.equals(STATUS.CLOSE)) return;
+
+                boolean reconnect = false;
+                if (!status.equals(STATUS.INIT)) {
+                    reconnect = true;
+                }
+
+                status = STATUS.OPEN;
+
+                TransportsUtil.invokeFunction(reconnect ? EVENT_TYPE.RECONNECT : EVENT_TYPE.OPEN,
+                        decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
             }
 
             @Override
             public void onClose(WebSocket websocket) {
                 if (closed.get()) return;
+
+                status = STATUS.CLOSE;
 
                 TransportsUtil.invokeFunction(EVENT_TYPE.CLOSE, decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
                 if (options.reconnect()) {
@@ -185,6 +210,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             @Override
             public void onError(Throwable t) {
+                status = STATUS.CLOSE;
+
                 TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver);
             }
         };

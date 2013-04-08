@@ -27,4 +27,10 @@ public class WebSocketsTest extends BaseTest {
     int statusCode() {
         return 101;
     }
+
+    // https://github.com/Atmosphere/nettosphere/issues/36
+    @Override
+    int notFoundCode() {
+        return 101;
+    }
 }

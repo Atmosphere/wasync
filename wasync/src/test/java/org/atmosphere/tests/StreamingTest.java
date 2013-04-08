@@ -13,4 +13,9 @@ public class StreamingTest extends BaseTest {
     int statusCode() {
         return 200;
     }
+
+    @Override
+    int notFoundCode() {
+        return 404;
+    }
 }

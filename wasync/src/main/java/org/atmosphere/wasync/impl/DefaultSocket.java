@@ -63,6 +63,10 @@ public class DefaultSocket implements Socket {
     }
 
     public Future fire(Object data) throws IOException {
+        if (transportInUse.status().equals(STATUS.CLOSE) ||
+                transportInUse.status().equals(STATUS.ERROR)) {
+            throw new IOException("Invalid Socket Status " +  transportInUse.status().name());
+        }
         socket.write(request, data);
         return new DefaultFuture(this);
     }
@@ -159,10 +163,15 @@ public class DefaultSocket implements Socket {
 
     @Override
     public void close() {
-        if (socket != null) {
+        if (socket != null && !transportInUse.status().equals(STATUS.CLOSE)) {
             transportInUse.close();
             socket.close();
         }
+    }
+
+    @Override
+    public Socket.STATUS status() {
+        return transportInUse.status();
     }
 
     protected InternalSocket internalSocket() {
@@ -209,7 +218,7 @@ public class DefaultSocket implements Socket {
 
         public void close() {
             if (!options.isShared() && !options.runtime().isClosed()) {
-                options.runtime().close();
+                options.runtime().closeAsynchronously();
             }
         }
 
@@ -291,27 +300,32 @@ public class DefaultSocket implements Socket {
 
         @Override
         public Future fire(Object data) throws IOException {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+            throw new IllegalStateException("An error occurred during connection. Please add a Function(Throwable) to debug.");
         }
 
         @Override
         public Socket on(Function<? extends Object> function) {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+            throw new IllegalStateException("An error occurred during connection. Please add a Function(Throwable) to debug.");
         }
 
         @Override
         public Socket on(String functionMessage, Function<? extends Object> function) {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+            throw new IllegalStateException("An error occurred during connection. Please add a Function(Throwable) to debug.");
         }
 
         @Override
         public Socket open(Request request) throws IOException {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+            throw new IllegalStateException("An error occurred during connection. Please add a Function(Throwable) to debug.");
         }
 
         @Override
         public void close() {
-            throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+            throw new IllegalStateException("An error occurred during connection. Please add a Function(Throwable) to debug.");
+        }
+
+        @Override
+        public STATUS status() {
+            return STATUS.ERROR;
         }
 
         @Override

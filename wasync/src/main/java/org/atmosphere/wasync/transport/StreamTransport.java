@@ -39,7 +39,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class StreamTransport<T> implements AsyncHandler<String>, Transport {
+import static org.atmosphere.wasync.Socket.STATUS;
+
+public class StreamTransport implements AsyncHandler<String>, Transport {
     private final static String DEFAULT_CHARSET = "UTF-8";
     private final Logger logger = LoggerFactory.getLogger(StreamTransport.class);
 
@@ -54,6 +56,7 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     private final Request request;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final boolean isBinary;
+    private STATUS status =  STATUS.INIT;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -93,6 +96,7 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
      */
     @Override
     public void onThrowable(Throwable t) {
+        status = STATUS.ERROR;
         TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver);
     }
 
@@ -110,7 +114,7 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
             }
         }
-        return STATE.CONTINUE;
+        return AsyncHandler.STATE.CONTINUE;
     }
 
     /**
@@ -121,24 +125,33 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
         TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name(), resolver);
 
         // TODO: Parse charset
-        return STATE.CONTINUE;
+        return AsyncHandler.STATE.CONTINUE;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+    public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        boolean reconnect = false;
+        if (!status.equals(STATUS.INIT)) {
+            reconnect = true;
+        }
+        status = STATUS.OPEN;
+
         f.done();
-        TransportsUtil.invokeFunction(EVENT_TYPE.OPEN, decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
+        TransportsUtil.invokeFunction(reconnect ? EVENT_TYPE.RECONNECT : EVENT_TYPE.OPEN,
+                decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
         TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
 
-        return STATE.CONTINUE;
+        return AsyncHandler.STATE.CONTINUE;
     }
 
     @Override
     public String onCompleted() throws Exception {
         if (closed.get()) return "";
+
+        status = STATUS.CLOSE;
 
         if (options.reconnect()) {
             ScheduledExecutorService e = options.runtime().getConfig().reaper();
@@ -167,8 +180,14 @@ public class StreamTransport<T> implements AsyncHandler<String>, Transport {
     @Override
     public void close() {
         if (closed.getAndSet(true)) return;
+        status = STATUS.CLOSE;
 
         TransportsUtil.invokeFunction(decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
+    }
+
+    @Override
+    public STATUS status() {
+        return status;
     }
 }
 
