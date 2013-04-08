@@ -158,12 +158,14 @@ public class DefaultSocket implements Socket {
         }
         return this;
     }
-
+    
     @Override
     public void close() {
         if (socket != null) {
             socket.close();
             transportInUse.close();
+        }else{
+        	asyncHttpClient.close();
         }
     }
 
