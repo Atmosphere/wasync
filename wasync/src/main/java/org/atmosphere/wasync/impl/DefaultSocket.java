@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class DefaultSocket implements Socket {
 
@@ -138,7 +139,13 @@ public class DefaultSocket implements Socket {
                         return connect(r, transports, timeout, tu);
                     }
                 }
+
                 transportInUse.onThrowable(t);
+                transportInUse.close();
+                if (TimeoutException.class.isAssignableFrom(t.getClass())) {
+                    throw new IOException("Invalid state: " + t.getMessage());
+                }
+
                 return new VoidSocket();
             } catch (Throwable t) {
                 transportInUse.onThrowable(t);
