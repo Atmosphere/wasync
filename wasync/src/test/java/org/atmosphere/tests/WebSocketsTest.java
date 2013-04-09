@@ -33,4 +33,9 @@ public class WebSocketsTest extends BaseTest {
     int notFoundCode() {
         return 101;
     }
+
+    @Override
+    int getCount() {
+        return 1000;
+    }
 }

@@ -139,7 +139,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         }
         status = STATUS.OPEN;
 
-        f.done();
         TransportsUtil.invokeFunction(reconnect ? EVENT_TYPE.RECONNECT : EVENT_TYPE.OPEN,
                 decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
         TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);

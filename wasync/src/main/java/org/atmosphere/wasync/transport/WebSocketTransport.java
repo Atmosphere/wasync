@@ -113,7 +113,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         TransportsUtil.invokeFunction(decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
-
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
         } else {

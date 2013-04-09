@@ -18,4 +18,9 @@ public class StreamingTest extends BaseTest {
     int notFoundCode() {
         return 404;
     }
+
+    @Override
+    int getCount() {
+        return 10;
+    }
 }

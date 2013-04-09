@@ -68,8 +68,7 @@ public class DefaultSocket implements Socket {
                 transportInUse.status().equals(STATUS.ERROR)) {
             throw new IOException("Invalid Socket Status " + transportInUse.status().name());
         }
-        socket.write(request, data);
-        return new DefaultFuture(this);
+        return socket.write(request, data).future();
     }
 
     public Socket on(Function<? extends Object> function) {
@@ -118,10 +117,9 @@ public class DefaultSocket implements Socket {
         } else {
             throw new IOException("No suitable transport supported");
         }
-        socket = new InternalSocket(options);
+        socket = new InternalSocket(options, new DefaultFuture(this));
 
-        Future f = new DefaultFuture(this);
-        transportInUse.future(f);
+        transportInUse.future(socket.future());
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             r.setUrl(request.uri().replace("http", "ws"));
             try {
@@ -129,7 +127,7 @@ public class DefaultSocket implements Socket {
                         (AsyncHandler<WebSocket>) transportInUse);
 
                 WebSocket w = fw.get(timeout, tu);
-                socket = new InternalSocket(w, options);
+                socket = new InternalSocket(w, options, socket.future());
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
                 if (e != null) {
@@ -158,13 +156,13 @@ public class DefaultSocket implements Socket {
             try {
                 // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
                 // beginning for streaming and sse, but nothing for long-polling
-                f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
+                socket.future().get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 // Swallow  LOG ME
                 logger.trace("", t);
             }
 
-            socket = new InternalSocket(options);
+            socket = new InternalSocket(options, new DefaultFuture(this));
         }
         return this;
     }
@@ -213,15 +211,20 @@ public class DefaultSocket implements Socket {
 
         private final WebSocket webSocket;
         private final Options options;
+        private final DefaultFuture rootFuture;
 
-        public InternalSocket(WebSocket webSocket, Options options) {
+        public InternalSocket(WebSocket webSocket, Options options, DefaultFuture rootFuture) {
             this.webSocket = webSocket;
             this.options = options;
+            this.rootFuture = rootFuture;
         }
 
-        public InternalSocket(Options options) {
-            this.webSocket = null;
-            this.options = options;
+        public InternalSocket(Options options, DefaultFuture rootFuture) {
+            this(null, options, rootFuture);
+        }
+
+        public DefaultFuture future() {
+            return rootFuture;
         }
 
         public void close() {
@@ -296,6 +299,8 @@ public class DefaultSocket implements Socket {
                     throw new IllegalStateException("No Encoder for " + data);
                 }
             }
+            rootFuture.done();
+
             return this;
         }
     }
