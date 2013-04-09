@@ -142,8 +142,8 @@ public class DefaultSocket implements Socket {
 
                 transportInUse.onThrowable(t);
                 transportInUse.close();
-                if (TimeoutException.class.isAssignableFrom(t.getClass())) {
-                    throw new IOException("Invalid state: " + t.getMessage());
+                if (TimeoutException.class.isAssignableFrom(e.getClass())) {
+                    throw new IOException("Invalid state: " + e.getMessage());
                 }
 
                 return new VoidSocket();
