@@ -1,8 +1,10 @@
 package org.atmosphere.tests;
 
+import com.ning.http.client.AsyncHttpClient;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
 import org.atmosphere.nettosphere.Config;
 import org.atmosphere.nettosphere.Nettosphere;
 import org.atmosphere.wasync.Client;
@@ -914,4 +916,90 @@ public abstract class BaseTest {
             assertEquals(response.get().toString(), "PINGPONG");
         }
     }
+
+    @Test
+    public void basicLoadTest() throws IOException, InterruptedException {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(final AtmosphereResource r) throws IOException {
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            @Override
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                try {
+                                    r.getResponse().write("yo!".getBytes()).flushBuffer();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final AsyncHttpClient c = new AsyncHttpClient();
+        final CountDownLatch l = new CountDownLatch(1000);
+
+        for (int i = 0; i < 1000; i++) {
+            Client client = ClientFactory.getDefault().newClient();
+            RequestBuilder request = client.newRequestBuilder();
+            request.method(Request.METHOD.GET).uri(targetUrl);
+            request.transport(Request.TRANSPORT.WEBSOCKET);
+            request.encoder(new Encoder<String, String>() {
+                @Override
+                public String encode(String s) {
+                    return s;
+                }
+            });
+            request.decoder(new Decoder<String, String>() {
+                @Override
+                public String decode(Transport.EVENT_TYPE evntp, String s) {
+                    return s;
+                }
+            });
+
+            Socket socket = client.create(new Options.OptionsBuilder().runtime(c).build());
+            socket.on(new Function<Integer>() {
+                @Override
+                public void on(Integer statusCode) {
+                }
+            });
+            socket.on(new Function<String>() {
+                @Override
+                public void on(String s) {
+                    if (s.equalsIgnoreCase("yo!")){
+                        l.countDown();
+                    }
+                }
+            });
+            socket.on(new Function<Throwable>() {
+                @Override
+                public void on(Throwable t) {
+                    t.printStackTrace();
+                }
+            });
+
+            socket.open(request.build());
+            socket.fire("OPEN");
+        }
+        l.await(30, TimeUnit.SECONDS);
+    }
+
 }
