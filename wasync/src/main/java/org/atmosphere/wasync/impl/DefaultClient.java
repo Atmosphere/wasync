@@ -24,6 +24,8 @@ import org.atmosphere.wasync.Socket;
 
 public class DefaultClient implements Client<RequestBuilder> {
 
+    private static final String WASYNC_USER_AGENT = "wAsync/1.0";
+
     private AsyncHttpClient asyncHttpClient;
 
     public DefaultClient() {
@@ -69,7 +71,7 @@ public class DefaultClient implements Client<RequestBuilder> {
 
 	private void createDefaultAsyncHttpClient() {
 		AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-		config.setFollowRedirects(true).setRequestTimeoutInMs(-1).setUserAgent("wAsync/1.0");
+		config.setFollowRedirects(true).setRequestTimeoutInMs(-1).setUserAgent(WASYNC_USER_AGENT);
 		asyncHttpClient = new AsyncHttpClient(config.build());
 	}
 }
