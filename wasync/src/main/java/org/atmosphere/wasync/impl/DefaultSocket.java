@@ -66,7 +66,7 @@ public class DefaultSocket implements Socket {
     public Future fire(Object data) throws IOException {
         if (transportInUse.status().equals(STATUS.CLOSE) ||
                 transportInUse.status().equals(STATUS.ERROR)) {
-            throw new IOException("Invalid Socket Status " +  transportInUse.status().name());
+            throw new IOException("Invalid Socket Status " + transportInUse.status().name());
         }
         socket.write(request, data);
         return new DefaultFuture(this);
@@ -161,6 +161,7 @@ public class DefaultSocket implements Socket {
                 f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 // Swallow  LOG ME
+                logger.trace("", t);
             }
 
             socket = new InternalSocket(options);
