@@ -19,6 +19,7 @@ import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -155,6 +156,62 @@ public abstract class BaseTest {
         server.stop();
 
         assertEquals(socket.status(), Socket.STATUS.CLOSE);
+    }
+
+    @Test
+    public void closeWithoutOpenTest() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(RESUME);
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (!r.isResuming() || !r.isCancelled()) {
+                            r.getResource().getResponse().getWriter().print(r.getMessage());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<String> response = new AtomicReference<String>();
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(options);
+        try {
+            socket.close();
+            Assert.fail();
+        } catch (IllegalStateException ex) {
+            assertEquals(IllegalStateException.class, ex.getClass());
+        }
     }
 
     @Test
@@ -1095,7 +1152,7 @@ public abstract class BaseTest {
             socket.on(new Function<String>() {
                 @Override
                 public void on(String s) {
-                    if (s.equalsIgnoreCase("yo!")){
+                    if (s.equalsIgnoreCase("yo!")) {
                         l.countDown();
                     }
                 }

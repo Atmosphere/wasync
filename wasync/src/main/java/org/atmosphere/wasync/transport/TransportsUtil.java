@@ -37,7 +37,7 @@ public class TransportsUtil {
         invokeFunction(Transport.EVENT_TYPE.MESSAGE, decoders, functions, implementedType, instanceType, functionName, resolver);
     }
 
-    static void invokeFunction(Transport.EVENT_TYPE e,
+    public static void invokeFunction(Transport.EVENT_TYPE e,
                                List<Decoder<? extends Object, ?>> decoders,
                                List<FunctionWrapper> functions,
                                Class<?> implementedType,
@@ -65,7 +65,7 @@ public class TransportsUtil {
         }
     }
 
-    static Object matchDecoder(Transport.EVENT_TYPE e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
+    public static Object matchDecoder(Transport.EVENT_TYPE e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
         for (Decoder d : decoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
             if (instanceType != null && typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {

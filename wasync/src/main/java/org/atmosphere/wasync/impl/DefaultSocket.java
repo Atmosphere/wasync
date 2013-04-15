@@ -31,6 +31,7 @@ import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.transport.LongPollingTransport;
 import org.atmosphere.wasync.transport.SSETransport;
 import org.atmosphere.wasync.transport.StreamTransport;
+import org.atmosphere.wasync.transport.TransportsUtil;
 import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.atmosphere.wasync.util.ReaderInputStream;
 import org.atmosphere.wasync.util.TypeResolver;
@@ -64,6 +65,7 @@ public class DefaultSocket implements Socket {
     }
 
     public Future fire(Object data) throws IOException {
+        checkState();
         if (transportInUse.status().equals(STATUS.CLOSE) ||
                 transportInUse.status().equals(STATUS.ERROR)) {
             throw new IOException("Invalid Socket Status " + transportInUse.status().name());
@@ -169,6 +171,7 @@ public class DefaultSocket implements Socket {
 
     @Override
     public void close() {
+        checkState();
         if (socket != null && !transportInUse.status().equals(STATUS.CLOSE)) {
             transportInUse.close();
             socket.close();
@@ -177,6 +180,7 @@ public class DefaultSocket implements Socket {
 
     @Override
     public Socket.STATUS status() {
+        checkState();
         return transportInUse.status();
     }
 
@@ -344,6 +348,12 @@ public class DefaultSocket implements Socket {
         @Override
         public Socket open(Request request, long timeout, TimeUnit tu) throws IOException {
             throw new IllegalStateException("An error occured during connection. Please add a Function(Throwable) to debug.");
+        }
+    }
+
+    void checkState() {
+        if (transportInUse == null) {
+            throw new IllegalStateException("Invalid Socket Status : Not Connected");
         }
     }
 }
