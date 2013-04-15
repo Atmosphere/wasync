@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
 public abstract class BaseTest {
@@ -513,6 +514,34 @@ public abstract class BaseTest {
         latch.await(5, TimeUnit.SECONDS);
         socket.close();
         assertEquals(response.get().getClass(), ConnectException.class);
+    }
+
+    @Test
+    public void basicIOExceptionTest() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<IOException> response = new AtomicReference<IOException>();
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(options);
+
+        socket.on(new Function<IOException>() {
+
+            @Override
+            public void on(IOException t) {
+                response.set(t);
+                latch.countDown();
+            }
+
+        }).open(request.build());
+
+        latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+        assertTrue(IOException.class.isAssignableFrom(response.get().getClass()));
     }
 
     @Test
