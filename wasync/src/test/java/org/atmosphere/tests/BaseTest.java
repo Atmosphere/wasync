@@ -135,7 +135,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        socket.on("message", new Function<String>() {
+        socket.on(Event.MESSAGE.name(), new Function<String>() {
             @Override
             public void on(String t) {
                 logger.info("Function invoked {}", t);
