@@ -25,14 +25,14 @@ package org.atmosphere.wasync;
 
    Decoder&lt;String, POJO&gt; d = new Decoder&lt;String, POJO&gt;() {
              &#64;Override
-             public POJO decode(Transport.EVENT_TYPE e, String s) {
+             public POJO decode(Event e, String s) {
                  return new POJO(s);
              }
          }
 
    Function&lt;POJO&gt; f = new Function&lt;POJO&gt;() {
              &#64;Override
-             public void on(Transport.EVENT_TYPE e, POJO t) {
+             public void on(Event e, POJO t) {
 
              }
         }
@@ -45,10 +45,11 @@ package org.atmosphere.wasync;
 public interface Decoder<U extends Object, T> {
     /**
      * Decode the specified object of type U into object of type T
-     * @param e Transport.EVENT_TYPE
+     *
+     * @param e Event
      * @param s a object of type U
      * @return a new object of type T
      */
-    T decode(Transport.EVENT_TYPE e, U s);
+    T decode(Event e, U s);
 
 }

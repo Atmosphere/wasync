@@ -139,34 +139,66 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
 
     public abstract Request build();
 
+    /**
+     * Return the current list of {@link Request.TRANSPORT}
+     * @return the current list of {@link Request.TRANSPORT}
+     */
     public List<Request.TRANSPORT> transports() {
         return transports;
     }
 
+    /**
+     * Return the HTTP method
+     * @return  the HTTP method
+     */
     public Request.METHOD method() {
         return method;
     }
 
+    /**
+     * Return the current tMap of headers
+     * @return the current tMap of headers
+     */
     public Map<String, Collection<String>> headers() {
         return headers;
     }
 
+    /**
+     * Return the current query string/form param
+     * @return  the current query string/form param
+     */
     public Map<String, List<String>> queryString() {
         return queryString;
     }
 
+    /**
+     * Return the current list of {@link Encoder}
+     * @return  the current list of {@link Encoder}
+     */
     public List<Encoder<?, ?>> encoders() {
         return encoders;
     }
 
+    /**
+     * Return the current list of {@link Decoder}
+     * @return  the current list of {@link Decoder}
+     */
     public List<Decoder<?, ?>> decoders() {
         return decoders;
     }
 
+    /**
+     * Return the uri
+     * @return the uri
+     */
     public String uri() {
         return uri;
     }
 
+    /**
+     * Return the current {@link FunctionResolver}
+     * @return the current {@link FunctionResolver}
+     */
     public FunctionResolver resolver() {
         return resolver;
     }

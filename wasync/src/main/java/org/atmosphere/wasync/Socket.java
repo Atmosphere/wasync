@@ -65,7 +65,23 @@ public interface Socket {
     /**
      * The current state of the underlying Socket.
      */
-    public enum STATUS { INIT, OPEN, CLOSE, ERROR }
+    public enum STATUS {
+        /**
+         * The socket is not yet connected
+         */
+        INIT,
+        /**
+         * The socket is open and ready to send messages
+         */
+        OPEN,
+        /**
+         * The socket is close
+         */
+        CLOSE,
+        /**
+         * The socket is broken
+         */
+        ERROR }
 
     /**
      * Send data to the remote Server.
@@ -86,7 +102,7 @@ public interface Socket {
     /**
      * Associate a {@link Function} with the Socket. When a response is received, the library will try to associated
      * the decoded message (decoded by {@link Decoder}) to the defined type of the {@link Function}. The default messages
-     * are defined by {@link Function.MESSAGE} but handling of custom message can be done using a {@link FunctionResolver}
+     * are defined by {@link org.atmosphere.wasync.Function.EVENT_TYPE} but handling of custom message can be done using a {@link FunctionResolver}
      * @param function a {@link Function}
      * @return this
      */

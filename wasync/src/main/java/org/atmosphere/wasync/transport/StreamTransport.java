@@ -22,12 +22,14 @@ import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.atmosphere.wasync.Event.CLOSE;
+import static org.atmosphere.wasync.Event.ERROR;
+import static org.atmosphere.wasync.Event.MESSAGE;
+import static org.atmosphere.wasync.Event.OPEN;
+import static org.atmosphere.wasync.Event.RECONNECT;
+import static org.atmosphere.wasync.Event.STATUS;
+import static org.atmosphere.wasync.Event.TRANSPORT;
 import static org.atmosphere.wasync.Socket.STATUS;
 
 public class StreamTransport implements AsyncHandler<String>, Transport {
@@ -56,7 +65,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     private final Request request;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final boolean isBinary;
-    private STATUS status =  STATUS.INIT;
+    private STATUS status =  Socket.STATUS.INIT;
     private final AtomicBoolean errorHandled = new AtomicBoolean();
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
@@ -65,7 +74,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         if (decoders.size() == 0) {
             decoders.add(new Decoder<String, Object>() {
                 @Override
-                public Object decode(Transport.EVENT_TYPE e, String s) {
+                public Object decode(Event e, String s) {
                     return s;
                 }
             });
@@ -97,8 +106,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public void onThrowable(Throwable t) {
-        status = STATUS.ERROR;
-        errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver));
+        status = Socket.STATUS.ERROR;
+        errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
 
     /**
@@ -108,11 +117,11 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
-            TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, Function.MESSAGE.message.name(), resolver);
+            TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
         } else {
             String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
             if (!m.isEmpty()) {
-                TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, Function.MESSAGE.message.name(), resolver);
+                TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
         }
         return AsyncHandler.STATE.CONTINUE;
@@ -123,7 +132,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), Function.MESSAGE.headers.name(), resolver);
+        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), MESSAGE.name(), resolver);
 
         // TODO: Parse charset
         return AsyncHandler.STATE.CONTINUE;
@@ -134,18 +143,18 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        TransportsUtil.invokeFunction(decoders, functions, Request.TRANSPORT.class, name(), Function.MESSAGE.transport.name(), resolver);
+        TransportsUtil.invokeFunction(decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
 
         boolean reconnect = false;
-        if (!status.equals(STATUS.INIT)) {
+        if (!status.equals(Socket.STATUS.INIT)) {
             reconnect = true;
         }
-        status = STATUS.OPEN;
+        status = Socket.STATUS.OPEN;
 
         errorHandled.set(false);
-        TransportsUtil.invokeFunction(reconnect ? EVENT_TYPE.RECONNECT : EVENT_TYPE.OPEN,
-                decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
-        TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
+        TransportsUtil.invokeFunction(reconnect ? RECONNECT : OPEN,
+                decoders, functions, String.class, OPEN.name(), OPEN.name(), resolver);
+        TransportsUtil.invokeFunction(MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
 
         return AsyncHandler.STATE.CONTINUE;
     }
@@ -154,7 +163,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public String onCompleted() throws Exception {
         if (closed.get()) return "";
 
-        status = STATUS.INIT;
+        status = Socket.STATUS.INIT;
 
         if (options.reconnect()) {
             if (options.reconnectInSeconds() > 0) {
@@ -168,7 +177,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
                 reconnect();
             }
         } else {
-            status = STATUS.CLOSE;
+            status = Socket.STATUS.CLOSE;
         }
         return "";
     }
@@ -192,9 +201,9 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void close() {
         if (closed.getAndSet(true)) return;
-        status = STATUS.CLOSE;
+        status = Socket.STATUS.CLOSE;
 
-        TransportsUtil.invokeFunction(decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
+        TransportsUtil.invokeFunction(decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
     }
 
     @Override

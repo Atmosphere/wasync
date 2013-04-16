@@ -17,55 +17,55 @@ package org.atmosphere.wasync;
 
 /**
  * A function is asynchronously invoked when a response is received, complete or not.
- *
- * This library supports predefined life cycle's events (@link #MESSAGE} that can be used. For example, a Function
+ * <p/>
+ * This library supports predefined life cycle's events (@link Event} that can be used. For example, a Function
  * can be defined for handling IOException:
  * <blockquote><pre>
- *
+ * <p/>
  *     class Function&lt;IOException&gt;() {
- *
+ * <p/>
  *         public void on(IOEXception ex) {
- *
+ * <p/>
  *         }
  *     }
  * </pre></blockquote>
  * This function can be registered using the {@link Socket#on(Function)} as
  * <blockquote><pre>
- *
+ * <p/>
  *     socket.on(new Function&lt;IOEXception&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
  * This is the equivalent of doing
  * <blockquote><pre>
- *
- *     socket.on(MESSAGE.error, new Function&lt;IOEXception&gt;() {
+ * <p/>
+ *     socket.on(Event.ERROR, new Function&lt;IOEXception&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
  * Anonymous functions call also be invoked if a {@link Decoder} match its type
  * <blockquote><pre>
- *
+ * <p/>
  *     socket.decoder(new Decoder&lt;String, POJO&gt;(){
  *         &#64;Override
- *         public POJO decode(String message) {
+ *         public POJO decode(Event e, String message) {
  *             return new POJO(message);
  *         }
  *     }
- *
+ * <p/>
  *     .on(new Function&lt;POJO&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
+ *
  * @param <T>
  * @author Jeanfrancois Arcand
  */
 public interface Function<T extends Object> {
 
-    enum MESSAGE {error, open, close, message, status, headers, bytes, transport}
-
     /**
      * A function that will be invoked when a
+     *
      * @param t
      */
     void on(T t);

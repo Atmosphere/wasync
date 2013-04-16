@@ -20,7 +20,7 @@ import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.ReplayDecoder;
-import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.util.TypeResolver;
 
 import java.util.ArrayList;
@@ -34,10 +34,10 @@ public class TransportsUtil {
                                Object instanceType,
                                String functionName,
                                FunctionResolver resolver) {
-        return invokeFunction(Transport.EVENT_TYPE.MESSAGE, decoders, functions, implementedType, instanceType, functionName, resolver);
+        return invokeFunction(Event.MESSAGE, decoders, functions, implementedType, instanceType, functionName, resolver);
     }
 
-    public static boolean invokeFunction(Transport.EVENT_TYPE e,
+    public static boolean invokeFunction(Event e,
                                List<Decoder<? extends Object, ?>> decoders,
                                List<FunctionWrapper> functions,
                                Class<?> implementedType,
@@ -67,7 +67,7 @@ public class TransportsUtil {
         return hasMatch;
     }
 
-    public static Object matchDecoder(Transport.EVENT_TYPE e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
+    public static Object matchDecoder(Event e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
         for (Decoder d : decoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
             if (instanceType != null && typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {

@@ -15,6 +15,7 @@
  */
 package org.atmosphere.wasync.decoder;
 
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.ReplayDecoder;
 import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
@@ -39,8 +40,8 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
     }
 
     @Override
-    public List<String> decode(Transport.EVENT_TYPE type, String message) {
-        if (type.equals(Transport.EVENT_TYPE.MESSAGE)) {
+    public List<String> decode(Event type, String message) {
+        if (type.equals(Event.MESSAGE)) {
             ArrayList<String> messages = new ArrayList<String>();
 
             int messageLength = -1;

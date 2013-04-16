@@ -28,10 +28,11 @@ public interface ReplayDecoder extends Decoder<String, List<?>> {
      * Decode a String into a List of Objects. Each element of the List will be dispatched to the decoders that where
      * added after an implementation of that interface.
      *
-     * @param e Transport.EVENT_TYPE
+     *
+     * @param e Event
      * @param s a object of type U
      * @return a List of Object
      */
     @Override
-    public List<?> decode(Transport.EVENT_TYPE e, String s);
+    public List<?> decode(Event e, String s);
 }

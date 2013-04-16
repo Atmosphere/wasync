@@ -16,6 +16,7 @@
 package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
@@ -125,8 +126,8 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 private AtomicBoolean protocolReceived = new AtomicBoolean();
 
                 @Override
-                public String decode(Transport.EVENT_TYPE e, String s) {
-                    if (e.equals(Transport.EVENT_TYPE.MESSAGE) && !protocolReceived.getAndSet(true)) {
+                public String decode(Event e, String s) {
+                    if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
                         try {
                             String[] proto = s.trim().split("\\|");
                             List<String> l = new ArrayList<String>();

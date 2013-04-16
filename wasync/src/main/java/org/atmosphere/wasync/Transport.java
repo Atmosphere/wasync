@@ -24,8 +24,6 @@ package org.atmosphere.wasync;
  */
 public interface Transport {
 
-    public enum EVENT_TYPE { OPEN, CLOSE, MESSAGE, RECONNECT, ERROR}
-
     /**
      * The transport name
      * @return transport name
@@ -34,7 +32,7 @@ public interface Transport {
 
     /**
      * The current {@link Socket}'s Future
-     * @param f
+     * @param f a Future
      * @return this
      */
     Transport future(Future f);

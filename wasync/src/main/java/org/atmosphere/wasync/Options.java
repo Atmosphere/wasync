@@ -160,6 +160,10 @@ public class Options {
             return this;
         }
 
+        /**
+         * Build an {@link Options}
+         * @return {@link Options}
+         */
         public Options build(){
             return new Options(this);
         }

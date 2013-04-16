@@ -11,12 +11,12 @@ import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
-import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -337,7 +337,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        ;
+
         socket.on(new Function<String>() {
             @Override
             public void on(String m) {
@@ -347,7 +347,7 @@ public abstract class BaseTest {
         }).open(request.build()).fire("PING");
 
         latch.await(20, TimeUnit.SECONDS);
-        assertEquals(builder.toString(), "open" + RESUME);
+        assertEquals(builder.toString(), Event.OPEN + RESUME);
     }
 
     @Test
@@ -790,14 +790,14 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(Transport.EVENT_TYPE e, String s) {
+                    public POJO decode(Event e, String s) {
                         return new POJO(s);
                     }
                 })
                 .transport(transport());
 
         Socket socket = client.create(options);
-        socket.on(Function.MESSAGE.message.name(), new Function<POJO>() {
+        socket.on(Event.MESSAGE.name(), new Function<POJO>() {
             @Override
             public void on(POJO t) {
                 response.set(t);
@@ -861,7 +861,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        socket.on(Function.MESSAGE.transport.name(), new Function<Request.TRANSPORT>() {
+        socket.on(Event.TRANSPORT.name(), new Function<Request.TRANSPORT>() {
             @Override
             public void on(Request.TRANSPORT t) {
                 response.set(t);
@@ -922,13 +922,13 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(Transport.EVENT_TYPE e, String s) {
+                    public POJO decode(Event e, String s) {
                         return new POJO(s);
                     }
                 })
                 .decoder(new Decoder<POJO, POJO2>() {
                     @Override
-                    public POJO2 decode(Transport.EVENT_TYPE e, POJO s) {
+                    public POJO2 decode(Event e, POJO s) {
                         return new POJO2(s);
                     }
                 })
@@ -1222,16 +1222,19 @@ public abstract class BaseTest {
 
                     @Override
                     public void onRequest(final AtmosphereResource r) throws IOException {
-                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
-                            @Override
-                            public void onSuspend(AtmosphereResourceEvent event) {
-                                try {
-                                    r.getResponse().write("yo!".getBytes()).flushBuffer();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                        if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
+                            r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                                @Override
+                                public void onSuspend(AtmosphereResourceEvent event) {
+                                    r.removeEventListener(this);
+                                    try {
+                                        r.getResponse().write("yo!".getBytes()).flushBuffer();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        }).suspend();
+                            }).suspend();
+                        }
                     }
 
                     @Override
@@ -1248,29 +1251,25 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        Thread.sleep(2000);
-
         final AsyncHttpClient c = new AsyncHttpClient();
         final CountDownLatch l = new CountDownLatch(getCount());
-
+        Client client = ClientFactory.getDefault().newClient();
+        RequestBuilder request = client.newRequestBuilder();
+        request.method(Request.METHOD.GET).uri(targetUrl);
+        request.transport(transport());
+        request.encoder(new Encoder<String, String>() {
+            @Override
+            public String encode(String s) {
+                return s;
+            }
+        });
+        request.decoder(new Decoder<String, String>() {
+            @Override
+            public String decode(Event evntp, String s) {
+                return s;
+            }
+        });
         for (int i = 0; i < getCount(); i++) {
-            Client client = ClientFactory.getDefault().newClient();
-            RequestBuilder request = client.newRequestBuilder();
-            request.method(Request.METHOD.GET).uri(targetUrl);
-            request.transport(transport());
-            request.encoder(new Encoder<String, String>() {
-                @Override
-                public String encode(String s) {
-                    return s;
-                }
-            });
-            request.decoder(new Decoder<String, String>() {
-                @Override
-                public String decode(Transport.EVENT_TYPE evntp, String s) {
-                    return s;
-                }
-            });
-
             Socket socket = client.create(new Options.OptionsBuilder().runtime(c).build());
             socket.on(new Function<Integer>() {
                 @Override
@@ -1282,20 +1281,20 @@ public abstract class BaseTest {
                 public void on(String s) {
                     if (s.equalsIgnoreCase("yo!")) {
                         l.countDown();
+                        System.out.println(l.getCount());
                     }
                 }
             });
             socket.on(new Function<Throwable>() {
                 @Override
                 public void on(Throwable t) {
-                    t.printStackTrace();
                 }
             });
 
             socket.open(request.build());
             socket.fire("OPEN");
         }
-        l.await(30, TimeUnit.SECONDS);
+        l.await(60, TimeUnit.SECONDS);
     }
 
 }

@@ -23,12 +23,12 @@ import org.atmosphere.nettosphere.Nettosphere;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
-import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
@@ -126,14 +126,14 @@ public class TypedTest {
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(Transport.EVENT_TYPE e, String s) {
+                    public POJO decode(Event e, String s) {
                         return new POJO(s);
                     }
                 })
                 .transport(Request.TRANSPORT.WEBSOCKET);
 
         Socket socket = client.create(options);
-        socket.on(Function.MESSAGE.message.name(), new Function<POJO>() {
+        socket.on(Event.MESSAGE.name(), new Function<POJO>() {
             @Override
             public void on(POJO t) {
                 response.set(t);
@@ -195,7 +195,7 @@ public class TypedTest {
                 .uri(targetUrl + "/suspend")
                 .decoder(new Decoder<String, POJO>() {
                     @Override
-                    public POJO decode(Transport.EVENT_TYPE e, String s) {
+                    public POJO decode(Event e, String s) {
                         return new POJO(s);
                     }
                 })

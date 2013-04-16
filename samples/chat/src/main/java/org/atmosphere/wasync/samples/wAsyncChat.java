@@ -18,6 +18,7 @@ package org.atmosphere.wasync.samples;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
@@ -64,7 +65,7 @@ public class wAsyncChat {
                 })
                 .decoder(new Decoder<String, Chat.Data>() {
                     @Override
-                    public Chat.Data decode(Transport.EVENT_TYPE type, String data) {
+                    public Chat.Data decode(Event type, String data) {
 
                         data = data.trim();
 
@@ -73,7 +74,7 @@ public class wAsyncChat {
                             return null;
                         }
 
-                        if (type.equals(Transport.EVENT_TYPE.MESSAGE)) {
+                        if (type.equals(Event.MESSAGE)) {
                             try {
                                 return mapper.readValue(data, Chat.Data.class);
                             } catch (IOException e) {

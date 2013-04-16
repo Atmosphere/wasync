@@ -28,11 +28,11 @@ import android.widget.TextView;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
-import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -75,7 +75,7 @@ public class wAsyncChat extends Activity {
                     })
                     .decoder(new Decoder<String, Data>() {
                         @Override
-                        public Data decode(Transport.EVENT_TYPE type, String data) {
+                        public Data decode(Event type, String data) {
 
                             data = data.trim();
 
@@ -84,7 +84,7 @@ public class wAsyncChat extends Activity {
                                 return null;
                             }
 
-                            if (type.equals(Transport.EVENT_TYPE.MESSAGE)) {
+                            if (type.equals(Event.MESSAGE)) {
                                 try {
                                     return mapper.readValue(data, Data.class);
                                 } catch (IOException e) {

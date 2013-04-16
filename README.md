@@ -14,7 +14,7 @@ As simple as
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
-                .uri("http://wordnik.com")
+                .uri("http://async-io.org")
                 .encoder(new Encoder<String, Reader>() {        // Stream the request body
                     @Override
                     public Reader encode(String s) {
@@ -23,7 +23,7 @@ As simple as
                 })
                 .decoder(new Decoder<String, Reader>() {
                     @Override
-                    public Reader decode(Transport.EVENT_TYPE type, String s) {
+                    public Reader decode(Event type, String s) {
                         return new StringReader(s);
                     }
                 })
@@ -53,8 +53,8 @@ example,
 ```java
    Decoder<String, POJO> d = new Decoder<String, POJO>() {
              @Override
-             public POJO decode(Transport.EVENT_TYPE type, String s) {
-                 if (type.equals(Transport.EVENT_TYPE.MESSAGE)) {
+             public POJO decode(Event type, String s) {
+                 if (type.equals(Event.MESSAGE)) {
                     return new POJO(s);
                  } else {
                     return s;

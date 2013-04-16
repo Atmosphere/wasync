@@ -37,7 +37,7 @@ public class WebSocketsTest extends BaseTest {
 
     @Override
     int getCount() {
-        return 1000;
+        return 100;
     }
 
     //https://github.com/AsyncHttpClient/async-http-client/issues/277
