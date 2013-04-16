@@ -61,4 +61,9 @@ public interface Transport {
      * Return the current {@link org.atmosphere.wasync.Socket.STATUS}
      */
     Socket.STATUS status();
+
+    /**
+     * Error handled by a {@link Function}
+     */
+    boolean errorHandled();
 }

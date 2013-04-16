@@ -55,6 +55,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final RequestBuilder requestBuilder;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private STATUS status = STATUS.INIT;
+    private final AtomicBoolean errorHandled = new AtomicBoolean();
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -79,7 +80,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public void onThrowable(Throwable t) {
-        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver);
+        status = STATUS.ERROR;
+        errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver));
     }
 
     @Override
@@ -97,6 +99,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public STATUS status() {
         return status;
+    }
+
+    @Override
+    public boolean errorHandled() {
+        return errorHandled.get();
     }
 
     /**
@@ -139,6 +146,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             status = STATUS.ERROR;
             throw new IllegalStateException("WebSocket is null");
         }
+        errorHandled.set(false);
         return webSocket;
     }
 
@@ -249,7 +257,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public final void onFailure(Throwable t) {
-        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver);
+        errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver));
     }
 
 }

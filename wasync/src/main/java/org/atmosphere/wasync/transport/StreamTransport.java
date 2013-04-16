@@ -57,6 +57,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final boolean isBinary;
     private STATUS status =  STATUS.INIT;
+    private final AtomicBoolean errorHandled = new AtomicBoolean();
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -97,7 +98,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void onThrowable(Throwable t) {
         status = STATUS.ERROR;
-        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver);
+        errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver));
     }
 
     /**
@@ -139,6 +140,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         }
         status = STATUS.OPEN;
 
+        errorHandled.set(false);
         TransportsUtil.invokeFunction(reconnect ? EVENT_TYPE.RECONNECT : EVENT_TYPE.OPEN,
                 decoders, functions, String.class, Function.MESSAGE.open.name(), Function.MESSAGE.open.name(), resolver);
         TransportsUtil.invokeFunction(EVENT_TYPE.MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), Function.MESSAGE.status.name(), resolver);
@@ -196,6 +198,11 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public STATUS status() {
         return status;
+    }
+
+    @Override
+    public boolean errorHandled() {
+        return errorHandled.get();
     }
 }
 

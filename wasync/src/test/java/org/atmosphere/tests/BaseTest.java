@@ -32,6 +32,7 @@ import java.net.ServerSocket;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -676,6 +677,72 @@ public abstract class BaseTest {
         socket.close();
 
         assertEquals(response.get(), "<-echo->");
+    }
+
+    @Test
+    public void requestTimeoutTest() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+
+        Options o = new Options.OptionsBuilder().reconnect(false).requestTimeout(5).build();
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Class<? extends TimeoutException>> response = new AtomicReference<Class<? extends TimeoutException>>();
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .encoder(new Encoder<String, String>() {
+                    @Override
+                    public String encode(String s) {
+                        return "<-" + s.toString() + "->";
+                    }
+                })
+                .transport(transport());
+
+        Socket socket = client.create(o);
+
+        socket.on(new Function<TimeoutException>() {
+
+            @Override
+            public void on(TimeoutException t) {
+                response.set(t.getClass());
+                latch.countDown();
+            }
+
+        }).open(request.build());
+
+        latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
+        assertEquals(response.get(), TimeoutException.class);
     }
 
     @Test

@@ -32,7 +32,7 @@ public class DefaultClient implements Client<RequestBuilder> {
     }
 
     public Socket create() {
-        createDefaultAsyncHttpClient();
+        createDefaultAsyncHttpClient(new Options.OptionsBuilder().reconnect(true).build());
 
         return getSocket(new Options.OptionsBuilder().runtime(asyncHttpClient, false).build());
     }
@@ -40,7 +40,7 @@ public class DefaultClient implements Client<RequestBuilder> {
     public Socket create(Options options) {
         asyncHttpClient = options.runtime();
         if (asyncHttpClient == null) {
-            createDefaultAsyncHttpClient();
+            createDefaultAsyncHttpClient(options);
             options.runtime(asyncHttpClient);
         }
         return getSocket(options);
@@ -69,9 +69,9 @@ public class DefaultClient implements Client<RequestBuilder> {
     	return new DefaultSocket(options);
     }
 
-	private void createDefaultAsyncHttpClient() {
+	private void createDefaultAsyncHttpClient(Options o) {
 		AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-		config.setFollowRedirects(true).setRequestTimeoutInMs(-1).setUserAgent(WASYNC_USER_AGENT);
+		config.setFollowRedirects(true).setRequestTimeoutInMs(o.requestTimeout()).setUserAgent(WASYNC_USER_AGENT);
 		asyncHttpClient = new AsyncHttpClient(config.build());
 	}
 }

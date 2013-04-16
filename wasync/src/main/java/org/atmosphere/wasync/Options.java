@@ -77,7 +77,7 @@ public class Options {
          * @return this
          */
         public OptionsBuilder requestTimeout(int requestTimeout) {
-            this.requestTimeout = requestTimeout;
+            this.requestTimeout = requestTimeout * 1000;
             return this;
         }
 

@@ -28,23 +28,23 @@ import java.util.List;
 
 public class TransportsUtil {
 
-    static void invokeFunction(List<Decoder<? extends Object, ?>> decoders,
+    static boolean invokeFunction(List<Decoder<? extends Object, ?>> decoders,
                                List<FunctionWrapper> functions,
                                Class<?> implementedType,
                                Object instanceType,
                                String functionName,
                                FunctionResolver resolver) {
-        invokeFunction(Transport.EVENT_TYPE.MESSAGE, decoders, functions, implementedType, instanceType, functionName, resolver);
+        return invokeFunction(Transport.EVENT_TYPE.MESSAGE, decoders, functions, implementedType, instanceType, functionName, resolver);
     }
 
-    public static void invokeFunction(Transport.EVENT_TYPE e,
+    public static boolean invokeFunction(Transport.EVENT_TYPE e,
                                List<Decoder<? extends Object, ?>> decoders,
                                List<FunctionWrapper> functions,
                                Class<?> implementedType,
                                Object instanceType,
                                String functionName,
                                FunctionResolver resolver) {
-
+        boolean hasMatch = false;
         String originalMessage = instanceType == null? "" : instanceType.toString();
         for (FunctionWrapper wrapper : functions) {
             Function f = wrapper.function();
@@ -59,10 +59,12 @@ public class TransportsUtil {
 
             if (typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {
                 if (resolver.resolve(originalMessage, functionName, wrapper)) {
+                    hasMatch = true;
                     f.on(instanceType);
                 }
             }
         }
+        return hasMatch;
     }
 
     public static Object matchDecoder(Transport.EVENT_TYPE e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
@@ -94,4 +96,5 @@ public class TransportsUtil {
         }
         return instanceType;
     }
+
 }
