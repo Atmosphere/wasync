@@ -58,6 +58,10 @@ public class Options {
         return b.runtimeShared;
     }
 
+    public int requestTimeout() {
+        return b.requestTimeout;
+    }
+
     public final static class OptionsBuilder {
 
         private Transport transport;
@@ -66,7 +70,16 @@ public class Options {
         private long waitBeforeUnlocking = 2500;
         private AsyncHttpClient client;
         private boolean runtimeShared = false;
+        private int requestTimeout = -1;
 
+        /**
+         * The time, in seconds, the connection will stay open when waiting for new messages. This can be seen as the idle time.
+         * @return this
+         */
+        public OptionsBuilder requestTimeout(int requestTimeout) {
+            this.requestTimeout = requestTimeout;
+            return this;
+        }
 
         /**
          * Register a new {@link Transport} implementation. Register a transport only if you are planning to use

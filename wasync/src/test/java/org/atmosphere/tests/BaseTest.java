@@ -1122,6 +1122,8 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
+        Thread.sleep(2000);
+
         final AsyncHttpClient c = new AsyncHttpClient();
         final CountDownLatch l = new CountDownLatch(getCount());
 
