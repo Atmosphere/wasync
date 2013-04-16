@@ -150,25 +150,34 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public String onCompleted() throws Exception {
         if (closed.get()) return "";
 
-        status = STATUS.CLOSE;
+        status = STATUS.INIT;
 
         if (options.reconnect()) {
-            ScheduledExecutorService e = options.runtime().getConfig().reaper();
-            e.schedule(new Runnable() {
-                public void run() {
-
-                    Map<String, List<String>> c = request.queryString();
-                    FluentStringsMap f = new FluentStringsMap();
-                    f.putAll(c);
-                    try {
-                        options.runtime().executeRequest(requestBuilder.setQueryParameters(f).build(), StreamTransport.this);
-                    } catch (IOException e) {
-                        logger.error("", e);
+            if (options.reconnectInSeconds() > 0) {
+                ScheduledExecutorService e = options.runtime().getConfig().reaper();
+                e.schedule(new Runnable() {
+                    public void run() {
+                        reconnect();
                     }
-                }
-            }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+            } else {
+                reconnect();
+            }
+        } else {
+            status = STATUS.CLOSE;
         }
         return "";
+    }
+
+    void reconnect() {
+        Map<String, List<String>> c = request.queryString();
+        FluentStringsMap f = new FluentStringsMap();
+        f.putAll(c);
+        try {
+            options.runtime().executeRequest(requestBuilder.setQueryParameters(f).build(), StreamTransport.this);
+        } catch (IOException e) {
+            logger.error("", e);
+        }
     }
 
     @Override

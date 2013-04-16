@@ -40,7 +40,7 @@ public class AtmosphereClient implements Client<AtmosphereRequest.AtmosphereRequ
         // TODO
         AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
         config.setFollowRedirects(true)
-                .setRequestTimeoutInMs(options.reconnectInSeconds())
+                .setRequestTimeoutInMs(-1)
                 .setUserAgent("wAsync/1.0");
 
         asyncHttpClient = new AsyncHttpClient(config.build());

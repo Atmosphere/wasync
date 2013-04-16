@@ -70,6 +70,8 @@ public class DefaultSocket implements Socket {
                 transportInUse.status().equals(STATUS.ERROR)) {
             throw new IOException("Invalid Socket Status " + transportInUse.status().name());
         }
+
+
         return socket.write(request, data).future();
     }
 

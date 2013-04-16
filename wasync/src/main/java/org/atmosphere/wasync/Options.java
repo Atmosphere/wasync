@@ -62,7 +62,7 @@ public class Options {
 
         private Transport transport;
         private boolean reconnect = true;
-        private int reconnectInSecond = 1;
+        private int reconnectInSecond = 0;
         private long waitBeforeUnlocking = 2500;
         private AsyncHttpClient client;
         private boolean runtimeShared = false;

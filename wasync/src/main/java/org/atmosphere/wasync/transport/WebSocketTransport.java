@@ -189,21 +189,22 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             public void onClose(WebSocket websocket) {
                 if (closed.get()) return;
 
-                status = STATUS.CLOSE;
+                status = STATUS.INIT;
 
                 TransportsUtil.invokeFunction(EVENT_TYPE.CLOSE, decoders, functions, String.class, Function.MESSAGE.close.name(), Function.MESSAGE.close.name(), resolver);
                 if (options.reconnect()) {
-                    ScheduledExecutorService e = options.runtime().getConfig().reaper();
-                    e.schedule(new Runnable() {
-                        public void run() {
-                            try {
-                                options.runtime().executeRequest(requestBuilder.build(), WebSocketTransport.this);
-                            } catch (IOException e) {
-                                logger.error("", e);
+                    if (options.reconnectInSeconds() > 0) {
+                        ScheduledExecutorService e = options.runtime().getConfig().reaper();
+                        e.schedule(new Runnable() {
+                            public void run() {
+                                reconnect();
                             }
-                        }
-                    }, options.reconnectInSeconds(), TimeUnit.SECONDS);
-
+                        }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                    } else {
+                        reconnect();
+                    }
+                } else {
+                    status = STATUS.CLOSE;
                 }
             }
 
@@ -216,6 +217,14 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         };
         webSocket.addWebSocketListener(l);
         l.onOpen(webSocket);
+    }
+
+    void reconnect() {
+        try {
+            options.runtime().executeRequest(requestBuilder.build(), WebSocketTransport.this);
+        } catch (IOException e) {
+            logger.error("", e);
+        }
     }
 
     @Override

@@ -128,12 +128,12 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 public String decode(Transport.EVENT_TYPE e, String s) {
                     if (e.equals(Transport.EVENT_TYPE.MESSAGE) && !protocolReceived.getAndSet(true)) {
                         try {
-                            String[] proto = s.split("\\|");
+                            String[] proto = s.trim().split("\\|");
                             List<String> l = new ArrayList<String>();
-                            l.add(proto[1]);
+                            l.add(proto[0]);
                             queryString.put("X-Atmosphere-tracking-id", l);
                             l = new ArrayList<String>();
-                            l.add(proto[2]);
+                            l.add(proto[1]);
                             queryString.put("X-Cache-Date", l);
 
                             s = null;
