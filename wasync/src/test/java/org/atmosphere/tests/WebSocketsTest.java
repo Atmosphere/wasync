@@ -16,6 +16,7 @@
 package org.atmosphere.tests;
 
 import org.atmosphere.wasync.Request;
+import org.testng.annotations.Test;
 
 public class WebSocketsTest extends BaseTest {
     @Override
@@ -37,5 +38,11 @@ public class WebSocketsTest extends BaseTest {
     @Override
     int getCount() {
         return 1000;
+    }
+
+    //https://github.com/AsyncHttpClient/async-http-client/issues/277
+    @Test(enabled = false)
+    public void requestTimeoutTest() throws Exception {
+
     }
 }

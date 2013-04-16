@@ -681,8 +681,6 @@ public abstract class BaseTest {
 
     @Test
     public void requestTimeoutTest() throws Exception {
-        final CountDownLatch l = new CountDownLatch(1);
-
         Options o = new Options.OptionsBuilder().reconnect(false).requestTimeout(5).build();
         Config config = new Config.Builder()
                 .port(port)
@@ -739,7 +737,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), TimeoutException.class);
@@ -799,7 +797,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(options);
-        socket.on("message", new Function<POJO>() {
+        socket.on(Function.MESSAGE.message.name(), new Function<POJO>() {
             @Override
             public void on(POJO t) {
                 response.set(t);
@@ -815,7 +813,68 @@ public abstract class BaseTest {
 
     }
 
+    @Test
+    public void basicTransportTest() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
 
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(r.getRequest().getReader().readLine());
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (!r.isResuming() || !r.isCancelled()) {
+                            r.getResource().getResponse().getWriter().print(r.getMessage());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Request.TRANSPORT> response = new AtomicReference<Request.TRANSPORT>();
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(options);
+        socket.on(Function.MESSAGE.transport.name(), new Function<Request.TRANSPORT>() {
+            @Override
+            public void on(Request.TRANSPORT t) {
+                response.set(t);
+                latch.countDown();
+            }
+        }).open(request.build()).fire("yo");
+
+        latch.await(5, TimeUnit.SECONDS);
+
+        assertNotNull(response.get());
+        assertEquals(response.get(), transport());
+
+    }
     @Test
     public void chainingDecoder() throws Exception {
         final CountDownLatch l = new CountDownLatch(1);

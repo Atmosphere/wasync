@@ -71,13 +71,11 @@ public class DefaultSocket implements Socket {
             throw new IOException("Invalid Socket Status " + transportInUse.status().name());
         }
 
-
         return socket.write(request, data).future();
     }
 
     public Socket on(Function<? extends Object> function) {
-        functions.add(new FunctionWrapper("", function));
-        return this;
+        return on("",function);
     }
 
     public Socket on(String functionName, Function<? extends Object> function) {

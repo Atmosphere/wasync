@@ -62,7 +62,7 @@ package org.atmosphere.wasync;
  */
 public interface Function<T extends Object> {
 
-    enum MESSAGE {error, open, close, message, status, headers, bytes}
+    enum MESSAGE {error, open, close, message, status, headers, bytes, transport}
 
     /**
      * A function that will be invoked when a

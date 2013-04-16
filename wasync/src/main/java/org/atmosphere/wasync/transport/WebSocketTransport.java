@@ -146,7 +146,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             status = STATUS.ERROR;
             throw new IllegalStateException("WebSocket is null");
         }
-        errorHandled.set(false);
+        TransportsUtil.invokeFunction(decoders, functions, Request.TRANSPORT.class, name(), Function.MESSAGE.transport.name(), resolver);
         return webSocket;
     }
 
@@ -218,9 +218,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             @Override
             public void onError(Throwable t) {
-                status = STATUS.CLOSE;
+                status = STATUS.ERROR;
 
-                TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver);
+                errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, Function.MESSAGE.error.name(), resolver));
             }
         };
         webSocket.addWebSocketListener(l);
