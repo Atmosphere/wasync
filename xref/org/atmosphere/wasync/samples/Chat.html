@@ -6,7 +6,7 @@
 <link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
 </head>
 <body>
-<div id="overview"><a href="../../../../../apidocs/org/nettosphere/samples/chat/Chat.html">View Javadoc</a></div><pre>
+<div id="overview"><a href="../../../../../apidocs/org/atmosphere/wasync/samples/Chat.html">View Javadoc</a></div><pre>
 
 <a class="jxr_linenumber" name="1" href="#1">1</a>   <em class="jxr_comment">/*</em>
 <a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_comment"> * Copyright 2012 Jeanfrancois Arcand</em>
@@ -23,7 +23,7 @@
 <a class="jxr_linenumber" name="13" href="#13">13</a>  <em class="jxr_comment"> * License for the specific language governing permissions and limitations under</em>
 <a class="jxr_linenumber" name="14" href="#14">14</a>  <em class="jxr_comment"> * the License.</em>
 <a class="jxr_linenumber" name="15" href="#15">15</a>  <em class="jxr_comment"> */</em>
-<a class="jxr_linenumber" name="16" href="#16">16</a>  <strong class="jxr_keyword">package</strong> org.nettosphere.samples.chat;
+<a class="jxr_linenumber" name="16" href="#16">16</a>  <strong class="jxr_keyword">package</strong> org.atmosphere.wasync.samples;
 <a class="jxr_linenumber" name="17" href="#17">17</a>  
 <a class="jxr_linenumber" name="18" href="#18">18</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.config.service.ManagedService;
 <a class="jxr_linenumber" name="19" href="#19">19</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.config.service.Message;
@@ -33,7 +33,7 @@
 <a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> java.util.Date;
 <a class="jxr_linenumber" name="24" href="#24">24</a>  
 <a class="jxr_linenumber" name="25" href="#25">25</a>  @ManagedService(path = <span class="jxr_string">"/chat"</span>)
-<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/nettosphere/samples/chat/Chat.html">Chat</a> {
+<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/samples/Chat.html">Chat</a> {
 <a class="jxr_linenumber" name="27" href="#27">27</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> ObjectMapper mapper = <strong class="jxr_keyword">new</strong> ObjectMapper();
 <a class="jxr_linenumber" name="28" href="#28">28</a>  
 <a class="jxr_linenumber" name="29" href="#29">29</a>      @Message
@@ -41,17 +41,17 @@
 <a class="jxr_linenumber" name="31" href="#31">31</a>          <strong class="jxr_keyword">return</strong> mapper.writeValueAsString(mapper.readValue(message, Data.<strong class="jxr_keyword">class</strong>));
 <a class="jxr_linenumber" name="32" href="#32">32</a>      }
 <a class="jxr_linenumber" name="33" href="#33">33</a>  
-<a class="jxr_linenumber" name="34" href="#34">34</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/nettosphere/samples/chat/Chat.html">Data</a> {
+<a class="jxr_linenumber" name="34" href="#34">34</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/samples/Chat.html">Data</a> {
 <a class="jxr_linenumber" name="35" href="#35">35</a>  
 <a class="jxr_linenumber" name="36" href="#36">36</a>          <strong class="jxr_keyword">private</strong> String message;
 <a class="jxr_linenumber" name="37" href="#37">37</a>          <strong class="jxr_keyword">private</strong> String author;
 <a class="jxr_linenumber" name="38" href="#38">38</a>          <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">long</strong> time;
 <a class="jxr_linenumber" name="39" href="#39">39</a>  
-<a class="jxr_linenumber" name="40" href="#40">40</a>          <strong class="jxr_keyword">public</strong> <a href="../../../../org/nettosphere/samples/chat/Chat.html">Data</a>() {
+<a class="jxr_linenumber" name="40" href="#40">40</a>          <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/samples/Chat.html">Data</a>() {
 <a class="jxr_linenumber" name="41" href="#41">41</a>              <strong class="jxr_keyword">this</strong>(<span class="jxr_string">""</span>, <span class="jxr_string">""</span>);
 <a class="jxr_linenumber" name="42" href="#42">42</a>          }
 <a class="jxr_linenumber" name="43" href="#43">43</a>  
-<a class="jxr_linenumber" name="44" href="#44">44</a>          <strong class="jxr_keyword">public</strong> <a href="../../../../org/nettosphere/samples/chat/Chat.html">Data</a>(String author, String message) {
+<a class="jxr_linenumber" name="44" href="#44">44</a>          <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/samples/Chat.html">Data</a>(String author, String message) {
 <a class="jxr_linenumber" name="45" href="#45">45</a>              <strong class="jxr_keyword">this</strong>.author = author;
 <a class="jxr_linenumber" name="46" href="#46">46</a>              <strong class="jxr_keyword">this</strong>.message = message;
 <a class="jxr_linenumber" name="47" href="#47">47</a>              <strong class="jxr_keyword">this</strong>.time = <strong class="jxr_keyword">new</strong> Date().getTime();
