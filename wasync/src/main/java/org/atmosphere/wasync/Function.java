@@ -23,9 +23,7 @@ package org.atmosphere.wasync;
  * <blockquote><pre>
  * <p/>
  *     class Function&lt;IOException&gt;() {
- * <p/>
  *         public void on(IOEXception ex) {
- * <p/>
  *         }
  *     }
  * </pre></blockquote>
