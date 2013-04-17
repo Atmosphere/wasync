@@ -152,7 +152,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
         server.stop();
 
@@ -273,7 +273,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         server.stop();
         socket.close();
 
@@ -408,7 +408,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(status.get(), statusCode());
@@ -473,7 +473,7 @@ public abstract class BaseTest {
             }
         }).open(request.build());
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(status.get(), notFoundCode());
@@ -561,7 +561,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
         assertEquals(response.get().getClass(), ConnectException.class);
     }
@@ -589,7 +589,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
         assertTrue(IOException.class.isAssignableFrom(response.get().getClass()));
     }
@@ -665,7 +665,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("echo");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), "<-echo->");
@@ -797,7 +797,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("echo");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get().getClass(), POJO.class);
@@ -861,7 +861,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("yo");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get(), transport());
@@ -935,7 +935,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("echo");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get().getClass(), POJO.class);
@@ -1019,7 +1019,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("echo");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), "<-echo->");
@@ -1112,7 +1112,7 @@ public abstract class BaseTest {
                 .fire("PING").get()
                 .fire("PONG").get();
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         // We can't predict the order of requests send
@@ -1192,7 +1192,7 @@ public abstract class BaseTest {
                 .fire("PING")
                 .fire("PONG");
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         // We can't predict the order of requests send
