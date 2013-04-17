@@ -197,15 +197,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<String> response = new AtomicReference<String>();
         Client client = ClientFactory.getDefault().newClient();
-
-        RequestBuilder request = client.newRequestBuilder()
-                .method(Request.METHOD.GET)
-                .uri(targetUrl + "/suspend")
-                .transport(transport());
-
         Socket socket = client.create(options);
         try {
             socket.close();
