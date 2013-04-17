@@ -31,7 +31,6 @@ import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.transport.LongPollingTransport;
 import org.atmosphere.wasync.transport.SSETransport;
 import org.atmosphere.wasync.transport.StreamTransport;
-import org.atmosphere.wasync.transport.TransportsUtil;
 import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.atmosphere.wasync.util.ReaderInputStream;
 import org.atmosphere.wasync.util.TypeResolver;
@@ -52,7 +51,7 @@ import java.util.concurrent.TimeoutException;
 
 public class DefaultSocket implements Socket {
 
-    private final Logger logger = LoggerFactory.getLogger(DefaultSocket.class);
+    private final static Logger logger = LoggerFactory.getLogger(DefaultSocket.class);
 
     private Request request;
     private InternalSocket socket;
@@ -233,6 +232,8 @@ public class DefaultSocket implements Socket {
         public void close() {
             if (!options.isShared() && !options.runtime().isClosed()) {
                 options.runtime().closeAsynchronously();
+            } else if (options.isShared()) {
+                logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
             }
         }
 
