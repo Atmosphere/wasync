@@ -84,7 +84,7 @@ You can download the jar or use Maven
           <dependency>
               <groupId>org.atmosphere</groupId>
               <artifactId>wasync</artifactId>
-              <version>1.0.0.RC1</version>
+              <version>1.0.0.RC2</version>
           </dependency>
 
 ```
