@@ -169,8 +169,10 @@ public class DefaultSocket implements Socket {
 
     @Override
     public void close() {
-        checkState();
-        if (socket != null && !transportInUse.status().equals(STATUS.CLOSE)) {
+        // Not connected, but close the underlying AHC.
+        if (transportInUse == null) {
+            options.runtime().close();
+        } else if (socket != null && !transportInUse.status().equals(STATUS.CLOSE)) {
             transportInUse.close();
             socket.close();
         }
@@ -178,8 +180,11 @@ public class DefaultSocket implements Socket {
 
     @Override
     public Socket.STATUS status() {
-        checkState();
-        return transportInUse.status();
+        if (transportInUse == null) {
+            return STATUS.CLOSE;
+        } else {
+            return transportInUse.status();
+        }
     }
 
     protected InternalSocket internalSocket() {

@@ -39,7 +39,7 @@ public class DefaultClient implements Client<RequestBuilder> {
 
     public Socket create(Options options) {
         asyncHttpClient = options.runtime();
-        if (asyncHttpClient == null) {
+        if (asyncHttpClient == null || asyncHttpClient.isClosed()) {
             createDefaultAsyncHttpClient(options);
             options.runtime(asyncHttpClient);
         }

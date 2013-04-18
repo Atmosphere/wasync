@@ -19,7 +19,6 @@ import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -89,8 +88,6 @@ public abstract class BaseTest {
 
     @Test
     public void closeTest() throws Exception {
-        final CountDownLatch l = new CountDownLatch(1);
-
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -161,8 +158,6 @@ public abstract class BaseTest {
 
     @Test
     public void closeWithoutOpenTest() throws Exception {
-        final CountDownLatch l = new CountDownLatch(1);
-
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -199,12 +194,8 @@ public abstract class BaseTest {
 
         Client client = ClientFactory.getDefault().newClient();
         Socket socket = client.create(options);
-        try {
-            socket.close();
-            Assert.fail();
-        } catch (IllegalStateException ex) {
-            assertEquals(IllegalStateException.class, ex.getClass());
-        }
+        socket.close();
+        assertEquals(socket.status(), Socket.STATUS.CLOSE);
     }
 
     @Test
