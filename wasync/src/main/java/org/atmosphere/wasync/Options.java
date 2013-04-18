@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -67,7 +67,7 @@ public class Options {
         private Transport transport;
         private boolean reconnect = true;
         private int reconnectInSecond = 0;
-        private long waitBeforeUnlocking = 2500;
+        private long waitBeforeUnlocking = 2000;
         private AsyncHttpClient client;
         private boolean runtimeShared = false;
         private int requestTimeout = -1;

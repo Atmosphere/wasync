@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,43 +15,45 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.wasync.Client;
+import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 
 public class DefaultClient implements Client<RequestBuilder> {
 
-    private static final String WASYNC_USER_AGENT = "wAsync/1.0";
-
-    private AsyncHttpClient asyncHttpClient;
-
     public DefaultClient() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Socket create() {
-        createDefaultAsyncHttpClient(new Options.OptionsBuilder().reconnect(true).build());
-
-        return getSocket(new Options.OptionsBuilder().runtime(asyncHttpClient, false).build());
+        return ClientUtil.create();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Socket create(Options options) {
-        asyncHttpClient = options.runtime();
-        if (asyncHttpClient == null || asyncHttpClient.isClosed()) {
-            createDefaultAsyncHttpClient(options);
-            options.runtime(asyncHttpClient);
-        }
-        return getSocket(options);
+        return ClientUtil.create(options);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RequestBuilder newRequestBuilder() {
         RequestBuilder b = new DefaultRequestBuilder();
-        return b.resolver(new DefaultFunctionResolver());
+        return b.resolver(FunctionResolver.DEFAULT);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RequestBuilder newRequestBuilder(Class<RequestBuilder> clazz) {
         RequestBuilder b = null;
@@ -62,16 +64,11 @@ public class DefaultClient implements Client<RequestBuilder> {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return b.resolver(new DefaultFunctionResolver());
+        return b.resolver(FunctionResolver.DEFAULT);
     }
 
     protected Socket getSocket(Options options) {
     	return new DefaultSocket(options);
     }
 
-	private void createDefaultAsyncHttpClient(Options o) {
-		AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-		config.setFollowRedirects(true).setRequestTimeoutInMs(o.requestTimeout()).setUserAgent(WASYNC_USER_AGENT);
-		asyncHttpClient = new AsyncHttpClient(config.build());
-	}
 }

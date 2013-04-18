@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,6 @@ import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
-import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;

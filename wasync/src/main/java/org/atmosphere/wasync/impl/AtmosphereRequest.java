@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package org.atmosphere.wasync.impl;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.RequestBuilder;
-import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +113,9 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
             return trackMessageLengthDelimiter;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public AtmosphereRequest build() {
 
@@ -124,7 +126,9 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
             decoders().add(0, new Decoder<String, String>() {
 
                 private AtomicBoolean protocolReceived = new AtomicBoolean();
-
+                /**
+                 * Handle the Atmosphere's Protocol.
+                 */
                 @Override
                 public String decode(Event e, String s) {
                     if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {

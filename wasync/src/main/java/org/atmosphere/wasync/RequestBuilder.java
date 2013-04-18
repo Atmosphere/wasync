@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,8 +14,6 @@
  * the License.
  */
 package org.atmosphere.wasync;
-
-import org.atmosphere.wasync.impl.DefaultFunctionResolver;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +35,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     protected final List<Decoder<?, ?>> decoders = new ArrayList<Decoder<?, ?>>();
     protected final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
     protected final Map<String, List<String>> queryString = new HashMap<String, List<String>>();
-    protected FunctionResolver resolver = new DefaultFunctionResolver();
+    protected FunctionResolver resolver = FunctionResolver.DEFAULT;
     protected final Class<T> derived;
 
     protected RequestBuilder(Class<T> derived) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,37 +15,37 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.wasync.Client;
+import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 
 import static org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 
 public class AtmosphereClient implements Client<AtmosphereRequest.AtmosphereRequestBuilder> {
-    private AsyncHttpClient asyncHttpClient;
 
     public AtmosphereClient() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Socket create() {
-        AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-        config.setFollowRedirects(true).setRequestTimeoutInMs(-1).setUserAgent("wAsync/1.0");
-        asyncHttpClient = new AsyncHttpClient(config.build());
-        return getSocket(asyncHttpClient, new Options.OptionsBuilder().build());
+        return ClientUtil.create();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Socket create(Options options) {
-        AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder();
-        config.setFollowRedirects(true)
-                .setRequestTimeoutInMs(options.requestTimeout())
-                .setUserAgent("wAsync/1.0");
-
-        asyncHttpClient = new AsyncHttpClient(config.build());
-        return getSocket(asyncHttpClient, options);
+        return ClientUtil.create(options);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public AtmosphereRequestBuilder newRequestBuilder(Class<AtmosphereRequest.AtmosphereRequestBuilder> clazz) {
         AtmosphereRequestBuilder b = null;
@@ -56,17 +56,16 @@ public class AtmosphereClient implements Client<AtmosphereRequest.AtmosphereRequ
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return AtmosphereRequestBuilder.class.cast(b.resolver(new DefaultFunctionResolver()));
+        return AtmosphereRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
     }
 
-    protected Socket getSocket(AsyncHttpClient asyncHttpClient, Options options) {
-        options.runtime(asyncHttpClient);
-        return new DefaultSocket(options);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public AtmosphereRequestBuilder newRequestBuilder() {
         AtmosphereRequestBuilder b = new AtmosphereRequestBuilder();
-        return AtmosphereRequestBuilder.class.cast(b.resolver(new DefaultFunctionResolver()));
+        return AtmosphereRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
     }
+
 }

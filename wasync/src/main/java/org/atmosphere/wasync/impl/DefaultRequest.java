@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,41 +33,65 @@ public class DefaultRequest<T extends RequestBuilder> implements Request {
         this.builder = builder;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<TRANSPORT> transport() {
         return builder.transports();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public METHOD method() {
         return builder.method();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Collection<String>> headers() {
         return builder.headers();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, List<String>> queryString() {
         return builder.queryString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Encoder<?,?>> encoders() {
         return builder.encoders();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Decoder<?,?>> decoders() {
         return builder.decoders();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String uri() {
         return builder.uri();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FunctionResolver functionResolver() {
         return builder.resolver();

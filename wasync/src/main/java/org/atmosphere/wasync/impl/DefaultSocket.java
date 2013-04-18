@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -63,6 +64,10 @@ public class DefaultSocket implements Socket {
         this.options = options;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Future fire(Object data) throws IOException {
         checkState();
         if (transportInUse.status().equals(STATUS.CLOSE) ||
@@ -73,10 +78,18 @@ public class DefaultSocket implements Socket {
         return socket.write(request, data).future();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Socket on(Function<? extends Object> function) {
-        return on("",function);
+        return on("", function);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Socket on(String functionName, Function<? extends Object> function) {
         functions.add(new FunctionWrapper(functionName, function));
         return this;
@@ -86,6 +99,9 @@ public class DefaultSocket implements Socket {
         return open(request, -1, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Socket open(Request request, long timeout, TimeUnit tu) throws IOException {
         this.request = request;
@@ -167,6 +183,9 @@ public class DefaultSocket implements Socket {
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() {
         // Not connected, but close the underlying AHC.
@@ -286,6 +305,12 @@ public class DefaultSocket implements Socket {
                     throw new IllegalStateException("No Encoder for " + data);
                 }
             } else {
+
+                // Only for Atmosphere
+                if (request.headers().get("X-Atmosphere-Transport") != null) {
+                    request.headers().put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
+                }
+
                 AsyncHttpClient.BoundRequestBuilder b = options.runtime().preparePost(request.uri())
                         .setHeaders(request.headers())
                         .setQueryParameters(decodeQueryString(request))

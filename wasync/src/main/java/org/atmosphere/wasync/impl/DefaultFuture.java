@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,23 +35,38 @@ public class DefaultFuture implements Future {
         this.socket = socket;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         latch.countDown();
         return true;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isCancelled() {
         return latch.getCount() == 0;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDone() {
         return done.get();
     }
 
     // TODO: Not public
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Future done(){
         done.set(true);
         latch.countDown();
@@ -63,12 +78,19 @@ public class DefaultFuture implements Future {
         latch = new CountDownLatch(1);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Socket get() throws InterruptedException, ExecutionException {
         latch.await();
         return socket;
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         latch.await(timeout, unit);
@@ -79,6 +101,10 @@ public class DefaultFuture implements Future {
         return socket;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Future fire(Object data) throws IOException {
         reset();
         ((DefaultSocket)socket).internalSocket().write(((DefaultSocket)socket).request(), data);

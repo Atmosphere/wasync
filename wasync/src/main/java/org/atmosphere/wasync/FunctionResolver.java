@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@ package org.atmosphere.wasync;
 
 /**
  * FunctionResolver are useful for mapping received message with a {@link Function}. By default, only the predefined
- * function {@link org.atmosphere.wasync.Function.EVENT_TYPE} are automatically mapped to Function,
+ * function {@link org.atmosphere.wasync.Event} are automatically mapped to Function,
  * <blockquote><pre>
      Client client = ClientFactory.getDefault().newClient();
 
@@ -66,15 +66,29 @@ package org.atmosphere.wasync;
  * </pre></blockquote>
  * An application can define its own Function.EVENT_TYPE be writing the appropriate FunctionResolver.
  *
- * By default, the {@link org.atmosphere.wasync.impl.DefaultFunctionResolver} is used.
+ * By default, the {@link #DEFAULT} is used.
  *
  * @author Jeanfrancois Arcand
  */
 public interface FunctionResolver {
+
+    FunctionResolver DEFAULT = new FunctionResolver() {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean resolve(String message, Object functionName, FunctionWrapper fn) {
+            if (fn.functionName().isEmpty() || functionName.toString().equalsIgnoreCase(fn.functionName())) {
+                return true;
+            }
+            return false;
+        }
+    };
+
     /**
      * Resolve the current message with
      * @param message the original response's body received
-     * @param functionName the default function name taken from {@link org.atmosphere.wasync.Function.EVENT_TYPE}
+     * @param functionName the default function name taken from {@link org.atmosphere.wasync.Event} or from a custom FunctionResolver
      * @param fn The current {@link FunctionWrapper}
      * @return true if the {@link Function} can be invoked.
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Jeanfrancois Arcand
+ * Copyright 2013 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.ReplayDecoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.util.TypeResolver;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,11 @@ public class TransportsUtil {
                 }
             }
         }
+
+        if (!hasMatch) {
+            LoggerFactory.getLogger(TransportsUtil.class).trace("No Function matching {}", instanceType);
+        }
+
         return hasMatch;
     }
 
