@@ -78,14 +78,16 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         }
 
         public AtmosphereRequestBuilder transport(TRANSPORT t) {
-            List<String> l = new ArrayList<String>();
-            if (t.equals(TRANSPORT.LONG_POLLING)) {
-                l.add("long-polling");
-            } else {
-                l.add(t.name());
-            }
+            if (queryString.get("X-Atmosphere-Transport") == null) {
+                List<String> l = new ArrayList<String>();
+                if (t.equals(TRANSPORT.LONG_POLLING)) {
+                    l.add("long-polling");
+                } else {
+                    l.add(t.name());
+                }
 
-            queryString.put("X-Atmosphere-Transport", l);
+                queryString.put("X-Atmosphere-Transport", l);
+            }
             transports.add(t);
             return derived.cast(this);
         }

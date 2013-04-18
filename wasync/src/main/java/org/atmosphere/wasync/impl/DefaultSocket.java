@@ -31,6 +31,7 @@ import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.transport.LongPollingTransport;
 import org.atmosphere.wasync.transport.SSETransport;
 import org.atmosphere.wasync.transport.StreamTransport;
+import org.atmosphere.wasync.transport.TransportNotSupported;
 import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.atmosphere.wasync.util.ReaderInputStream;
 import org.atmosphere.wasync.util.TypeResolver;
@@ -127,7 +128,7 @@ public class DefaultSocket implements Socket {
         return connect(r, transports, -1, TimeUnit.MILLISECONDS);
     }
 
-    protected Socket connect(final RequestBuilder r, final List<Transport> transports, long timeout, TimeUnit tu) throws IOException {
+    protected Socket connect(final RequestBuilder r, final List<Transport> transports, final long timeout, final TimeUnit tu) throws IOException {
 
         if (transports.size() > 0) {
             transportInUse = transports.get(0);
@@ -135,6 +136,27 @@ public class DefaultSocket implements Socket {
             throw new IOException("No suitable transport supported");
         }
         socket = new InternalSocket(options, new DefaultFuture(this));
+
+        functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
+            @Override
+            public void on(TransportNotSupported transportNotSupported) {
+                request.transport().remove(0);
+                if (request.transport().size() > 0) {
+                    try {
+                        if (request.queryString().get("X-Atmosphere-Transport") != null) {
+                            Request.TRANSPORT rt = request.transport().get(0);
+                            String t = rt == Request.TRANSPORT.LONG_POLLING ? "long-polling" : rt.name();
+                            request.queryString().put("X-Atmosphere-Transport", Arrays.asList(new String[]{t}));
+                        }
+                        open(request, timeout, tu);
+                    } catch (IOException e) {
+                        logger.error("", e);
+                    }
+                } else {
+                    throw new Error("No suitable transport supported by the server");
+                }
+            }
+        }));
 
         transportInUse.future(socket.future());
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
@@ -147,12 +169,9 @@ public class DefaultSocket implements Socket {
                 socket = new InternalSocket(w, options, socket.future());
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
-                if (e != null) {
-                    if (e.getMessage() != null && e.getMessage().equalsIgnoreCase("Invalid handshake response")) {
-                        logger.info("WebSocket not supported, downgrading to an HTTP based transport.");
-                        transports.remove(0);
-                        return connect(r, transports, timeout, tu);
-                    }
+
+                if (TransportNotSupported.class.isAssignableFrom(e.getClass())) {
+                    return this;
                 }
 
                 transportInUse.close();
@@ -307,8 +326,9 @@ public class DefaultSocket implements Socket {
             } else {
 
                 // Only for Atmosphere
-                if (request.headers().get("X-Atmosphere-Transport") != null) {
-                    request.headers().put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
+                if (AtmosphereRequest.class.isAssignableFrom(request.getClass())) {
+                    request.queryString().put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
+                    request.queryString().remove("X-atmo-protocol");
                 }
 
                 AsyncHttpClient.BoundRequestBuilder b = options.runtime().preparePost(request.uri())

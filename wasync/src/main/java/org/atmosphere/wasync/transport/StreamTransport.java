@@ -162,6 +162,10 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public String onCompleted() throws Exception {
         if (closed.get()) return "";
 
+        if (status == Socket.STATUS.ERROR) {
+            return "";
+        }
+
         status = Socket.STATUS.INIT;
 
         if (options.reconnect()) {

@@ -132,7 +132,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
         } else {
-            return STATE.ABORT;
+            status = Socket.STATUS.ERROR;
+            throw new TransportNotSupported();
         }
     }
 
@@ -153,7 +154,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     public WebSocket onCompleted() throws Exception {
         if (webSocket == null) {
             status = Socket.STATUS.ERROR;
-            throw new IllegalStateException("WebSocket is null");
+            return null;
         }
         TransportsUtil.invokeFunction(decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
         return webSocket;

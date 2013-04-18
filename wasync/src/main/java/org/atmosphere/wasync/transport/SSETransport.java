@@ -15,14 +15,16 @@
  */
 package org.atmosphere.wasync.transport;
 
-import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.atmosphere.wasync.Event.MESSAGE;
 
@@ -41,6 +43,24 @@ public class SSETransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
+    public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+
+        List<String> ct = headers.getHeaders().get("Content-Type");
+        if ( ct == null || ct.size() == 0 || !ct.get(0).contains("text/event-stream")) {
+            status = Socket.STATUS.ERROR;
+            throw new TransportNotSupported();
+        }
+
+        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), MESSAGE.name(), resolver);
+
+        // TODO: Parse charset
+        return STATE.CONTINUE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
         if (!m.isEmpty()) {
@@ -49,7 +69,11 @@ public class SSETransport extends StreamTransport {
                 if (!d.isEmpty())
                     TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
             }
+
+            if (data.length == 0) {
+                return STATE.ABORT;
+            }
         }
-        return AsyncHandler.STATE.CONTINUE;
+        return STATE.CONTINUE;
     }
 }
