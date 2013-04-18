@@ -55,17 +55,17 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
 
     protected Future f;
     protected final List<FunctionWrapper> functions;
-    private final List<Decoder<? extends Object, ?>> decoders;
+    protected final List<Decoder<? extends Object, ?>> decoders;
     //TODO fix me
     protected String charSet = DEFAULT_CHARSET;
-    private final FunctionResolver resolver;
-    private final Options options;
-    private final RequestBuilder requestBuilder;
-    private final Request request;
-    private final AtomicBoolean closed = new AtomicBoolean(false);
-    private final boolean isBinary;
-    private STATUS status =  Socket.STATUS.INIT;
-    private final AtomicBoolean errorHandled = new AtomicBoolean();
+    protected final FunctionResolver resolver;
+    protected final Options options;
+    protected final RequestBuilder requestBuilder;
+    protected final Request request;
+    protected final AtomicBoolean closed = new AtomicBoolean(false);
+    protected final boolean isBinary;
+    protected STATUS status =  Socket.STATUS.INIT;
+    protected final AtomicBoolean errorHandled = new AtomicBoolean();
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();

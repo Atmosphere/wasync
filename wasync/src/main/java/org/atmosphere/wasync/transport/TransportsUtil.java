@@ -67,7 +67,7 @@ public class TransportsUtil {
         }
 
         if (!hasMatch) {
-            LoggerFactory.getLogger(TransportsUtil.class).trace("No Function matching {}", instanceType);
+            LoggerFactory.getLogger(TransportsUtil.class).trace("No Function {} matching {}", functionName, instanceType);
         }
 
         return hasMatch;
