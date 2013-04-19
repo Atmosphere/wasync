@@ -16,6 +16,7 @@
 package org.atmosphere.wasync;
 
 import com.ning.http.client.AsyncHttpClient;
+import org.atmosphere.wasync.serial.SerializedFireStage;
 
 /**
  * Configure the underlying WebSocket/HTTP client.
@@ -50,7 +51,7 @@ public class Options {
         return b.client;
     }
     
-    public ISerializedFireStage serializedFireStage() {
+    public SerializedFireStage serializedFireStage() {
     	return b.serializedFireStage;
     }
 
@@ -75,7 +76,7 @@ public class Options {
         private AsyncHttpClient client;
         private boolean runtimeShared = false;
         private int requestTimeout = -1;
-        private ISerializedFireStage serializedFireStage;
+        private SerializedFireStage serializedFireStage;
 
         /**
          * The time, in seconds, the connection will stay open when waiting for new messages. This can be seen as the idle time.
@@ -151,7 +152,7 @@ public class Options {
             return runtime(client, false);
         }
 
-        public OptionsBuilder serializedFireStage(ISerializedFireStage serializedFireStage) {
+        public OptionsBuilder serializedFireStage(SerializedFireStage serializedFireStage) {
         	this.serializedFireStage = serializedFireStage;
         	return this;
         }

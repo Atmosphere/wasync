@@ -16,11 +16,6 @@
 package org.atmosphere.wasync;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An internal {@link Future} implementation used by {@link Transport} to notify {@link Socket} when the

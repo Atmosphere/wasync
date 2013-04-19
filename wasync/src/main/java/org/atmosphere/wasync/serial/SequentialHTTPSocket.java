@@ -1,23 +1,38 @@
-package org.atmosphere.wasync.impl;
+/*
+ * Copyright 2013 Jeanfrancois Arcand
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.atmosphere.wasync.serial;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.util.concurrent.SettableFuture;
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.FluentStringsMap;
+import com.ning.http.client.ListenableFuture;
+import com.ning.http.client.RequestBuilder;
+import com.ning.http.client.Response;
+import com.ning.http.client.websocket.WebSocket;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.ISerializedFireStage;
+import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.impl.AtmosphereRequest;
+import org.atmosphere.wasync.impl.DefaultFuture;
 import org.atmosphere.wasync.transport.LongPollingTransport;
 import org.atmosphere.wasync.transport.SSETransport;
 import org.atmosphere.wasync.transport.StreamTransport;
@@ -28,30 +43,37 @@ import org.atmosphere.wasync.util.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.SettableFuture;
-import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.FluentStringsMap;
-import com.ning.http.client.ListenableFuture;
-import com.ning.http.client.RequestBuilder;
-import com.ning.http.client.Response;
-import com.ning.http.client.websocket.WebSocket;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+/**
+ * A {@link Socket} what support ordered serialization of invocation of {@link Socket#fire(Object)}. Message will be delivered in the same order the fire() message is invoked.
+ *
+ * @author Christian Bach
+ */
 public class SequentialHTTPSocket implements Socket {
 
-	private final static Logger logger = LoggerFactory.getLogger(SequentialHTTPSocket.class);
+    private final static Logger logger = LoggerFactory.getLogger(SequentialHTTPSocket.class);
 
     private volatile Request request;
     private InternalSocket socket;
     private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     protected Transport transportInUse;
     private final Options options;
-    
-    private ISerializedFireStage serializedFireStage;
+
+    private SerializedFireStage serializedFireStage;
 
     public SequentialHTTPSocket(Options options) {
-    	this.serializedFireStage = options.serializedFireStage();
-    	this.serializedFireStage.setSocket(this);
+        this.serializedFireStage = options.serializedFireStage();
+        this.serializedFireStage.setSocket(this);
         this.options = options;
     }
 
@@ -59,7 +81,7 @@ public class SequentialHTTPSocket implements Socket {
      * {@inheritDoc}
      */
     @Override
-    public Future<Response> fire(Object data) throws IOException {
+    public Future fire(Object data) throws IOException {
         checkState();
         if (transportInUse.status().equals(STATUS.CLOSE) ||
                 transportInUse.status().equals(STATUS.ERROR)) {
@@ -149,7 +171,7 @@ public class SequentialHTTPSocket implements Socket {
         }));
 
         transportInUse.future(socket.future());
-        
+
         r.setUrl(request.uri().replace("ws", "http"));
         options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse);
 
@@ -163,7 +185,7 @@ public class SequentialHTTPSocket implements Socket {
         }
 
         socket = new InternalSocket(options, new DefaultFuture(this));
-        
+
         return this;
     }
 
@@ -203,7 +225,7 @@ public class SequentialHTTPSocket implements Socket {
         }
 
         for (Request.TRANSPORT t : request.transport()) {
-        	if (t.equals(Request.TRANSPORT.SSE)) {
+            if (t.equals(Request.TRANSPORT.SSE)) {
                 transports.add(new SSETransport(r, options, request, functions));
             } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {
                 transports.add(new LongPollingTransport(r, options, request, functions));
@@ -252,35 +274,112 @@ public class SequentialHTTPSocket implements Socket {
             return instanceType;
         }
 
-        public Future<Response> write(Request request, Object data) throws IOException {
+        public Future write(Request request, Object data) throws IOException {
 
-        	// Execute encoder
+            // Execute encoder
             Object encodedPayload = invokeEncoder(request.encoders(), data);
             if (!
-            	(InputStream.class.isAssignableFrom(encodedPayload.getClass()) 
-            	|| Reader.class.isAssignableFrom(encodedPayload.getClass()) 
-            	|| String.class.isAssignableFrom(encodedPayload.getClass()) 
-                || byte[].class.isAssignableFrom(encodedPayload.getClass())
-                )
-               )
-            {
-            	throw new IllegalStateException("No Encoder for " + data);
-            }	        
-            
+                    (InputStream.class.isAssignableFrom(encodedPayload.getClass())
+                            || Reader.class.isAssignableFrom(encodedPayload.getClass())
+                            || String.class.isAssignableFrom(encodedPayload.getClass())
+                            || byte[].class.isAssignableFrom(encodedPayload.getClass())
+                    )
+                    ) {
+                throw new IllegalStateException("No Encoder for " + data);
+            }
+
             if (serializedFireStage != null) {
-            	SettableFuture<Response> future = SettableFuture.create();
-            	serializedFireStage.enqueue(encodedPayload, future);
-            	return future;
+                final SettableFuture<Response> future = SettableFuture.create();
+                serializedFireStage.enqueue(encodedPayload, future);
+                return new Future() {
+
+                    @Override
+                    public Future fire(Object data) throws IOException {
+                        return SequentialHTTPSocket.this.fire(data);
+                    }
+
+                    @Override
+                    public Future done() {
+                        ListenableFuture.class.cast(future).done(null);
+                        return this;
+                    }
+
+                    @Override
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return future.cancel(mayInterruptIfRunning);
+                    }
+
+                    @Override
+                    public boolean isCancelled() {
+                        return future.isCancelled();
+                    }
+
+                    @Override
+                    public boolean isDone() {
+                        return future.isDone();
+                    }
+
+                    @Override
+                    public Socket get() throws InterruptedException, ExecutionException {
+                        future.get();
+                        return SequentialHTTPSocket.this;
+                    }
+
+                    @Override
+                    public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        future.get(timeout, unit);
+                        return SequentialHTTPSocket.this;
+                    }
+                };
             } else {
-            	return directWrite(encodedPayload);
-            }        
-            
+                final ListenableFuture<Response> future = directWrite(encodedPayload);
+                return new Future() {
+                    @Override
+                    public Future fire(Object data) throws IOException {
+                        return SequentialHTTPSocket.this.fire(data);
+                    }
+
+                    @Override
+                    public Future done() {
+                        future.done(null);
+                        return this;
+                    }
+
+                    @Override
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return future.cancel(mayInterruptIfRunning);
+                    }
+
+                    @Override
+                    public boolean isCancelled() {
+                        return future.isCancelled();
+                    }
+
+                    @Override
+                    public boolean isDone() {
+                        return future.isDone();
+                    }
+
+                    @Override
+                    public Socket get() throws InterruptedException, ExecutionException {
+                        future.get();
+                        return SequentialHTTPSocket.this;
+                    }
+
+                    @Override
+                    public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        future.get(timeout, unit);
+                        return SequentialHTTPSocket.this;
+                    }
+                };
+            }
+
         }
-        
+
     }
-    
+
     public ListenableFuture<Response> directWrite(Object encodedPayload) throws IOException {
-    	// Only for Atmosphere
+        // Only for Atmosphere
         if (AtmosphereRequest.class.isAssignableFrom(request.getClass())) {
             request.queryString().put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
             request.queryString().remove("X-atmo-protocol");
@@ -293,15 +392,15 @@ public class SequentialHTTPSocket implements Socket {
 
 
         if (InputStream.class.isAssignableFrom(encodedPayload.getClass())) {
-        	return b.setBody((InputStream) encodedPayload).execute();
+            return b.setBody((InputStream) encodedPayload).execute();
         } else if (Reader.class.isAssignableFrom(encodedPayload.getClass())) {
-        	return b.setBody(new ReaderInputStream((Reader) encodedPayload)).execute();	                
+            return b.setBody(new ReaderInputStream((Reader) encodedPayload)).execute();
         } else if (String.class.isAssignableFrom(encodedPayload.getClass())) {
             return b.setBody((String) encodedPayload).execute();
         } else if (byte[].class.isAssignableFrom(encodedPayload.getClass())) {
             return b.setBody((byte[]) encodedPayload).execute();
         } else {
-        	throw new AssertionError();            	
+            throw new AssertionError();
         }
     }
 
@@ -314,5 +413,5 @@ public class SequentialHTTPSocket implements Socket {
             throw new IllegalStateException("Invalid Socket Status : Not Connected");
         }
     }
-    
+
 }
