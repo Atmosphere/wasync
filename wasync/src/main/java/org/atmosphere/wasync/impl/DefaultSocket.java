@@ -175,6 +175,7 @@ public class DefaultSocket implements Socket {
                 }
 
                 transportInUse.close();
+                options.runtime().close();
                 if (!transportInUse.errorHandled() && TimeoutException.class.isAssignableFrom(e.getClass())) {
                     throw new IOException("Invalid state: " + e.getMessage());
                 }
