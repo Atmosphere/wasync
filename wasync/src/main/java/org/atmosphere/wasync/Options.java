@@ -49,6 +49,10 @@ public class Options {
     public AsyncHttpClient runtime(){
         return b.client;
     }
+    
+    public ISerializedFireStage serializedFireStage() {
+    	return b.serializedFireStage;
+    }
 
     public void runtime(AsyncHttpClient client){
         b.client = client;
@@ -71,6 +75,7 @@ public class Options {
         private AsyncHttpClient client;
         private boolean runtimeShared = false;
         private int requestTimeout = -1;
+        private ISerializedFireStage serializedFireStage;
 
         /**
          * The time, in seconds, the connection will stay open when waiting for new messages. This can be seen as the idle time.
@@ -146,6 +151,11 @@ public class Options {
             return runtime(client, false);
         }
 
+        public OptionsBuilder serializedFireStage(ISerializedFireStage serializedFireStage) {
+        	this.serializedFireStage = serializedFireStage;
+        	return this;
+        }
+        
         /**
          * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used
          * by the library.
@@ -159,7 +169,7 @@ public class Options {
             this.runtimeShared = runtimeShared;
             return this;
         }
-
+        
         /**
          * Build an {@link Options}
          * @return {@link Options}
