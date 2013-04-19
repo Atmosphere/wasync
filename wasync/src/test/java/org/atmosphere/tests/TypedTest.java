@@ -25,7 +25,6 @@ import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
@@ -50,7 +49,6 @@ public class TypedTest {
     public String targetUrl;
     public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
-    public final Options options = new Options.OptionsBuilder().reconnect(false).runtimeShared(true).build();
 
     public int findFreePort() throws IOException {
         ServerSocket socket = null;
@@ -132,7 +130,7 @@ public class TypedTest {
                 })
                 .transport(Request.TRANSPORT.WEBSOCKET);
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on(Event.MESSAGE.name(), new Function<POJO>() {
             @Override
             public void on(POJO t) {
@@ -201,7 +199,7 @@ public class TypedTest {
                 })
                 .transport(Request.TRANSPORT.WEBSOCKET);
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on(new Function<POJO>() {
             @Override
             public void on(POJO t) {

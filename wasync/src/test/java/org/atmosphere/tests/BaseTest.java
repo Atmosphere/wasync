@@ -17,6 +17,9 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.serial.DefaultSerializedFireStage;
+import org.atmosphere.wasync.serial.SerializedClient;
+import org.atmosphere.wasync.serial.SerializedOptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
@@ -30,6 +33,7 @@ import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +52,6 @@ public abstract class BaseTest {
     public String targetUrl;
     public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
-    public Options options = new Options.OptionsBuilder().reconnect(false).build();
 
     public int findFreePort() throws IOException {
         ServerSocket socket = null;
@@ -83,7 +86,6 @@ public abstract class BaseTest {
     public void start() throws IOException {
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
-        options = new Options.OptionsBuilder().reconnect(false).build();
     }
 
     @Test
@@ -131,7 +133,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build());
         socket.on(Event.MESSAGE.name(), new Function<String>() {
             @Override
             public void on(String t) {
@@ -193,7 +195,7 @@ public abstract class BaseTest {
         server.start();
 
         Client client = ClientFactory.getDefault().newClient();
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.close();
         assertEquals(socket.status(), Socket.STATUS.CLOSE);
     }
@@ -245,7 +247,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         ;
         socket.on("message", new Function<String>() {
             @Override
@@ -319,7 +321,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
 
         socket.on(new Function<String>() {
             @Override
@@ -382,7 +384,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {
@@ -454,7 +456,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/ratata")
                 .transport(transport());
 
-        final Socket socket = client.create(options);
+        final Socket socket = client.create();
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {
@@ -509,7 +511,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         try {
-            final Socket socket = client.create(options);
+            final Socket socket = client.create();
             socket.on(new Function<Integer>() {
                 @Override
                 public void on(Integer statusCode) {
@@ -540,7 +542,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         ;
         socket.on(new Function<ConnectException>() {
 
@@ -568,7 +570,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
 
         socket.on(new Function<IOException>() {
 
@@ -638,7 +640,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         ;
         socket.on("message", new Function<String>() {
             @Override
@@ -664,7 +666,6 @@ public abstract class BaseTest {
 
     @Test
     public void requestTimeoutTest() throws Exception {
-        Options o = new Options.OptionsBuilder().reconnect(false).requestTimeout(5).build();
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -697,6 +698,7 @@ public abstract class BaseTest {
         final AtomicReference<Class<? extends TimeoutException>> response = new AtomicReference<Class<? extends TimeoutException>>();
         Client client = ClientFactory.getDefault().newClient();
 
+        Options o = client.newOptionsBuilder().reconnect(false).requestTimeout(5).build();
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
@@ -779,7 +781,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on(Event.MESSAGE.name(), new Function<POJO>() {
             @Override
             public void on(POJO t) {
@@ -843,7 +845,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on(Event.TRANSPORT.name(), new Function<Request.TRANSPORT>() {
             @Override
             public void on(Request.TRANSPORT t) {
@@ -917,7 +919,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on("message", new Function<POJO2>() {
             @Override
             public void on(POJO2 t) {
@@ -993,7 +995,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on(Event.MESSAGE.name(), new Function<String>() {
             @Override
             public void on(String t) {
@@ -1082,7 +1084,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
 
         socket.on("message", new Function<String>() {
             @Override
@@ -1162,7 +1164,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
 
         socket.on("message", new Function<String>() {
             @Override
@@ -1253,7 +1255,7 @@ public abstract class BaseTest {
             }
         });
         for (int i = 0; i < getCount(); i++) {
-            Socket socket = client.create(new Options.OptionsBuilder().runtime(c).build());
+            Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
             socket.on(new Function<Integer>() {
                 @Override
                 public void on(Integer statusCode) {
@@ -1280,4 +1282,87 @@ public abstract class BaseTest {
         l.await(60, TimeUnit.SECONDS);
     }
 
+    @Test (enabled = false)
+    public void serializeTest() throws Exception {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+                    private final AtomicInteger count = new AtomicInteger(2);
+                    private final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            try {
+                                r.getBroadcaster().broadcast(r.getRequest().getReader().readLine()).get();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        response.get().append(r.getMessage());
+                        if (count.decrementAndGet() == 0 && (!r.isResuming() || !r.isCancelled())) {
+                            r.getResource().getResponse().write(response.toString());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        SerializedOptionsBuilder b = client.newOptionsBuilder();
+        b.serializedFireStage(new DefaultSerializedFireStage());
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(b.build());
+
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Function invoked {}", t);
+                response.get().append(t);
+                latch.countDown();
+            }
+        }).on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+        }).open(request.build())
+                .fire("PING")
+                .fire("PONG");
+
+        latch.await(10, TimeUnit.SECONDS);
+        socket.close();
+
+        assertEquals(response.get().toString(), "PINGPONG");
+    }
 }

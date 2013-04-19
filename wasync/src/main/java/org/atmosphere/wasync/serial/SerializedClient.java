@@ -15,7 +15,6 @@
  */
 package org.atmosphere.wasync.serial;
 
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.impl.DefaultClient;
 
@@ -25,14 +24,21 @@ import org.atmosphere.wasync.impl.DefaultClient;
  * <p/>
  *     socket.fire("message1").fire("message2");
  * </pre></blockquote>
- * means message1 will be send, then message2. By default, wAsync is asynchronous so if you need order use the {@link SequentialHTTPClient}
+ * means message1 will be send, then message2. By default, wAsync is asynchronous so if you need order use the {@link SerializedClient}
  *
  * @author Christian Bach
  */
-public class SequentialHTTPClient extends DefaultClient {
+public class SerializedClient extends DefaultClient {
 	
-    protected Socket getSocket(Options options) {
-    	return new SequentialHTTPSocket(options);
+    protected Socket getSocket(SerializedOptions options) {
+    	return new SerializedSocket(options);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SerializedOptionsBuilder newOptionsBuilder() {
+        return new SerializedOptionsBuilder();
+    }
 }

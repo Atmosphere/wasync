@@ -13,24 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.wasync;
+package org.atmosphere.wasync.serial;
 
-import com.ning.http.client.AsyncHttpClient;
+import org.atmosphere.wasync.impl.DefaultOptions;
 
-public interface Options {
-    public Transport transport() ;
+public class SerializedOptions extends DefaultOptions{
 
-    public boolean reconnect();
+    public SerializedOptions(SerializedOptionsBuilder b) {
+        super(b);
+    }
 
-    public int reconnectInSeconds();
-
-    public long waitBeforeUnlocking();
-
-    public AsyncHttpClient runtime();
-
-    public void runtime(AsyncHttpClient client);
-
-    public boolean isShared();
-
-    public int requestTimeout() ;
+    public SerializedFireStage serializedFireStage() {
+        return SerializedOptionsBuilder.class.cast(b).serializedFireStage();
+    }
 }

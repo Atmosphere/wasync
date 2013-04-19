@@ -21,11 +21,9 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
-import org.atmosphere.wasync.Transport;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +44,6 @@ public class wAsyncNodeChat {
             args = new String[] {"http://127.0.0.1:8080"};
         }
 
-        Options options = new Options.OptionsBuilder().build();
         Client client = ClientFactory.getDefault().newClient();
 
         RequestBuilder request = client.newRequestBuilder()
@@ -88,7 +85,7 @@ public class wAsyncNodeChat {
                 .transport(Request.TRANSPORT.WEBSOCKET)
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on("message", new Function<Data>() {
             @Override
             public void on(Data t) {

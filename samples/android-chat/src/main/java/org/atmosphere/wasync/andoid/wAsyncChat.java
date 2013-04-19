@@ -30,7 +30,6 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.impl.AtmosphereClient;
@@ -56,7 +55,6 @@ public class wAsyncChat extends Activity {
         tv = (TextView) findViewById(R.id.myTextView);
 
         try {
-            Options options = new Options.OptionsBuilder().build();
             AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
             RequestBuilder request = client.newRequestBuilder()
@@ -98,7 +96,7 @@ public class wAsyncChat extends Activity {
                     })
                     .transport(Request.TRANSPORT.WEBSOCKET);
 
-            final org.atmosphere.wasync.Socket socket = client.create(options);
+            final org.atmosphere.wasync.Socket socket = client.create();
             socket.on("message", new Function<Data>() {
                 @Override
                 public void on(final Data t) {

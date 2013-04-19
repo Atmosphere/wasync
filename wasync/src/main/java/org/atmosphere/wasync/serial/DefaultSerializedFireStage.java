@@ -31,7 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class DefaultSerializedFireStage implements SerializedFireStage {
 
-	private volatile SequentialHTTPSocket socket;
+	private volatile SerializedSocket socket;
 	private final int maxBinaryMessagesAggregationSize;
 	
 	private final BlockingQueue<FirePayloadEntry> firePayloadsQueue;
@@ -51,7 +51,7 @@ public class DefaultSerializedFireStage implements SerializedFireStage {
 	}
 	
 	@Override
-	public void setSocket(SequentialHTTPSocket socket) {
+	public void setSocket(SerializedSocket socket) {
 		this.socket = socket;
 	}
 	

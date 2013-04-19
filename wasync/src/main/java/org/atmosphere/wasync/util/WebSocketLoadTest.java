@@ -19,7 +19,6 @@ import com.ning.http.client.AsyncHttpClient;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
@@ -61,7 +60,7 @@ public class WebSocketLoadTest {
 
         for (int i = 0; i < clientCount; i++) {
             final AtomicLong start = new AtomicLong(0);
-            Socket socket = client.create(new Options.OptionsBuilder().runtime(c).build());
+            Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
             socket.on(new Function<Integer>() {
                 @Override
                 public void on(Integer statusCode) {
@@ -96,7 +95,7 @@ public class WebSocketLoadTest {
         System.out.println("OK, all Connected: " + clientNum);
 
         long count = messageNum;
-        Socket socket = client.create(new Options.OptionsBuilder().runtime(c).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
         socket.open(request.build());
         for (int i = 0; i < count; i++ ) {
             socket.fire("message" + i);

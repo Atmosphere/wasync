@@ -59,9 +59,9 @@ import java.util.concurrent.TimeoutException;
  *
  * @author Christian Bach
  */
-public class SequentialHTTPSocket implements Socket {
+public class SerializedSocket implements Socket {
 
-    private final static Logger logger = LoggerFactory.getLogger(SequentialHTTPSocket.class);
+    private final static Logger logger = LoggerFactory.getLogger(SerializedSocket.class);
 
     private volatile Request request;
     private InternalSocket socket;
@@ -71,7 +71,7 @@ public class SequentialHTTPSocket implements Socket {
 
     private SerializedFireStage serializedFireStage;
 
-    public SequentialHTTPSocket(Options options) {
+    public SerializedSocket(SerializedOptions options) {
         this.serializedFireStage = options.serializedFireStage();
         this.serializedFireStage.setSocket(this);
         this.options = options;
@@ -295,7 +295,7 @@ public class SequentialHTTPSocket implements Socket {
 
                     @Override
                     public Future fire(Object data) throws IOException {
-                        return SequentialHTTPSocket.this.fire(data);
+                        return SerializedSocket.this.fire(data);
                     }
 
                     @Override
@@ -322,13 +322,13 @@ public class SequentialHTTPSocket implements Socket {
                     @Override
                     public Socket get() throws InterruptedException, ExecutionException {
                         future.get();
-                        return SequentialHTTPSocket.this;
+                        return SerializedSocket.this;
                     }
 
                     @Override
                     public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                         future.get(timeout, unit);
-                        return SequentialHTTPSocket.this;
+                        return SerializedSocket.this;
                     }
                 };
             } else {
@@ -336,7 +336,7 @@ public class SequentialHTTPSocket implements Socket {
                 return new Future() {
                     @Override
                     public Future fire(Object data) throws IOException {
-                        return SequentialHTTPSocket.this.fire(data);
+                        return SerializedSocket.this.fire(data);
                     }
 
                     @Override
@@ -363,13 +363,13 @@ public class SequentialHTTPSocket implements Socket {
                     @Override
                     public Socket get() throws InterruptedException, ExecutionException {
                         future.get();
-                        return SequentialHTTPSocket.this;
+                        return SerializedSocket.this;
                     }
 
                     @Override
                     public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                         future.get(timeout, unit);
-                        return SequentialHTTPSocket.this;
+                        return SerializedSocket.this;
                     }
                 };
             }

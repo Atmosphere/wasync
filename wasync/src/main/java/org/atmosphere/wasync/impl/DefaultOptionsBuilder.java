@@ -13,24 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.wasync;
+package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHttpClient;
+import org.atmosphere.wasync.OptionsBuilder;
 
-public interface Options {
-    public Transport transport() ;
+public class DefaultOptionsBuilder extends OptionsBuilder {
 
-    public boolean reconnect();
+    protected DefaultOptionsBuilder() {
+        super(DefaultOptionsBuilder.class);
+    }
 
-    public int reconnectInSeconds();
+    /**
+     * Build an {@link org.atmosphere.wasync.Options}
+     *
+     * @return {@link org.atmosphere.wasync.Options}
+     */
+    @Override
+    public DefaultOptions build() {
+        return new DefaultOptions(this);
+    }
 
-    public long waitBeforeUnlocking();
-
-    public AsyncHttpClient runtime();
-
-    public void runtime(AsyncHttpClient client);
-
-    public boolean isShared();
-
-    public int requestTimeout() ;
 }

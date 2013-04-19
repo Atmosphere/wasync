@@ -22,7 +22,7 @@ import org.atmosphere.wasync.Socket;
 
 import static org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 
-public class AtmosphereClient implements Client<AtmosphereRequest.AtmosphereRequestBuilder> {
+public class AtmosphereClient implements Client<DefaultOptionsBuilder,AtmosphereRequest.AtmosphereRequestBuilder> {
 
     public AtmosphereClient() {
     }
@@ -57,6 +57,14 @@ public class AtmosphereClient implements Client<AtmosphereRequest.AtmosphereRequ
             throw new RuntimeException(e);
         }
         return AtmosphereRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DefaultOptionsBuilder newOptionsBuilder() {
+        return new DefaultOptionsBuilder();
     }
 
     /**

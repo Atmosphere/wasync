@@ -44,9 +44,9 @@ public class ClientUtil {
     }
 
     public static Socket create() {
-        AsyncHttpClient asyncHttpClient = createDefaultAsyncHttpClient(new Options.OptionsBuilder().reconnect(true).build());
+        AsyncHttpClient asyncHttpClient = createDefaultAsyncHttpClient(new DefaultOptionsBuilder().reconnect(true).build());
 
-        return getSocket(new Options.OptionsBuilder().runtime(asyncHttpClient, false).build());
+        return getSocket(new DefaultOptionsBuilder().runtime(asyncHttpClient, false).build());
     }
 
 //    public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {

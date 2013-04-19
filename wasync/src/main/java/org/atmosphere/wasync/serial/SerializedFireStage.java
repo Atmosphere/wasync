@@ -26,7 +26,7 @@ import org.atmosphere.wasync.Socket;
  */
 public interface SerializedFireStage {
 
-	public void setSocket(SequentialHTTPSocket socket);
+	public void setSocket(SerializedSocket socket);
 	
 	public void enqueue(Object firePayload, SettableFuture<Response> originalFuture);	
 	

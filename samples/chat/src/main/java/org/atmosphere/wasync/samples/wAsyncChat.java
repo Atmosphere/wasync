@@ -45,7 +45,6 @@ public class wAsyncChat {
             args = new String[] {"http://127.0.0.1:8080"};
         }
 
-        Options options = new Options.OptionsBuilder().build();
         AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
         RequestBuilder request = client.newRequestBuilder()
@@ -89,7 +88,7 @@ public class wAsyncChat {
                 .transport(Request.TRANSPORT.SSE)
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
-        Socket socket = client.create(options);
+        Socket socket = client.create();
         socket.on("message", new Function<Chat.Data>() {
             @Override
             public void on(Chat.Data t) {
