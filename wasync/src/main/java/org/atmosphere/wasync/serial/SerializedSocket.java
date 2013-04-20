@@ -261,6 +261,9 @@ public class SerializedSocket implements Socket {
             } else if (options.isShared()) {
                 logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
             }
+            if (serializedFireStage != null) {
+            	serializedFireStage.shutdown();
+            }
         }
 
         Object invokeEncoder(List<Encoder<? extends Object, ?>> encoders, Object instanceType) {
