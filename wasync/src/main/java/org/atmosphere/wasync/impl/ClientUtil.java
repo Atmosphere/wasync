@@ -23,14 +23,14 @@ import org.atmosphere.wasync.Socket;
 public class ClientUtil {
     private static final String WASYNC_USER_AGENT = "wAsync/1.0";
 
-    final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
+    public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
 		AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
 		b.setFollowRedirects(true).setRequestTimeoutInMs(o.requestTimeout()).setUserAgent(WASYNC_USER_AGENT);
         AsyncHttpClientConfig config = b.build();
 		return new AsyncHttpClient(config);
 	}
 
-    final static Socket create(Options options) {
+    public static Socket create(Options options) {
         AsyncHttpClient asyncHttpClient = options.runtime();
         if (asyncHttpClient == null || asyncHttpClient.isClosed()) {
             asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(options);
@@ -39,11 +39,11 @@ public class ClientUtil {
         return getSocket(options);
     }
 
-    final static Socket getSocket(Options options) {
+    public final static Socket getSocket(Options options) {
         return new DefaultSocket(options);
     }
 
-    public static Socket create() {
+    public  static Socket create() {
         AsyncHttpClient asyncHttpClient = createDefaultAsyncHttpClient(new DefaultOptionsBuilder().reconnect(true).build());
 
         return getSocket(new DefaultOptionsBuilder().runtime(asyncHttpClient, false).build());

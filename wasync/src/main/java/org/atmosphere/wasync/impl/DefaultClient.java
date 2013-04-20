@@ -17,12 +17,11 @@ package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.OptionsBuilder;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 
-public class DefaultClient implements Client<OptionsBuilder,RequestBuilder> {
+public class DefaultClient implements Client<DefaultOptions, OptionsBuilder,RequestBuilder> {
 
     public DefaultClient() {
     }
@@ -39,7 +38,7 @@ public class DefaultClient implements Client<OptionsBuilder,RequestBuilder> {
      * {@inheritDoc}
      */
     @Override
-    public Socket create(Options options) {
+    public Socket create(DefaultOptions options) {
         return ClientUtil.create(options);
     }
 
@@ -75,9 +74,4 @@ public class DefaultClient implements Client<OptionsBuilder,RequestBuilder> {
         }
         return b.resolver(FunctionResolver.DEFAULT);
     }
-
-    protected Socket getSocket(Options options) {
-    	return new DefaultSocket(options);
-    }
-
 }

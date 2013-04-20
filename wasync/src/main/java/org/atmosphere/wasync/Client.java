@@ -33,7 +33,7 @@ package org.atmosphere.wasync;
  * </pre></blockquote>
  * @author Jeanfrancois Arcand
  */
-public interface Client<U extends OptionsBuilder, T extends RequestBuilder> {
+public interface Client<O extends Options, U extends OptionsBuilder, T extends RequestBuilder> {
 
     /**
      * Create a {@link Socket}
@@ -44,7 +44,7 @@ public interface Client<U extends OptionsBuilder, T extends RequestBuilder> {
      * Create a {@link Socket} configured using the {@link Options}
      * @return {@link Socket}
      */
-    Socket create(Options options);
+    Socket create(O options);
 
     /**
      * Return a {@link RequestBuilder}

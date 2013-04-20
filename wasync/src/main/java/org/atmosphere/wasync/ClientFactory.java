@@ -46,7 +46,7 @@ public class ClientFactory {
      *
      * @return a new {@link Client} instance
      */
-    public Client<? extends OptionsBuilder,? extends RequestBuilder> newClient() {
+    public Client<? extends Options, ? extends OptionsBuilder,? extends RequestBuilder> newClient() {
         if (clientClassName == null) {
             return new DefaultClient();
         } else {
@@ -65,7 +65,7 @@ public class ClientFactory {
      * @param clientClass the runtime instance class of {@link Client} instance that is returned
      * @return a new {@link Client} instance
      */
-    public <T extends Client<? extends OptionsBuilder,? extends RequestBuilder>> T newClient(Class<? extends Client> clientClass) {
+    public <T extends Client<? extends Options,? extends OptionsBuilder,? extends RequestBuilder>> T newClient(Class<? extends Client> clientClass) {
         Client client;
         try {
             client = clientClass.newInstance();

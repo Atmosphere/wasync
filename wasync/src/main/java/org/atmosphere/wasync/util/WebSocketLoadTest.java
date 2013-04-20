@@ -48,7 +48,7 @@ public class WebSocketLoadTest {
 
         final CountDownLatch l = new CountDownLatch(clientNum);
 
-        final CountDownLatch messages = new CountDownLatch(messageNum);
+        final CountDownLatch messages = new CountDownLatch(messageNum * clientNum);
 
         Client client = ClientFactory.getDefault().newClient();
         RequestBuilder request = client.newRequestBuilder();
@@ -75,9 +75,12 @@ public class WebSocketLoadTest {
                 @Override
                 public void on(String s) {
                     if (s.startsWith("message")) {
-                        if (++mCount == messageNum) {
+                        String[] m = s.split("\n\r");
+                        mCount += m.length;
+                        System.out.println(messages.getCount());
+                        messages.countDown();
+                        if (mCount == messageNum) {
                             total.addAndGet(System.currentTimeMillis() - start.get());
-                            messages.countDown();
                         }
                     }
                 }
@@ -94,10 +97,9 @@ public class WebSocketLoadTest {
 
         System.out.println("OK, all Connected: " + clientNum);
 
-        long count = messageNum;
         Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
         socket.open(request.build());
-        for (int i = 0; i < count; i++ ) {
+        for (int i = 0; i < messageNum; i++ ) {
             socket.fire("message" + i);
         }
         messages.await(5, TimeUnit.MINUTES);

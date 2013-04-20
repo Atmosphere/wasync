@@ -17,12 +17,11 @@ package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 
 import static org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 
-public class AtmosphereClient implements Client<DefaultOptionsBuilder,AtmosphereRequest.AtmosphereRequestBuilder> {
+public class AtmosphereClient implements Client<DefaultOptions, DefaultOptionsBuilder,AtmosphereRequest.AtmosphereRequestBuilder> {
 
     public AtmosphereClient() {
     }
@@ -39,7 +38,7 @@ public class AtmosphereClient implements Client<DefaultOptionsBuilder,Atmosphere
      * {@inheritDoc}
      */
     @Override
-    public Socket create(Options options) {
+    public Socket create(DefaultOptions options) {
         return ClientUtil.create(options);
     }
 
@@ -48,7 +47,7 @@ public class AtmosphereClient implements Client<DefaultOptionsBuilder,Atmosphere
      */
     @Override
     public AtmosphereRequestBuilder newRequestBuilder(Class<AtmosphereRequest.AtmosphereRequestBuilder> clazz) {
-        AtmosphereRequestBuilder b = null;
+        AtmosphereRequestBuilder b;
         try {
             b = clazz.newInstance();
         } catch (InstantiationException e) {

@@ -15,8 +15,13 @@
  */
 package org.atmosphere.wasync.serial;
 
+import com.ning.http.client.AsyncHttpClient;
+import org.atmosphere.wasync.Client;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
-import org.atmosphere.wasync.impl.DefaultClient;
+import org.atmosphere.wasync.impl.ClientUtil;
+import org.atmosphere.wasync.impl.DefaultRequestBuilder;
 
 /**
  * A {@link org.atmosphere.wasync.Client} that guarantee message delivery order when {@link Socket#fire(Object)} is invoked. Doing:
@@ -28,10 +33,29 @@ import org.atmosphere.wasync.impl.DefaultClient;
  *
  * @author Christian Bach
  */
-public class SerializedClient extends DefaultClient {
-	
-    protected Socket getSocket(SerializedOptions options) {
-    	return new SerializedSocket(options);
+public class SerializedClient implements Client<SerializedOptions, SerializedOptionsBuilder, RequestBuilder> {
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Socket create(SerializedOptions options) {
+        AsyncHttpClient asyncHttpClient = options.runtime();
+        if (asyncHttpClient == null || asyncHttpClient.isClosed()) {
+            asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(options);
+            options.runtime(asyncHttpClient);
+        }
+        return new SerializedSocket(options);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Socket create() {
+        AsyncHttpClient asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(newOptionsBuilder().reconnect(true).build());
+
+        return new SerializedSocket(new SerializedOptionsBuilder().runtime(asyncHttpClient).build());
     }
 
     /**
@@ -40,5 +64,30 @@ public class SerializedClient extends DefaultClient {
     @Override
     public SerializedOptionsBuilder newOptionsBuilder() {
         return new SerializedOptionsBuilder();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RequestBuilder newRequestBuilder() {
+        RequestBuilder b = new DefaultRequestBuilder();
+        return b.resolver(FunctionResolver.DEFAULT);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RequestBuilder newRequestBuilder(Class<RequestBuilder> clazz) {
+        RequestBuilder b = null;
+        try {
+            b = clazz.newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return b.resolver(FunctionResolver.DEFAULT);
     }
 }
