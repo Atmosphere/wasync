@@ -149,6 +149,7 @@ public class DefaultSerializedFireStage implements SerializedFireStage {
 		}
 	}
 	
+	@Override
 	public void shutdown() {
 		executorService.shutdownNow();
 		for (FirePayloadEntry entry  : firePayloadsQueue) {
