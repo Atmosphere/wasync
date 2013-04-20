@@ -28,6 +28,8 @@ public interface SerializedFireStage {
 
 	public void setSocket(SerializedSocket socket);
 	
-	public void enqueue(Object firePayload, SettableFuture<Response> originalFuture);	
+	public void enqueue(Object firePayload, SettableFuture<Response> originalFuture);
+	
+	public void shutdown();
 	
 }
