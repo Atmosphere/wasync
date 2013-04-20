@@ -139,7 +139,7 @@ public class DefaultSerializedFireStage implements SerializedFireStage {
 		ListenableFuture<Response> future;
 		Response response = null;
 		try {
-			future = socket.directWrite(firePayloadEntry);
+			future = socket.directWrite(firePayloadEntry.firePayload);
 			response = future.get();
 		} catch (Exception e) {				
 			firePayloadEntry.getOriginalFuture().setException(e);
