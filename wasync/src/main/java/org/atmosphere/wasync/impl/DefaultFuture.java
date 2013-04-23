@@ -67,10 +67,9 @@ public class DefaultFuture implements Future {
      * {@inheritDoc}
      */
     @Override
-    public Future done(){
+    public void done(){
         done.set(true);
         latch.countDown();
-        return this;
     }
 
     protected void reset(){

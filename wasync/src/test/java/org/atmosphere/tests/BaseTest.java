@@ -1282,7 +1282,7 @@ public abstract class BaseTest {
         l.await(60, TimeUnit.SECONDS);
     }
 
-    @Test (enabled = false)
+    @Test (enabled = true)
     public void serializeTest() throws Exception {
         Config config = new Config.Builder()
                 .port(port)

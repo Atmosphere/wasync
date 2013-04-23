@@ -34,5 +34,5 @@ public interface Future extends java.util.concurrent.Future<Socket> {
     /**
      * Mark the future done.
      */
-    Future done();
+    void done();
 }

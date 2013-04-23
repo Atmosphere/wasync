@@ -16,11 +16,9 @@
 package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
-import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
@@ -33,16 +31,10 @@ import org.atmosphere.wasync.transport.SSETransport;
 import org.atmosphere.wasync.transport.StreamTransport;
 import org.atmosphere.wasync.transport.TransportNotSupported;
 import org.atmosphere.wasync.transport.WebSocketTransport;
-import org.atmosphere.wasync.util.ReaderInputStream;
-import org.atmosphere.wasync.util.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,11 +47,11 @@ public class DefaultSocket implements Socket {
 
     private final static Logger logger = LoggerFactory.getLogger(DefaultSocket.class);
 
-    private Request request;
-    private InternalSocket socket;
-    private final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
+    protected Request request;
+    protected SocketRuntime socket;
+    protected final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     protected Transport transportInUse;
-    private final Options options;
+    protected final Options options;
 
     public DefaultSocket(Options options) {
         this.options = options;
@@ -76,7 +68,8 @@ public class DefaultSocket implements Socket {
             throw new IOException("Invalid Socket Status " + transportInUse.status().name());
         }
 
-        return socket.write(request, data).future();
+        socket.write(request, data);
+        return socket.future();
     }
 
     /**
@@ -135,7 +128,7 @@ public class DefaultSocket implements Socket {
         } else {
             throw new IOException("No suitable transport supported");
         }
-        socket = new InternalSocket(options, new DefaultFuture(this));
+        socket = new SocketRuntime(options, new DefaultFuture(this));
 
         functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
             @Override
@@ -166,7 +159,7 @@ public class DefaultSocket implements Socket {
                         (AsyncHandler<WebSocket>) transportInUse);
 
                 WebSocket w = fw.get(timeout, tu);
-                socket = new InternalSocket(w, options, socket.future());
+                socket = new SocketRuntime(w, options, socket.future());
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 
@@ -197,9 +190,13 @@ public class DefaultSocket implements Socket {
                 logger.trace("", t);
             }
 
-            socket = new InternalSocket(options, new DefaultFuture(this));
+            socket = createSocket();
         }
         return this;
+    }
+
+    protected SocketRuntime createSocket() {
+        return new SocketRuntime(options, new DefaultFuture(this));
     }
 
     /**
@@ -225,7 +222,7 @@ public class DefaultSocket implements Socket {
         }
     }
 
-    protected InternalSocket internalSocket() {
+    protected SocketRuntime internalSocket() {
         return socket;
     }
 
@@ -251,113 +248,6 @@ public class DefaultSocket implements Socket {
         return transports;
     }
 
-
-    protected final static class InternalSocket {
-
-        private final WebSocket webSocket;
-        private final Options options;
-        private final DefaultFuture rootFuture;
-
-        public InternalSocket(WebSocket webSocket, Options options, DefaultFuture rootFuture) {
-            this.webSocket = webSocket;
-            this.options = options;
-            this.rootFuture = rootFuture;
-        }
-
-        public InternalSocket(Options options, DefaultFuture rootFuture) {
-            this(null, options, rootFuture);
-        }
-
-        public DefaultFuture future() {
-            return rootFuture;
-        }
-
-        public void close() {
-            if (!options.isShared() && !options.runtime().isClosed()) {
-                options.runtime().closeAsynchronously();
-            } else if (options.isShared()) {
-                logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
-            }
-        }
-
-        Object invokeEncoder(List<Encoder<? extends Object, ?>> encoders, Object instanceType) {
-            for (Encoder e : encoders) {
-                Class<?>[] typeArguments = TypeResolver.resolveArguments(e.getClass(), Encoder.class);
-
-                if (typeArguments.length > 0 && typeArguments[0].isAssignableFrom(instanceType.getClass())) {
-                    instanceType = e.encode(instanceType);
-                }
-            }
-            return instanceType;
-        }
-
-        public InternalSocket write(Request request, Object data) throws IOException {
-
-            // Execute encoder
-            Object object = invokeEncoder(request.encoders(), data);
-            if (webSocket != null) {
-                if (InputStream.class.isAssignableFrom(object.getClass())) {
-                    InputStream is = (InputStream) object;
-                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
-                    //TODO: We need to stream directly, in AHC!
-                    byte[] buffer = new byte[8192];
-                    int n = 0;
-                    while (-1 != (n = is.read(buffer))) {
-                        bs.write(buffer, 0, n);
-                    }
-                    webSocket.sendMessage(bs.toByteArray());
-                } else if (Reader.class.isAssignableFrom(object.getClass())) {
-                    Reader is = (Reader) object;
-                    StringWriter bs = new StringWriter();
-                    //TODO: We need to stream directly, in AHC!
-                    char[] chars = new char[8192];
-                    int n = 0;
-                    while (-1 != (n = is.read(chars))) {
-                        bs.write(chars, 0, n);
-                    }
-                    webSocket.sendTextMessage(bs.getBuffer().toString());
-                } else if (String.class.isAssignableFrom(object.getClass())) {
-                    webSocket.sendTextMessage(object.toString());
-                } else if (byte[].class.isAssignableFrom(object.getClass())) {
-                    webSocket.sendMessage((byte[]) object);
-                } else {
-                    throw new IllegalStateException("No Encoder for " + data);
-                }
-            } else {
-
-                // Only for Atmosphere
-                if (AtmosphereRequest.class.isAssignableFrom(request.getClass())) {
-                    request.queryString().put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
-                    request.queryString().remove("X-atmo-protocol");
-                }
-
-                AsyncHttpClient.BoundRequestBuilder b = options.runtime().preparePost(request.uri())
-                        .setHeaders(request.headers())
-                        .setQueryParameters(decodeQueryString(request))
-                        .setMethod(Request.METHOD.POST.name());
-
-                if (InputStream.class.isAssignableFrom(object.getClass())) {
-                    //TODO: Allow reading the response.
-                    b.setBody((InputStream) object).execute();
-                } else if (Reader.class.isAssignableFrom(object.getClass())) {
-                    b.setBody(new ReaderInputStream((Reader) object))
-                            .execute();
-                    return this;
-                } else if (String.class.isAssignableFrom(object.getClass())) {
-                    b.setBody((String) object)
-                            .execute();
-                } else if (byte[].class.isAssignableFrom(object.getClass())) {
-                    b.setBody((byte[]) object)
-                            .execute();
-                } else {
-                    throw new IllegalStateException("No Encoder for " + data);
-                }
-            }
-            rootFuture.done();
-
-            return this;
-        }
-    }
 
     protected Request request() {
         return request;
