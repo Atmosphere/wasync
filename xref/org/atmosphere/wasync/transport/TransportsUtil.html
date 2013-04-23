@@ -68,7 +68,7 @@
 <a class="jxr_linenumber" name="58" href="#58">58</a>                  }
 <a class="jxr_linenumber" name="59" href="#59">59</a>              }
 <a class="jxr_linenumber" name="60" href="#60">60</a>  
-<a class="jxr_linenumber" name="61" href="#61">61</a>              <strong class="jxr_keyword">if</strong> (typeArguments.length &gt; 0 &amp;&amp; typeArguments[0].isAssignableFrom(implementedType)) {
+<a class="jxr_linenumber" name="61" href="#61">61</a>              <strong class="jxr_keyword">if</strong> (instanceType != <strong class="jxr_keyword">null</strong> &amp;&amp; typeArguments.length &gt; 0 &amp;&amp; typeArguments[0].isAssignableFrom(implementedType)) {
 <a class="jxr_linenumber" name="62" href="#62">62</a>                  <strong class="jxr_keyword">if</strong> (resolver.resolve(originalMessage, functionName, wrapper)) {
 <a class="jxr_linenumber" name="63" href="#63">63</a>                      hasMatch = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="64" href="#64">64</a>                      f.on(instanceType);
