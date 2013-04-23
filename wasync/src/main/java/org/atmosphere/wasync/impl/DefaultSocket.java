@@ -168,7 +168,7 @@ public class DefaultSocket implements Socket {
                 }
 
                 transportInUse.close();
-                options.runtime().close();
+                closeRuntime(false);
                 if (!transportInUse.errorHandled() && TimeoutException.class.isAssignableFrom(e.getClass())) {
                     throw new IOException("Invalid state: " + e.getMessage());
                 }
@@ -207,10 +207,24 @@ public class DefaultSocket implements Socket {
     public void close() {
         // Not connected, but close the underlying AHC.
         if (transportInUse == null) {
-            options.runtime().close();
+            closeRuntime(false);
         } else if (socket != null && !transportInUse.status().equals(STATUS.CLOSE)) {
             transportInUse.close();
             socket.close();
+            closeRuntime(true);
+        }
+    }
+
+    void closeRuntime(boolean async) {
+        if (options.runtimeShared()) {
+            if (!options.runtimeShared() && !options.runtime().isClosed()) {
+                if (async == true)
+                    options.runtime().closeAsynchronously();
+                else
+                    options.runtime().close();
+            } else if (options.runtimeShared()) {
+                logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
+            }
         }
     }
 

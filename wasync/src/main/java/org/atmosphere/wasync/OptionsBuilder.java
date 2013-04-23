@@ -134,31 +134,55 @@ public abstract class OptionsBuilder<T extends OptionsBuilder<T>> {
      */
     public abstract Options build();
 
+    /**
+     * The used {@link Transport}
+     * @return {@link Transport}
+     */
     public Transport transport() {
         return transport;
     }
-
+    /**
+     * Reconnect after a network failure or when the server close the connection.
+     * @return reconnect
+     */
     public boolean reconnect(){
         return reconnect;
     }
-
+    /**
+     * The delay, in second, before reconnecting.
+     * @return The delay, in second, before reconnecting.
+     */
     public int reconnectInSeconds(){
         return reconnectInSecond;
     }
-
+    /**
+     * When using long-polling and the {@link Request}, the delay before considering the long-polling connection has been fully processed by the server. If you use
+     * the {@link org.atmosphere.wasync.impl.AtmosphereClient}, the server will send some handshake so this value is not needed.
+     * @return the delay before considering the long-polling connection has been fully processed
+     */
     public long waitBeforeUnlocking() {
         return waitBeforeUnlocking;
     }
-
+    /**
+     * The {@link AsyncHttpClient} used to communicate with server.
+     * @return {@link AsyncHttpClient} used to communicate with server.
+     */
     public AsyncHttpClient runtime(){
         return client;
     }
-
+    /**
+     * Return true is the {@link AsyncHttpClient} is shared between {@link Socket}. Default is false. You need to invoke {@link #runtime(com.ning.http.client.AsyncHttpClient)} to make
+     * it shared.
+     * @return true is the {@link AsyncHttpClient}
+     */
     public boolean runtimeShared(){
         return runtimeShared;
     }
-
-    public int requestTimeout() {
+    /**
+     * The time, in seconds to wait before closing the connection.
+     * @return The time, in seconds to wait before closing the connection.
+     */
+    public int requestTimeoutInSeconds() {
         return requestTimeout;
     }
 

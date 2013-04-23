@@ -59,11 +59,6 @@ public class SocketRuntime {
     }
 
     public void close() {
-        if (!options.isShared() && !options.runtime().isClosed()) {
-            options.runtime().closeAsynchronously();
-        } else if (options.isShared()) {
-            logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
-        }
     }
 
     protected Object invokeEncoder(List<Encoder<? extends Object, ?>> encoders, Object instanceType) {
