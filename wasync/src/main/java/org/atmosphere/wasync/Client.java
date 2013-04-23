@@ -37,31 +37,37 @@ public interface Client<O extends Options, U extends OptionsBuilder, T extends R
 
     /**
      * Create a {@link Socket}
+     *
      * @return {@link Socket}
      */
     Socket create();
+
     /**
      * Create a {@link Socket} configured using the {@link Options}
+     *
      * @return {@link Socket}
      */
     Socket create(O options);
 
     /**
      * Return a {@link RequestBuilder}
+     *
      * @return a {@link RequestBuilder}
      */
     T newRequestBuilder();
 
     /**
      * Create a new {@link RequestBuilder} based on the class' implementation.
+     *
      * @param clazz an impplementation of {@link RequestBuilder}
-     * @return  a {@link RequestBuilder}
+     * @return a {@link RequestBuilder}
      */
     T newRequestBuilder(Class<T> clazz);
 
 
     /**
      * Return an {@link OptionsBuilder}
+     *
      * @return {@link OptionsBuilder}
      */
     U newOptionsBuilder();

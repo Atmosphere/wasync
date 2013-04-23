@@ -26,11 +26,11 @@ import java.io.IOException;
 public interface Future extends java.util.concurrent.Future<Socket> {
     /**
      * Send data to the remote Server.
-     * @param data
+     * @param message the message to fire
      * @return a {@link Future}
      * @throws java.io.IOException
      */
-    Future fire(Object data) throws IOException;
+    Future fire(Object message) throws IOException;
     /**
      * Mark the future done.
      */

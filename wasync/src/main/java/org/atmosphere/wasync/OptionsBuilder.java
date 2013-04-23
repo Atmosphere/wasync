@@ -17,6 +17,12 @@ package org.atmosphere.wasync;
 
 import com.ning.http.client.AsyncHttpClient;
 
+/**
+ * Base class for building {@link Options}
+ *
+ * @author Jeanfrancois Arcand
+ * @param <T>
+ */
 public abstract class OptionsBuilder<T extends OptionsBuilder<T>> {
 
     private Transport transport;

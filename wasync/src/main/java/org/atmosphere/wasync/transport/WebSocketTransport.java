@@ -93,6 +93,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() {
         if (closed.getAndSet(true)) return;
@@ -105,11 +108,17 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             webSocket.close();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public STATUS status() {
         return status;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean errorHandled() {
         return errorHandled.get();
@@ -245,17 +254,25 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Request.TRANSPORT name() {
         return Request.TRANSPORT.WEBSOCKET;
     }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Transport future(Future f) {
         this.f = f;
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Transport registerF(FunctionWrapper function) {
         functions.add(function);

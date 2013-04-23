@@ -34,6 +34,9 @@ public class SSETransport extends StreamTransport {
         super(requestBuilder, options, request, functions);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Request.TRANSPORT name() {
         return Request.TRANSPORT.SSE;

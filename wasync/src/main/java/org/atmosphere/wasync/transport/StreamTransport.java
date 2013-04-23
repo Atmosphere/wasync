@@ -89,12 +89,18 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
                 request.headers().get("Content-Type").contains("application/octet-stream") : false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Transport future(Future f) {
         this.f = f;
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Transport registerF(FunctionWrapper function) {
         functions.add(function);
@@ -159,6 +165,9 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         return AsyncHandler.STATE.CONTINUE;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String onCompleted() throws Exception {
         if (closed.get()) return "";
@@ -197,11 +206,17 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Request.TRANSPORT name() {
         return Request.TRANSPORT.STREAMING;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() {
         if (closed.getAndSet(true)) return;
@@ -210,11 +225,17 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         TransportsUtil.invokeFunction(decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public STATUS status() {
         return status;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean errorHandled() {
         return errorHandled.get();
