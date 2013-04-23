@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.atmosphere.wasync.Event.CLOSE;
 import static org.atmosphere.wasync.Event.ERROR;
+import static org.atmosphere.wasync.Event.HEADERS;
 import static org.atmosphere.wasync.Event.MESSAGE;
 import static org.atmosphere.wasync.Event.OPEN;
 import static org.atmosphere.wasync.Event.RECONNECT;
@@ -131,7 +132,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), MESSAGE.name(), resolver);
+        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), HEADERS.name(), resolver);
 
         // TODO: Parse charset
         return AsyncHandler.STATE.CONTINUE;
