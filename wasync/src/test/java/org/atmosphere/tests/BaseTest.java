@@ -698,7 +698,7 @@ public abstract class BaseTest {
         final AtomicReference<Class<? extends TimeoutException>> response = new AtomicReference<Class<? extends TimeoutException>>();
         Client client = ClientFactory.getDefault().newClient();
 
-        Options o = client.newOptionsBuilder().reconnect(false).requestTimeout(5).build();
+        Options o = client.newOptionsBuilder().reconnect(false).requestTimeoutInSeconds(5).build();
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")

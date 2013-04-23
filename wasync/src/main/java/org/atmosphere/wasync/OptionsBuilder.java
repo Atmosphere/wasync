@@ -37,8 +37,8 @@ public abstract class OptionsBuilder<T extends OptionsBuilder<T>> {
      *
      * @return this
      */
-    public T requestTimeout(int requestTimeout) {
-        this.requestTimeout = requestTimeout * 1000;
+    public T requestTimeoutInSeconds(int requestTimeout) {
+        this.requestTimeout = requestTimeout;
         return derived.cast(this);
     }
 
