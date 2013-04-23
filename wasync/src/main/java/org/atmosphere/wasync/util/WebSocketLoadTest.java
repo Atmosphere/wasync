@@ -37,6 +37,10 @@ public class WebSocketLoadTest {
 
     public static void main(String[] s) throws InterruptedException, IOException {
 
+        if (s.length == 0) {
+            s = new String[]{"500","1000","http://127.0.0.1:8080/atmosphere-chat/chat"};
+        }
+
         final int clientNum = Integer.valueOf(s[0]);
         final int messageNum = Integer.valueOf(s[1]);
         String url = s[2];
@@ -103,6 +107,7 @@ public class WebSocketLoadTest {
             socket.fire("message" + i);
         }
         messages.await(5, TimeUnit.MINUTES);
+        socket.close();
         c.close();
         System.out.println("Total: " + (total.get()/clientCount));
 
