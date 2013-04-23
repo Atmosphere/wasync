@@ -1,27 +1,28 @@
 package org.atmosphere.tests;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.nettosphere.Config;
 import org.atmosphere.nettosphere.Nettosphere;
-import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class LongPollingTest extends StreamingTest {
 
@@ -61,8 +62,16 @@ public class LongPollingTest extends StreamingTest {
 
             	@Override
             	public void onStateChange(AtmosphereResourceEvent event) throws IOException {
-            		event.getResource().getResponse().write((String) event.getMessage());
-            		event.getResource().resume();
+                    if (List.class.isAssignableFrom(event.getMessage().getClass())) {
+                        List<String> cached = (List<String>) List.class.cast(event.getMessage());
+                        logger.info("cached : {}", cached);
+                        for (String m: cached) {
+                            event.getResource().getResponse().write(m);
+                        }
+                    } else {
+                        event.getResource().getResponse().write((String) event.getMessage());
+                    }
+                    event.getResource().resume();
             	}
             	
             	@Override
@@ -78,7 +87,7 @@ public class LongPollingTest extends StreamingTest {
        
        final CountDownLatch latch = new CountDownLatch(5);
        final AtomicReference<Set> response = new AtomicReference<Set>(new HashSet());
-       Client client = ClientFactory.getDefault().newClient();
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
        RequestBuilder request = client.newRequestBuilder()
     		   .method(Request.METHOD.GET)
