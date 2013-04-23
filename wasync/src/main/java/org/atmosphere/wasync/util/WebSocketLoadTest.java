@@ -38,7 +38,7 @@ public class WebSocketLoadTest {
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"500","1000","http://127.0.0.1:8080/atmosphere-chat/chat"};
+            s = new String[]{"500","1000","http://127.0.0.1:8080/chat"};
         }
 
         final int clientNum = Integer.valueOf(s[0]);
@@ -62,41 +62,44 @@ public class WebSocketLoadTest {
         long clientCount = l.getCount();
         final AtomicLong total = new AtomicLong(0);
 
+        Socket[] sockets = new Socket[clientNum];
         for (int i = 0; i < clientCount; i++) {
             final AtomicLong start = new AtomicLong(0);
-            Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
-            socket.on(new Function<Integer>() {
-                @Override
-                public void on(Integer statusCode) {
-                    start.set(System.currentTimeMillis());
-                    l.countDown();
-                }
-            });
-            socket.on(new Function<String>() {
-
-                int mCount = 0;
-
-                @Override
-                public void on(String s) {
-                    if (s.startsWith("message")) {
-                        String[] m = s.split("\n\r");
-                        mCount += m.length;
-                        System.out.println(messages.getCount());
-                        messages.countDown();
-                        if (mCount == messageNum) {
-                            total.addAndGet(System.currentTimeMillis() - start.get());
+            sockets[i] = client.create(client.newOptionsBuilder().runtime(c).build())
+                    .on(new Function<Integer>() {
+                        @Override
+                        public void on(Integer statusCode) {
+                            start.set(System.currentTimeMillis());
+                            l.countDown();
                         }
-                    }
-                }
-            }).on(new Function<Throwable>() {
-                @Override
-                public void on(Throwable t) {
-                    t.printStackTrace();
-                }
-            });
+                    }).on(new Function<String>() {
 
-            socket.open(request.build());
+                        int mCount = 0;
+
+                        @Override
+                        public void on(String s) {
+                            if (s.startsWith("message")) {
+                                String[] m = s.split("\n\r");
+                                mCount += m.length;
+                                // System.out.println(messages.getCount());
+                                messages.countDown();
+                                if (mCount == messageNum) {
+                                    total.addAndGet(System.currentTimeMillis() - start.get());
+                                }
+                            }
+                        }
+                    }).on(new Function<Throwable>() {
+                        @Override
+                        public void on(Throwable t) {
+                            t.printStackTrace();
+                        }
+                    });
+
         }
+        for (int i = 0; i < clientCount; i++) {
+            sockets[i].open(request.build());
+        }
+
         l.await(60, TimeUnit.SECONDS);
 
         System.out.println("OK, all Connected: " + clientNum);
