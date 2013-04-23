@@ -87,7 +87,7 @@ public class LongPollingTest extends StreamingTest {
        
        final CountDownLatch latch = new CountDownLatch(5);
        final AtomicReference<Set> response = new AtomicReference<Set>(new HashSet());
-        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+       AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
        RequestBuilder request = client.newRequestBuilder()
     		   .method(Request.METHOD.GET)
