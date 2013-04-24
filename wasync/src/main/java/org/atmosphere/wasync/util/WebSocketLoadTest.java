@@ -38,7 +38,7 @@ public class WebSocketLoadTest {
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"500","1000","http://127.0.0.1:8080/chat"};
+            s = new String[]{"1","1","http://127.0.0.1:8080/atmosphere-chat/chat"};
         }
 
         final int clientNum = Integer.valueOf(s[0]);
@@ -81,9 +81,9 @@ public class WebSocketLoadTest {
                             if (s.startsWith("message")) {
                                 String[] m = s.split("\n\r");
                                 mCount += m.length;
-                                // System.out.println(messages.getCount());
                                 messages.countDown();
                                 if (mCount == messageNum) {
+                                   // System.out.println("All messages received " + mCount);
                                     total.addAndGet(System.currentTimeMillis() - start.get());
                                 }
                             }
@@ -96,6 +96,7 @@ public class WebSocketLoadTest {
                     });
 
         }
+
         for (int i = 0; i < clientCount; i++) {
             sockets[i].open(request.build());
         }
@@ -111,6 +112,9 @@ public class WebSocketLoadTest {
         }
         messages.await(5, TimeUnit.MINUTES);
         socket.close();
+        for (int i = 0; i < clientCount; i++) {
+            sockets[i].close();
+        }
         c.close();
         System.out.println("Total: " + (total.get()/clientCount));
 
