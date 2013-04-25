@@ -20,8 +20,10 @@ import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.impl.AtmosphereRequest;
 import org.atmosphere.wasync.impl.ClientUtil;
 import org.atmosphere.wasync.impl.DefaultRequestBuilder;
+import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 
 /**
  * {@code SerializedClient} is a {@link org.atmosphere.wasync.Client} that guarantees ordered message delivery, in-line with the 
@@ -41,7 +43,7 @@ import org.atmosphere.wasync.impl.DefaultRequestBuilder;
  * <p/>
  * @author Christian Bach
  */
-public class SerializedClient implements Client<SerializedOptions, SerializedOptionsBuilder, RequestBuilder> {
+public class SerializedClient implements Client<SerializedOptions, SerializedOptionsBuilder, AtmosphereRequest.AtmosphereRequestBuilder> {
 
     /**
      * {@inheritDoc}
@@ -63,7 +65,11 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
     public Socket create() {
         AsyncHttpClient asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(newOptionsBuilder().reconnect(true).build());
 
-        return new SerializedSocket(new SerializedOptionsBuilder().runtime(asyncHttpClient).build());
+        return new SerializedSocket(
+        		new SerializedOptionsBuilder()
+        		.runtime(asyncHttpClient)
+        		.serializedFireStage(new DefaultSerializedFireStage())
+        		.build());
     }
 
     /**
@@ -78,17 +84,17 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
      * {@inheritDoc}
      */
     @Override
-    public RequestBuilder newRequestBuilder() {
-        RequestBuilder b = new DefaultRequestBuilder();
-        return b.resolver(FunctionResolver.DEFAULT);
+    public AtmosphereRequestBuilder newRequestBuilder() {
+        AtmosphereRequestBuilder b = new AtmosphereRequestBuilder();
+        return AtmosphereRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public RequestBuilder newRequestBuilder(Class<RequestBuilder> clazz) {
-        RequestBuilder b = null;
+    public AtmosphereRequestBuilder newRequestBuilder(Class<AtmosphereRequest.AtmosphereRequestBuilder> clazz) {
+        AtmosphereRequestBuilder b;
         try {
             b = clazz.newInstance();
         } catch (InstantiationException e) {
@@ -96,6 +102,6 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return b.resolver(FunctionResolver.DEFAULT);
+        return AtmosphereRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
     }
 }

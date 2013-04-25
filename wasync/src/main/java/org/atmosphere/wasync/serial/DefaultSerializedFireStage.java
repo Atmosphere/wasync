@@ -38,7 +38,7 @@ import org.atmosphere.wasync.Socket;
  * consumes payload objects off the stage queue.
  * <p/>
  * Binary payloads are aggregated up to a {@code maxBinaryPayloadAggregationSize}.
- *
+ * <p/>
  * @author Christian Bach
  */
 public class DefaultSerializedFireStage implements SerializedFireStage {
