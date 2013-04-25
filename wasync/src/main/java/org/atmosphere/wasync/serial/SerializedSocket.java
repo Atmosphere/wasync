@@ -49,7 +49,7 @@ public class SerializedSocket extends DefaultSocket {
 
     @Override
     protected SocketRuntime createSocket() {
-        return new SerialSocketRuntime(options, new DefaultFuture(this), this);
+        return new SerialSocketRuntime(options, new DefaultFuture(this), this, functions);
     }
 
     public SerializedFireStage getSerializedFireStage() {

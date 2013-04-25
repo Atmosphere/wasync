@@ -127,7 +127,7 @@ public class DefaultSocket implements Socket {
         } else {
             throw new IOException("No suitable transport supported");
         }
-        socketRuntime = new SocketRuntime(options, new DefaultFuture(this));
+        socketRuntime = new SocketRuntime(options, new DefaultFuture(this), functions);
 
         functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
             @Override
@@ -157,7 +157,7 @@ public class DefaultSocket implements Socket {
                         (AsyncHandler<WebSocket>) transportInUse);
 
                 WebSocket w = fw.get(timeout, tu);
-                socketRuntime = new SocketRuntime(w, options, socketRuntime.future());
+                socketRuntime = new SocketRuntime(w, options, socketRuntime.future(), functions);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 
@@ -195,7 +195,7 @@ public class DefaultSocket implements Socket {
     }
 
     protected SocketRuntime createSocket() {
-        return new SocketRuntime(options, new DefaultFuture(this));
+        return new SocketRuntime(options, new DefaultFuture(this), functions);
     }
 
     /**

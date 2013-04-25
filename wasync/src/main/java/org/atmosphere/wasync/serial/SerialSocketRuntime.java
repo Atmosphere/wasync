@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 import com.ning.http.client.websocket.WebSocket;
+import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -40,13 +42,13 @@ public class SerialSocketRuntime extends SocketRuntime {
     private final static Logger logger = LoggerFactory.getLogger(SerialSocketRuntime.class);
     private final SerializedSocket serializedSocket;
 
-    public SerialSocketRuntime(WebSocket webSocket, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket) {
-        super(webSocket, options, rootFuture);
+    public SerialSocketRuntime(WebSocket webSocket, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket,  List<FunctionWrapper> functions) {
+        super(webSocket, options, rootFuture, functions);
         this.serializedSocket = serializedSocket;
     }
 
-    public SerialSocketRuntime(Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket) {
-        this(null, options, rootFuture, serializedSocket);
+    public SerialSocketRuntime(Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket, List<FunctionWrapper> functions) {
+        this(null, options, rootFuture, serializedSocket, functions);
     }
 
     public Future write(Request request, Object data) throws IOException {

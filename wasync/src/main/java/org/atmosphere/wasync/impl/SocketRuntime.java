@@ -20,9 +20,12 @@ import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 import com.ning.http.client.websocket.WebSocket;
 import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.transport.TransportsUtil;
 import org.atmosphere.wasync.util.ReaderInputStream;
 import org.atmosphere.wasync.util.TypeResolver;
 import org.slf4j.Logger;
@@ -35,6 +38,9 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
+
+import static org.atmosphere.wasync.Event.MESSAGE;
 
 public class SocketRuntime {
 
@@ -43,15 +49,17 @@ public class SocketRuntime {
     protected final WebSocket webSocket;
     protected final Options options;
     protected final DefaultFuture rootFuture;
+    protected final List<FunctionWrapper> functions;
 
-    public SocketRuntime(WebSocket webSocket, Options options, DefaultFuture rootFuture) {
+    public SocketRuntime(WebSocket webSocket, Options options, DefaultFuture rootFuture, List<FunctionWrapper> functions) {
         this.webSocket = webSocket;
         this.options = options;
         this.rootFuture = rootFuture;
+        this.functions = functions;
     }
 
-    public SocketRuntime(Options options, DefaultFuture rootFuture) {
-        this(null, options, rootFuture);
+    public SocketRuntime(Options options, DefaultFuture rootFuture, List<FunctionWrapper> functions) {
+        this(null, options, rootFuture, functions);
     }
 
     public DefaultFuture future() {
@@ -75,7 +83,18 @@ public class SocketRuntime {
         if (webSocket != null) {
             webSocketWrite(request, object, data);
         } else {
-            httpWrite(request, object, data);
+            try {
+                Response r = httpWrite(request, object, data).get(rootFuture.time, rootFuture.tu);
+                String m = r.getResponseBody();
+                if (!m.isEmpty()) {
+                    TransportsUtil.invokeFunction(request.decoders(),functions, String.class, m, MESSAGE.name(), request.functionResolver());
+                }
+            } catch (TimeoutException t) {
+                logger.trace("AHC Timeout", t);
+                rootFuture.te = t;
+            } catch (Throwable t) {
+                logger.error("", t);
+            }
         }
 
         return rootFuture.done();

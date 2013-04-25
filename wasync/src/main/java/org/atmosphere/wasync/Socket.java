@@ -21,8 +21,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A Socket represents a connection to a remote server. A Socket abstract the transport used and will negotiate
- * the best {@link org.atmosphere.wasync.Request.TRANSPORT} to communicate with the remote Server.
+ * the best {@link org.atmosphere.wasync.Request.TRANSPORT} to communicate with the Server.
  * <p></p>
+ * Depending on the transport used, one or two connections will be opened. For WebSocket, a single, bi-directional connection
+ * will be used. For other transport like streaming, server side events and long-polling, a connection will be opened
+ * to the server and will be suspended (stay opened) until an event happen on the server. A second connection will be opened every time the {@link #fire(Object)}
+ * method is invoked and cached for further re-use.
+ * <p></p>
+ *
  * As simple as
  * <blockquote><pre>
      Client client = AtmosphereClientFactory.getDefault().newClient();
@@ -88,7 +94,8 @@ public interface Socket {
 
     /**
      * Send data to the remote Server. The object will first be delivered to the set of {@link Encoder}, and then send to the server.
-     * The server's response will be delivered to the set of defined {@link Function}
+     * The server's response will be delivered to the set of defined {@link Function} using the opened {@link Transport}, e.g for
+     * {@link Request.TRANSPORT#WEBSOCKET}, the same connection will be re-used and, for others transports, the suspended connection.
      * @param data object to send
      * @return a {@link Future}
      * @throws IOException
