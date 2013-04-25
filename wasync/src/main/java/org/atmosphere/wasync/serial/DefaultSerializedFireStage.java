@@ -25,7 +25,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.atmosphere.wasync.Socket;
+
 /**
+ * Default implementation of a {@link SerializedFireStage}.
+ * <p/>
+ * This implementation is based on an unbounded stage that enqueues the payload
+ * objects to be fired ({@link SerializedFireStage#enqueue(Object, SettableFuture)}) by 
+ * means of a {@link LinkedBlockingQueue}.
+ * <p/>
+ * Every instance of this class spans its dedicated stage thread, which sequentially 
+ * consumes payload objects off the stage queue.
+ * <p/>
+ * Binary payloads are aggregated up to a {@code maxBinaryPayloadAggregationSize}.
  *
  * @author Christian Bach
  */
