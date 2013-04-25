@@ -27,8 +27,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * A {@link Socket} what support ordered serialization of invocation of {@link Socket#fire(Object)}. Message will be delivered in the same order the fire() message is invoked.
- *
+ * {@code SerializedSocket} is a {@link Socket} implementation that guarantees ordered message delivery of 
+ * {@link Socket#fire(Object)} calls, by serializing fire calls over a {@link SerializedFireStage}. 
+ * <p/>
+ * {@code SerializedSocket} guarantees to use only one underlying connection at any moment in time, while still 
+ * providing an asynchronous fire interface to clients.
+ * <p/>
  * @author Christian Bach
  */
 public class SerializedSocket extends DefaultSocket {
