@@ -216,15 +216,13 @@ public class DefaultSocket implements Socket {
     }
 
     void closeRuntime(boolean async) {
-        if (options.runtimeShared()) {
-            if (!options.runtimeShared() && !options.runtime().isClosed()) {
-                if (async == true)
-                    options.runtime().closeAsynchronously();
-                else
-                    options.runtime().close();
-            } else if (options.runtimeShared()) {
-                logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
-            }
+        if (!options.runtimeShared() && !options.runtime().isClosed()) {
+            if (async == true)
+                options.runtime().closeAsynchronously();
+            else
+                options.runtime().close();
+        } else if (options.runtimeShared()) {
+            logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
         }
     }
 
