@@ -57,6 +57,6 @@ public class SerializedSocket extends DefaultSocket {
     }
 
     public ListenableFuture<Response> directWrite(Object encodedPayload) throws IOException {
-        return socket.httpWrite(request, encodedPayload, encodedPayload);
+        return socketRuntime.httpWrite(request, encodedPayload, encodedPayload);
     }
 }

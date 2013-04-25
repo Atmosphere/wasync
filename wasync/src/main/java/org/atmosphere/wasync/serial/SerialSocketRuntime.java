@@ -76,8 +76,9 @@ public class SerialSocketRuntime extends SocketRuntime {
                     }
 
                     @Override
-                    public void done() {
+                    public Future done() {
                         ListenableFuture.class.cast(future).done(null);
+                        return this;
                     }
 
                     @Override
@@ -116,8 +117,9 @@ public class SerialSocketRuntime extends SocketRuntime {
                     }
 
                     @Override
-                    public void done() {
+                    public Future done() {
                         future.done(null);
+                        return this;
                     }
 
                     @Override

@@ -27,11 +27,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultFuture implements Future {
 
-    private final Socket socket;
+    private final DefaultSocket socket;
     private CountDownLatch latch = new CountDownLatch(1);
     private final AtomicBoolean done = new AtomicBoolean(false);
 
-    public DefaultFuture(Socket socket) {
+    public DefaultFuture(DefaultSocket socket) {
         this.socket = socket;
     }
 
@@ -67,9 +67,10 @@ public class DefaultFuture implements Future {
      * {@inheritDoc}
      */
     @Override
-    public void done(){
+    public Future done(){
         done.set(true);
         latch.countDown();
+        return this;
     }
 
     protected void reset(){
@@ -106,7 +107,7 @@ public class DefaultFuture implements Future {
     @Override
     public Future fire(Object data) throws IOException {
         reset();
-        ((DefaultSocket)socket).internalSocket().write(((DefaultSocket)socket).request(), data);
+        socket.internalSocket().write(socket.request(), data);
         return this;
     }
 }

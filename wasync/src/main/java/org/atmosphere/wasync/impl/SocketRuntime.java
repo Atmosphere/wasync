@@ -58,9 +58,6 @@ public class SocketRuntime {
         return rootFuture;
     }
 
-    public void close() {
-    }
-
     protected Object invokeEncoder(List<Encoder<? extends Object, ?>> encoders, Object instanceType) {
         for (Encoder e : encoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(e.getClass(), Encoder.class);
@@ -80,9 +77,8 @@ public class SocketRuntime {
         } else {
             httpWrite(request, object, data);
         }
-        rootFuture.done();
 
-        return rootFuture;
+        return rootFuture.done();
     }
 
     public void webSocketWrite(Request request, Object object, Object data) throws IOException {

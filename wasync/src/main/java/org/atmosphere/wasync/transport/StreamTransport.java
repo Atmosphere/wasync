@@ -54,7 +54,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     private final static String DEFAULT_CHARSET = "UTF-8";
     private final Logger logger = LoggerFactory.getLogger(StreamTransport.class);
 
-    protected Future f;
     protected final List<FunctionWrapper> functions;
     protected final List<Decoder<? extends Object, ?>> decoders;
     //TODO fix me
@@ -87,15 +86,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
 
         isBinary = request.headers().get("Content-Type") != null ?
                 request.headers().get("Content-Type").contains("application/octet-stream") : false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Transport future(Future f) {
-        this.f = f;
-        return this;
     }
 
     /**

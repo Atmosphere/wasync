@@ -56,7 +56,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);
     private WebSocket webSocket;
     private final AtomicBoolean ok = new AtomicBoolean(false);
-    private Future f;
     private final List<FunctionWrapper> functions;
     private final List<Decoder<?, ?>> decoders;
     private final FunctionResolver resolver;
@@ -260,14 +259,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public Request.TRANSPORT name() {
         return Request.TRANSPORT.WEBSOCKET;
-    }
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Transport future(Future f) {
-        this.f = f;
-        return this;
     }
 
     /**

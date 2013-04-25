@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A Socket represent a connection to a remote server. A Socket abstract the transport used, the client will negotiate
- * the best {@link org.atmosphere.wasync.Request#transport()} to communicate with the remote Server. As simple as
+ * A Socket represents a connection to a remote server. A Socket abstract the transport used and will negotiate
+ * the best {@link org.atmosphere.wasync.Request.TRANSPORT} to communicate with the remote Server.
+ * <p></p>
+ * As simple as
  * <blockquote><pre>
      Client client = AtmosphereClientFactory.getDefault().newClient();
 
@@ -85,8 +87,9 @@ public interface Socket {
         ERROR }
 
     /**
-     * Send data to the remote Server.
-     * @param data
+     * Send data to the remote Server. The object will first be delivered to the set of {@link Encoder}, and then send to the server.
+     * The server's response will be delivered to the set of defined {@link Function}
+     * @param data object to send
      * @return a {@link Future}
      * @throws IOException
      */
@@ -98,7 +101,7 @@ public interface Socket {
      * @param function a {@link Function}
      * @return this
      */
-    Socket on(Function<? extends Object> function);
+    Socket on(Function<?> function);
 
     /**
      * Associate a {@link Function} with the Socket. When a response is received, the library will try to associated
@@ -107,7 +110,7 @@ public interface Socket {
      * @param function a {@link Function}
      * @return this
      */
-    Socket on(String functionMessage, Function<? extends Object> function);
+    Socket on(String functionMessage, Function<?> function);
 
     /**
      * Connect to the remote Server using the {@link Request}'s information.
@@ -134,7 +137,7 @@ public interface Socket {
     void close();
 
     /**
-     *  Return true if this socket is open.
+     *  Return the {@link STATUS} of this Socket.
      */
     STATUS status();
 }

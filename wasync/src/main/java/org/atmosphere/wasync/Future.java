@@ -33,6 +33,7 @@ public interface Future extends java.util.concurrent.Future<Socket> {
     Future fire(Object message) throws IOException;
     /**
      * Mark the future done.
+     * @return a {@link Future}
      */
-    void done();
+    Future done();
 }
