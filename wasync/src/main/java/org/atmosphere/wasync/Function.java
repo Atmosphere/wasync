@@ -59,12 +59,12 @@ package org.atmosphere.wasync;
  * @param <T>
  * @author Jeanfrancois Arcand
  */
-public interface Function<T extends Object> {
+public interface Function<T> {
 
     /**
-     * A function that will be invoked when a
+     * A function that will be invoked when a object of type T is defined.
      *
-     * @param t
+     * @param t  A function that will be invoked when a object of type T is defined.
      */
     void on(T t);
 

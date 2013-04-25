@@ -58,7 +58,7 @@ public class TransportsUtil {
                 }
             }
 
-            if (typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {
+            if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {
                 if (resolver.resolve(originalMessage, functionName, wrapper)) {
                     hasMatch = true;
                     f.on(instanceType);

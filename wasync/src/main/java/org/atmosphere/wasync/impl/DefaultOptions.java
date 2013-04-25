@@ -78,14 +78,14 @@ public class DefaultOptions implements Options {
      * {@inheritDoc}
      */
     @Override
-    public boolean isShared(){
+    public boolean runtimeShared(){
         return b.runtimeShared();
     }
     /**
      * {@inheritDoc}
      */
     @Override
-    public int requestTimeout() {
-        return b.requestTimeout();
+    public int requestTimeoutInSeconds() {
+        return b.requestTimeoutInSeconds();
     }
 }

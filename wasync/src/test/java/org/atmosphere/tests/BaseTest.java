@@ -84,7 +84,7 @@ public abstract class BaseTest {
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
-        port = findFreePort();
+        port = 8080;
         targetUrl = "http://127.0.0.1:" + port;
     }
 
@@ -698,7 +698,7 @@ public abstract class BaseTest {
         final AtomicReference<Class<? extends TimeoutException>> response = new AtomicReference<Class<? extends TimeoutException>>();
         Client client = ClientFactory.getDefault().newClient();
 
-        Options o = client.newOptionsBuilder().reconnect(false).requestTimeout(5).build();
+        Options o = client.newOptionsBuilder().reconnect(false).requestTimeoutInSeconds(5).build();
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
@@ -1282,7 +1282,7 @@ public abstract class BaseTest {
         l.await(60, TimeUnit.SECONDS);
     }
 
-    @Test (enabled = false)
+    @Test (enabled = true)
     public void serializeTest() throws Exception {
         Config config = new Config.Builder()
                 .port(port)

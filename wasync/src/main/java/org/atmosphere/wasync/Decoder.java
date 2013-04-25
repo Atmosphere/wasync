@@ -42,7 +42,7 @@ package org.atmosphere.wasync;
  * @param <T>
  * @author Jeanfrancois Arcand
  */
-public interface Decoder<U extends Object, T> {
+public interface Decoder<U, T> {
     /**
      * Decode the specified object of type U into object of type T
      *

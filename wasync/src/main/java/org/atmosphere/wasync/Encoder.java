@@ -22,7 +22,7 @@ package org.atmosphere.wasync;
  * @param <T>
  * @author Jeanfrancois Arcand
  */
-public interface Encoder<U extends Object, T> {
+public interface Encoder<U, T> {
 
     /**
      * Encode the object of type U into an object of type T.

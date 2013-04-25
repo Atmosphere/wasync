@@ -15,5 +15,16 @@
  */
 package org.atmosphere.wasync.transport;
 
+/**
+ * An exception thrown when a {@link org.atmosphere.wasync.Transport} is not supported by the server. The exception can be handled using a Function:
+ * <blockquote><pre>
+ * <p/>
+ *     class Function&lt;TransportNotSupported&gt;() {
+ *         public void on(TransportNotSupported ex) {
+ *         }
+ *     }
+ * </pre></blockquote>
+ * @author Jeanfrancois Arcand
+ */
 public class TransportNotSupported extends Exception {
 }

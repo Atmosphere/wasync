@@ -25,7 +25,8 @@ public class ClientUtil {
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
 		AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
-		b.setFollowRedirects(true).setRequestTimeoutInMs(o.requestTimeout()).setUserAgent(WASYNC_USER_AGENT);
+        int t = o.requestTimeoutInSeconds();
+		b.setFollowRedirects(true).setRequestTimeoutInMs(t == -1? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
         AsyncHttpClientConfig config = b.build();
 		return new AsyncHttpClient(config);
 	}
