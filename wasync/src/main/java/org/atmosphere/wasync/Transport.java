@@ -31,13 +31,6 @@ public interface Transport {
     Request.TRANSPORT name();
 
     /**
-     * The current {@link Socket}'s Future
-     * @param f a Future
-     * @return this
-     */
-    Transport future(Future f);
-
-    /**
      * Register a new {@link FunctionResolver}
      * @param function {@link FunctionResolver}
      * @return this;

@@ -27,11 +27,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultFuture implements Future {
 
-    private final Socket socket;
+    private final DefaultSocket socket;
     private CountDownLatch latch = new CountDownLatch(1);
     private final AtomicBoolean done = new AtomicBoolean(false);
+    protected long time = -1;
+    protected TimeUnit tu;
+    protected TimeoutException te = null;
 
-    public DefaultFuture(Socket socket) {
+    public DefaultFuture(DefaultSocket socket) {
         this.socket = socket;
     }
 
@@ -67,9 +70,10 @@ public class DefaultFuture implements Future {
      * {@inheritDoc}
      */
     @Override
-    public void done(){
+    public Future done(){
         done.set(true);
         latch.countDown();
+        return this;
     }
 
     protected void reset(){
@@ -86,13 +90,16 @@ public class DefaultFuture implements Future {
         return socket;
     }
 
-
     /**
      * {@inheritDoc}
      */
     @Override
     public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        latch.await(timeout, unit);
+        time = timeout;
+        tu = unit;
+        if (!latch.await(timeout, unit) || te != null) {
+            throw te;
+        }
         return socket;
     }
 
@@ -106,7 +113,7 @@ public class DefaultFuture implements Future {
     @Override
     public Future fire(Object data) throws IOException {
         reset();
-        ((DefaultSocket)socket).internalSocket().write(((DefaultSocket)socket).request(), data);
+        socket.internalSocket().write(socket.request(), data);
         return this;
     }
 }

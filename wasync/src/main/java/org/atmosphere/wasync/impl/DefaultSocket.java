@@ -48,7 +48,7 @@ public class DefaultSocket implements Socket {
     private final static Logger logger = LoggerFactory.getLogger(DefaultSocket.class);
 
     protected Request request;
-    protected SocketRuntime socket;
+    protected SocketRuntime socketRuntime;
     protected final List<FunctionWrapper> functions = new ArrayList<FunctionWrapper>();
     protected Transport transportInUse;
     protected final Options options;
@@ -68,8 +68,7 @@ public class DefaultSocket implements Socket {
             throw new IOException("Invalid Socket Status " + transportInUse.status().name());
         }
 
-        socket.write(request, data);
-        return socket.future();
+        return socketRuntime.write(request, data);
     }
 
     /**
@@ -128,7 +127,7 @@ public class DefaultSocket implements Socket {
         } else {
             throw new IOException("No suitable transport supported");
         }
-        socket = new SocketRuntime(options, new DefaultFuture(this));
+        socketRuntime = new SocketRuntime(options, new DefaultFuture(this), functions);
 
         functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
             @Override
@@ -151,7 +150,6 @@ public class DefaultSocket implements Socket {
             }
         }));
 
-        transportInUse.future(socket.future());
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             r.setUrl(request.uri().replace("http", "ws"));
             try {
@@ -159,7 +157,7 @@ public class DefaultSocket implements Socket {
                         (AsyncHandler<WebSocket>) transportInUse);
 
                 WebSocket w = fw.get(timeout, tu);
-                socket = new SocketRuntime(w, options, socket.future());
+                socketRuntime = new SocketRuntime(w, options, socketRuntime.future(), functions);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 
@@ -185,19 +183,19 @@ public class DefaultSocket implements Socket {
             try {
                 // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
                 // beginning for streaming and sse, but nothing for long-polling
-                socket.future().get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
+                socketRuntime.future().get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 // Swallow  LOG ME
                 logger.trace("", t);
             }
 
-            socket = createSocket();
+            socketRuntime = createSocket();
         }
         return this;
     }
 
     protected SocketRuntime createSocket() {
-        return new SocketRuntime(options, new DefaultFuture(this));
+        return new SocketRuntime(options, new DefaultFuture(this), functions);
     }
 
     /**
@@ -208,23 +206,20 @@ public class DefaultSocket implements Socket {
         // Not connected, but close the underlying AHC.
         if (transportInUse == null) {
             closeRuntime(false);
-        } else if (socket != null && !transportInUse.status().equals(STATUS.CLOSE)) {
+        } else if (socketRuntime != null && !transportInUse.status().equals(STATUS.CLOSE)) {
             transportInUse.close();
-            socket.close();
             closeRuntime(true);
         }
     }
 
     void closeRuntime(boolean async) {
-        if (options.runtimeShared()) {
-            if (!options.runtimeShared() && !options.runtime().isClosed()) {
-                if (async == true)
-                    options.runtime().closeAsynchronously();
-                else
-                    options.runtime().close();
-            } else if (options.runtimeShared()) {
-                logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
-            }
+        if (!options.runtimeShared() && !options.runtime().isClosed()) {
+            if (async)
+                options.runtime().closeAsynchronously();
+            else
+                options.runtime().close();
+        } else if (options.runtimeShared()) {
+            logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
         }
     }
 
@@ -238,7 +233,7 @@ public class DefaultSocket implements Socket {
     }
 
     protected SocketRuntime internalSocket() {
-        return socket;
+        return socketRuntime;
     }
 
     protected List<Transport> getTransport(RequestBuilder r, Request request) throws IOException {

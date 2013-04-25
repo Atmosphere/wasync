@@ -49,7 +49,7 @@ public class SerializedSocket extends DefaultSocket {
 
     @Override
     protected SocketRuntime createSocket() {
-        return new SerialSocketRuntime(options, new DefaultFuture(this), this);
+        return new SerialSocketRuntime(options, new DefaultFuture(this), this, functions);
     }
 
     public SerializedFireStage getSerializedFireStage() {
@@ -57,6 +57,6 @@ public class SerializedSocket extends DefaultSocket {
     }
 
     public ListenableFuture<Response> directWrite(Object encodedPayload) throws IOException {
-        return socket.httpWrite(request, encodedPayload, encodedPayload);
+        return socketRuntime.httpWrite(request, encodedPayload, encodedPayload);
     }
 }

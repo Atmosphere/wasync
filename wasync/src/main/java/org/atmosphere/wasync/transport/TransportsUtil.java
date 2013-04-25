@@ -29,7 +29,7 @@ import java.util.List;
 
 public class TransportsUtil {
 
-    static boolean invokeFunction(List<Decoder<? extends Object, ?>> decoders,
+    public static boolean invokeFunction(List<Decoder<? extends Object, ?>> decoders,
                                List<FunctionWrapper> functions,
                                Class<?> implementedType,
                                Object instanceType,

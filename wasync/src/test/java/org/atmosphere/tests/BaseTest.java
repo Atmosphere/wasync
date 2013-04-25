@@ -84,7 +84,7 @@ public abstract class BaseTest {
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
-        port = 8080;
+        port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
     }
 
@@ -860,6 +860,7 @@ public abstract class BaseTest {
         assertEquals(response.get(), transport());
 
     }
+
     @Test
     public void chainingDecoder() throws Exception {
         final CountDownLatch l = new CountDownLatch(1);
@@ -1364,5 +1365,62 @@ public abstract class BaseTest {
         socket.close();
 
         assertEquals(response.get().toString(), "PINGPONG");
+    }
+
+    @Test
+    public void postTest() throws Exception {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getResponse().write(r.getRequest().getReader().readLine());
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<String> response = new AtomicReference<String>();
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on(Event.MESSAGE.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                response.set(t);
+                latch.countDown();
+            }
+        }).open(request.build()).fire("yoga");
+
+        latch.await(10, TimeUnit.SECONDS);
+
+        assertNotNull(response.get());
+        assertEquals(response.get(), "yoga");
+
     }
 }
