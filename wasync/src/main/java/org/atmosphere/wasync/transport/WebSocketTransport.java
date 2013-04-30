@@ -26,7 +26,6 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
@@ -123,6 +122,12 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         return errorHandled.get();
     }
 
+    @Override
+    public void error(Throwable t) {
+        logger.warn("", t);
+        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -180,6 +185,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             @Override
             public void onMessage(String message) {
                 message = message.trim();
+                logger.debug("{} received {}", name(), message );
                 if (message.length() > 0) {
                     TransportsUtil.invokeFunction(MESSAGE,
                             decoders,

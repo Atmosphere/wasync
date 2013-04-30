@@ -20,7 +20,6 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
@@ -50,7 +49,7 @@ public class wAsyncChat {
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(args[0] + "/chat")
-                .trackMessageLength(true)
+                //.trackMessageLength(true)
                 .encoder(new Encoder<Chat.Data, String>() {
                     @Override
                     public String encode(Chat.Data data) {

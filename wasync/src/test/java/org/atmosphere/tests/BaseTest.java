@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
-import static org.testng.AssertJUnit.fail;
 
 public abstract class BaseTest {
     public final static String RESUME = "Resume";
@@ -502,6 +501,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicInteger status = new AtomicInteger();
+        final AtomicReference response2 = new AtomicReference();
 
         Client client = ClientFactory.getDefault().newClient();
 
@@ -510,25 +510,29 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/ratata")
                 .transport(transport());
 
-        try {
-            final Socket socket = client.create();
-            socket.on(new Function<Integer>() {
-                @Override
-                public void on(Integer statusCode) {
-                    status.set(statusCode);
-                    socket.close();
-                    latch.countDown();
-                }
-            }).open(request.build());
+        final Socket socket = client.create();
+        socket.on(new Function<Integer>() {
+            @Override
+            public void on(Integer statusCode) {
+                status.set(statusCode);
+                socket.close();
+                latch.countDown();
+            }
+        }).on(new Function<IOException>() {
 
-            latch.await(10, TimeUnit.SECONDS);
+            @Override
+            public void on(IOException t) {
+                response2.set(t);
+                latch.countDown();
+            }
 
-            socket.fire("Yo");
+        }).open(request.build());
 
-            fail();
-        } catch (IOException ex) {
-            assertEquals(ex.getClass(), IOException.class);
-        }
+        latch.await(10, TimeUnit.SECONDS);
+
+        socket.fire("Yo");
+        assertEquals(response2.get().getClass(), IOException.class);
+
     }
 
     @Test
@@ -1197,7 +1201,7 @@ public abstract class BaseTest {
         }
     }
 
-    @Test(enabled = true)
+    @Test(enabled = false)
     public void basicLoadTest() throws IOException, InterruptedException {
         Config config = new Config.Builder()
                 .port(port)
@@ -1283,7 +1287,7 @@ public abstract class BaseTest {
         l.await(60, TimeUnit.SECONDS);
     }
 
-    @Test (enabled = true)
+    @Test(enabled = true)
     public void serializeTest() throws Exception {
         Config config = new Config.Builder()
                 .port(port)
@@ -1421,6 +1425,52 @@ public abstract class BaseTest {
 
         assertNotNull(response.get());
         assertEquals(response.get(), "yoga");
+
+    }
+
+    @Test
+    public void serverDownTest() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(2);
+        final AtomicReference response = new AtomicReference();
+        final AtomicReference response2 = new AtomicReference();
+
+        Client client = ClientFactory.getDefault().newClient();
+
+        String unreachableUrl = "http://localhost:8120";
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(unreachableUrl + "/suspend")
+                .transport(transport());
+
+        final Socket socket = client.create();
+
+        socket.on(new Function<ConnectException>() {
+
+            @Override
+            public void on(ConnectException t) {
+                socket.close(); // I close it here, remove this close, issue will not happen
+                response.set(t);
+                latch.countDown();
+            }
+
+        }).on(new Function<IOException>() {
+
+            @Override
+            public void on(IOException t) {
+                response2.set(t);
+                latch.countDown();
+            }
+
+        }).open(request.build());
+
+        socket.fire("echo");
+        latch.await();
+
+        // My favorite. The close is asynchronous.
+        Thread.sleep(2000);
+
+        assertEquals(response.get().getClass(), ConnectException.class);
+        assertEquals(response2.get().getClass(), IOException.class);
 
     }
 }

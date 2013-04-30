@@ -57,4 +57,6 @@ public interface Transport {
      * Error handled by a {@link Function}
      */
     boolean errorHandled();
+
+    void error(Throwable e);
 }
