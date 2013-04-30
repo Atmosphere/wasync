@@ -1466,9 +1466,6 @@ public abstract class BaseTest {
         socket.fire("echo");
         latch.await();
 
-        // My favorite. The close is asynchronous.
-        Thread.sleep(2000);
-
         assertEquals(response.get().getClass(), ConnectException.class);
         assertEquals(response2.get().getClass(), IOException.class);
 
