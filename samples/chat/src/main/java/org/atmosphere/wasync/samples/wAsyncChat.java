@@ -49,7 +49,7 @@ public class wAsyncChat {
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(args[0] + "/chat")
-                //.trackMessageLength(true)
+                .trackMessageLength(true)
                 .encoder(new Encoder<Chat.Data, String>() {
                     @Override
                     public String encode(Chat.Data data) {
