@@ -40,6 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -65,7 +67,8 @@ public class DefaultSocket implements Socket {
         checkState();
         if (transportInUse.status().equals(STATUS.CLOSE) ||
                 transportInUse.status().equals(STATUS.ERROR)) {
-            throw new IOException("Invalid Socket Status " + transportInUse.status().name());
+            transportInUse.error(new IOException("Invalid Socket Status " + transportInUse.status().name()));
+            return socketRuntime.rootFuture;
         }
 
         return socketRuntime.write(request, data);
@@ -166,9 +169,9 @@ public class DefaultSocket implements Socket {
                 }
 
                 transportInUse.close();
-                closeRuntime(false);
+                closeRuntime(true);
                 if (!transportInUse.errorHandled() && TimeoutException.class.isAssignableFrom(e.getClass())) {
-                    throw new IOException("Invalid state: " + e.getMessage());
+                    transportInUse.error(new IOException("Invalid state: " + e.getMessage()));
                 }
 
                 return new VoidSocket();
@@ -214,8 +217,17 @@ public class DefaultSocket implements Socket {
 
     void closeRuntime(boolean async) {
         if (!options.runtimeShared() && !options.runtime().isClosed()) {
-            if (async)
-                options.runtime().closeAsynchronously();
+            if (async) {
+                // AHC is broken when calling closeAsynchronously.
+                final ExecutorService e= Executors.newSingleThreadExecutor();
+                e.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        options.runtime().close();
+                        e.shutdown();
+                    }
+                });
+            }
             else
                 options.runtime().close();
         } else if (options.runtimeShared()) {

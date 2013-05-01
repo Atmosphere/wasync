@@ -25,7 +25,6 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
@@ -229,6 +228,12 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public boolean errorHandled() {
         return errorHandled.get();
+    }
+
+    @Override
+    public void error(Throwable t) {
+        logger.warn("", t);
+        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver);
     }
 }
 

@@ -139,7 +139,7 @@ public interface Socket {
     Socket open(Request request, long timeout, TimeUnit unit) throws IOException;
 
     /**
-     * Close this Socket
+     * Close this Socket, asynchronously.
      */
     void close();
 

@@ -47,6 +47,12 @@ public class Chat {
             this.time = new Date().getTime();
         }
 
+        public Data(String author, String message, long time) {
+            this.author = author;
+            this.message = message;
+            this.time = time;
+        }
+
         public String getMessage() {
             return message;
         }

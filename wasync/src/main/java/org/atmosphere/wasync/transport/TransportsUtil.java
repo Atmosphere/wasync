@@ -16,18 +16,21 @@
 package org.atmosphere.wasync.transport;
 
 import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.ReplayDecoder;
-import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.util.TypeResolver;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TransportsUtil {
+
+    private final static Logger logger = LoggerFactory.getLogger(TransportsUtil.class);
 
     public static boolean invokeFunction(List<Decoder<? extends Object, ?>> decoders,
                                List<FunctionWrapper> functions,
@@ -79,6 +82,7 @@ public class TransportsUtil {
             if (instanceType != null && typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
                 boolean replay = ReplayDecoder.class.isAssignableFrom(d.getClass());
 
+                logger.debug("{} is trying to decode {}", d, instanceType);
                 instanceType = d.decode(e, instanceType);
 
                 if (replay) {
