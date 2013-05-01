@@ -21,6 +21,6 @@ public class StreamingTest extends BaseTest {
 
     @Override
     int getCount() {
-        return 10;
+        return 5;
     }
 }

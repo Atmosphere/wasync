@@ -1,6 +1,7 @@
 package org.atmosphere.tests;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
@@ -1201,7 +1202,7 @@ public abstract class BaseTest {
         }
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void basicLoadTest() throws IOException, InterruptedException {
         Config config = new Config.Builder()
                 .port(port)
@@ -1241,7 +1242,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient c = new AsyncHttpClient();
+        final AsyncHttpClient c = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         final CountDownLatch l = new CountDownLatch(getCount());
         Client client = ClientFactory.getDefault().newClient();
         RequestBuilder request = client.newRequestBuilder();
@@ -1253,6 +1254,7 @@ public abstract class BaseTest {
                 return s;
             }
         });
+        Socket[] sockets = new Socket[getCount()];
         request.decoder(new Decoder<String, String>() {
             @Override
             public String decode(Event evntp, String s) {
@@ -1260,31 +1262,42 @@ public abstract class BaseTest {
             }
         });
         for (int i = 0; i < getCount(); i++) {
-            Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
-            socket.on(new Function<Integer>() {
+            sockets[i] = client.create(client.newOptionsBuilder().runtime(c, true).build());
+            sockets[i] .on(new Function<Integer>() {
                 @Override
                 public void on(Integer statusCode) {
                 }
             });
-            socket.on(new Function<String>() {
+            sockets[i] .on(new Function<String>() {
                 @Override
                 public void on(String s) {
                     if (s.equalsIgnoreCase("yo!")) {
+                        System.out.println("=========> " + l.getCount());
                         l.countDown();
-                        System.out.println(l.getCount());
                     }
                 }
             });
-            socket.on(new Function<Throwable>() {
+            sockets[i] .on(new Function<Throwable>() {
                 @Override
                 public void on(Throwable t) {
+                    t.printStackTrace();
                 }
             });
 
-            socket.open(request.build());
-            socket.fire("OPEN");
+            sockets[i].open(request.build());
+            sockets[i].fire("OPEN");
         }
-        l.await(60, TimeUnit.SECONDS);
+
+        boolean pass = l.await(60, TimeUnit.SECONDS);
+        try {
+            for (int i=0; i< sockets.length; i++) {
+                sockets[i].close();
+            }
+            c.close();
+            server.stop();
+        } finally {
+            assertTrue(pass);
+        }
     }
 
     @Test(enabled = true)

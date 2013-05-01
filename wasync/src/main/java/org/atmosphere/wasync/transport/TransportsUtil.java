@@ -64,6 +64,7 @@ public class TransportsUtil {
             if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {
                 if (resolver.resolve(originalMessage, functionName, wrapper)) {
                     hasMatch = true;
+                    logger.debug("{} .on {}", functionName, instanceType);
                     f.on(instanceType);
                 }
             }
@@ -82,7 +83,7 @@ public class TransportsUtil {
             if (instanceType != null && typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
                 boolean replay = ReplayDecoder.class.isAssignableFrom(d.getClass());
 
-                logger.debug("{} is trying to decode {}", d, instanceType);
+                logger.trace("{} is trying to decode {}", d, instanceType);
                 instanceType = d.decode(e, instanceType);
 
                 if (replay) {

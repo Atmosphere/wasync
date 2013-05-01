@@ -219,6 +219,7 @@ public class DefaultSocket implements Socket {
         if (!options.runtimeShared() && !options.runtime().isClosed()) {
             if (async) {
                 // AHC is broken when calling closeAsynchronously.
+                // https://github.com/AsyncHttpClient/async-http-client/issues/290
                 final ExecutorService e= Executors.newSingleThreadExecutor();
                 e.submit(new Runnable() {
                     @Override
