@@ -3,14 +3,14 @@
     <parent>
         <groupId>org.atmosphere</groupId>
         <artifactId>wasync-project</artifactId>
-        <version>1.0.0.RC3</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.atmosphere.wasync.samples</groupId>
     <artifactId>android-chat</artifactId>
     <packaging>apk</packaging>
-    <version>1.0.0.RC3</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>Android Chat</name>
     <url>http://maven.apache.org</url>
 
