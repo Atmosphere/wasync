@@ -139,10 +139,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         TransportsUtil.invokeFunction(decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
-        if (responseStatus.getStatusCode() > 400) {
-            throw new TransportNotSupported(responseStatus.getStatusCode(), responseStatus.getStatusText());
-        }
-
         boolean reconnect = false;
         if (!status.equals(Socket.STATUS.INIT)) {
             reconnect = true;
