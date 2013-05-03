@@ -146,7 +146,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             return STATE.UPGRADE;
         } else {
             status = Socket.STATUS.ERROR;
-            throw new TransportNotSupported();
+            throw new TransportNotSupported(responseStatus.getStatusCode(), responseStatus.getStatusText());
         }
     }
 
