@@ -210,7 +210,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         if (closed.getAndSet(true)) return;
         status = Socket.STATUS.CLOSE;
 
-        TransportsUtil.invokeFunction(decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
+        TransportsUtil.invokeFunction(Event.CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
     }
 
     /**
