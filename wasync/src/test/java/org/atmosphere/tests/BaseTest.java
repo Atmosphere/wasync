@@ -1307,13 +1307,12 @@ public abstract class BaseTest {
                 .host("127.0.0.1")
                 .resource("/suspend", new AtmosphereHandler() {
 
-                    private final AtomicBoolean b = new AtomicBoolean(false);
                     private final AtomicInteger count = new AtomicInteger(2);
                     private final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
 
                     @Override
                     public void onRequest(AtmosphereResource r) throws IOException {
-                        if (!b.getAndSet(true)) {
+                        if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
                             r.suspend(-1);
                         } else {
                             try {
@@ -1328,10 +1327,12 @@ public abstract class BaseTest {
 
                     @Override
                     public void onStateChange(AtmosphereResourceEvent r) throws IOException {
-                        response.get().append(r.getMessage());
-                        if (count.decrementAndGet() == 0 && (!r.isResuming() || !r.isCancelled())) {
-                            r.getResource().getResponse().write(response.toString());
-                            r.getResource().resume();
+                        if (r.getMessage() != null) {
+                            response.get().append(r.getMessage());
+                            if (count.decrementAndGet() == 0) {
+                                r.getResource().getResponse().write(response.toString());
+                                r.getResource().resume();
+                            }
                         }
                     }
 
@@ -1378,7 +1379,7 @@ public abstract class BaseTest {
                 .fire("PING")
                 .fire("PONG");
 
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get().toString(), "PINGPONG");

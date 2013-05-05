@@ -102,7 +102,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void onThrowable(Throwable t) {
         status = Socket.STATUS.ERROR;
-        errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+        errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
 
     /**
@@ -127,7 +127,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), HEADERS.name(), resolver);
+        TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headers.getHeaders(), HEADERS.name(), resolver);
 
         // TODO: Parse charset
         return AsyncHandler.STATE.CONTINUE;
@@ -138,7 +138,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        TransportsUtil.invokeFunction(decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
+        TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
         boolean reconnect = false;
         if (!status.equals(Socket.STATUS.INIT)) {
             reconnect = true;
@@ -210,7 +210,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         if (closed.getAndSet(true)) return;
         status = Socket.STATUS.CLOSE;
 
-        TransportsUtil.invokeFunction(Event.CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
+        TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
     }
 
     /**
@@ -232,7 +232,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void error(Throwable t) {
         logger.warn("", t);
-        TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+        TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
     }
 }
 
