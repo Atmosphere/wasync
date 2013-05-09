@@ -38,7 +38,7 @@ public class WebSocketLoadTest {
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"1","1","http://127.0.0.1:8080/atmosphere-chat/chat"};
+            s = new String[]{"500","1000","http://127.0.0.1:8080/chat"};
         }
 
         final int clientNum = Integer.valueOf(s[0]);

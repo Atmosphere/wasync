@@ -27,4 +27,17 @@ package org.atmosphere.wasync.transport;
  * @author Jeanfrancois Arcand
  */
 public class TransportNotSupported extends Exception {
+
+    private final int statusCode;
+    private final String reasonPhrase;
+
+    public TransportNotSupported(int statusCode, String reasonPhrase){
+        this.statusCode = statusCode;
+        this.reasonPhrase = reasonPhrase;
+    }
+
+    @Override
+    public String toString(){
+        return "Connection Error " + statusCode + " : " + reasonPhrase;
+    }
 }

@@ -51,7 +51,7 @@ public class SSETransport extends StreamTransport {
         List<String> ct = headers.getHeaders().get("Content-Type");
         if ( ct == null || ct.size() == 0 || !ct.get(0).contains("text/event-stream")) {
             status = Socket.STATUS.ERROR;
-            throw new TransportNotSupported();
+            throw new TransportNotSupported(500, "Invalid Content-Type" + ct);
         }
 
         TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), MESSAGE.name(), resolver);

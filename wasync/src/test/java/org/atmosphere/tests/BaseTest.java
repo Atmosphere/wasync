@@ -1,6 +1,7 @@
 package org.atmosphere.tests;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
@@ -1201,7 +1202,7 @@ public abstract class BaseTest {
         }
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void basicLoadTest() throws IOException, InterruptedException {
         Config config = new Config.Builder()
                 .port(port)
@@ -1241,7 +1242,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient c = new AsyncHttpClient();
+        final AsyncHttpClient c = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         final CountDownLatch l = new CountDownLatch(getCount());
         Client client = ClientFactory.getDefault().newClient();
         RequestBuilder request = client.newRequestBuilder();
@@ -1253,6 +1254,7 @@ public abstract class BaseTest {
                 return s;
             }
         });
+        Socket[] sockets = new Socket[getCount()];
         request.decoder(new Decoder<String, String>() {
             @Override
             public String decode(Event evntp, String s) {
@@ -1260,31 +1262,42 @@ public abstract class BaseTest {
             }
         });
         for (int i = 0; i < getCount(); i++) {
-            Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
-            socket.on(new Function<Integer>() {
+            sockets[i] = client.create(client.newOptionsBuilder().runtime(c, true).build());
+            sockets[i] .on(new Function<Integer>() {
                 @Override
                 public void on(Integer statusCode) {
                 }
             });
-            socket.on(new Function<String>() {
+            sockets[i] .on(new Function<String>() {
                 @Override
                 public void on(String s) {
                     if (s.equalsIgnoreCase("yo!")) {
+                        System.out.println("=========> " + l.getCount());
                         l.countDown();
-                        System.out.println(l.getCount());
                     }
                 }
             });
-            socket.on(new Function<Throwable>() {
+            sockets[i] .on(new Function<Throwable>() {
                 @Override
                 public void on(Throwable t) {
+                    t.printStackTrace();
                 }
             });
 
-            socket.open(request.build());
-            socket.fire("OPEN");
+            sockets[i].open(request.build());
+            sockets[i].fire("OPEN");
         }
-        l.await(60, TimeUnit.SECONDS);
+
+        boolean pass = l.await(60, TimeUnit.SECONDS);
+        try {
+            for (int i=0; i< sockets.length; i++) {
+                sockets[i].close();
+            }
+            c.close();
+            server.stop();
+        } finally {
+            assertTrue(pass);
+        }
     }
 
     @Test(enabled = true)
@@ -1294,13 +1307,12 @@ public abstract class BaseTest {
                 .host("127.0.0.1")
                 .resource("/suspend", new AtmosphereHandler() {
 
-                    private final AtomicBoolean b = new AtomicBoolean(false);
                     private final AtomicInteger count = new AtomicInteger(2);
                     private final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
 
                     @Override
                     public void onRequest(AtmosphereResource r) throws IOException {
-                        if (!b.getAndSet(true)) {
+                        if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
                             r.suspend(-1);
                         } else {
                             try {
@@ -1315,10 +1327,12 @@ public abstract class BaseTest {
 
                     @Override
                     public void onStateChange(AtmosphereResourceEvent r) throws IOException {
-                        response.get().append(r.getMessage());
-                        if (count.decrementAndGet() == 0 && (!r.isResuming() || !r.isCancelled())) {
-                            r.getResource().getResponse().write(response.toString());
-                            r.getResource().resume();
+                        if (r.getMessage() != null) {
+                            response.get().append(r.getMessage());
+                            if (count.decrementAndGet() == 0) {
+                                r.getResource().getResponse().write(response.toString());
+                                r.getResource().resume();
+                            }
                         }
                     }
 
@@ -1365,7 +1379,7 @@ public abstract class BaseTest {
                 .fire("PING")
                 .fire("PONG");
 
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get().toString(), "PINGPONG");
