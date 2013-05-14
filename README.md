@@ -116,3 +116,4 @@ You can also implement your own FunctionResolver to associate the Function with 
 ```
 where myEvent could be read from the response's body.
 
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/6565d992c41200f6a5617e646f291569 "githalytics.com")](http://githalytics.com/Atmosphere/wasync)

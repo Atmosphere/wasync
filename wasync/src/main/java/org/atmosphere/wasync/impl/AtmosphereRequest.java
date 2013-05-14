@@ -142,6 +142,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                             l = new ArrayList<String>();
                             l.add(proto[1]);
                             queryString.put("X-Cache-Date", l);
+                            decoders.remove(this);
 
                             s = null;
                         } catch (Exception ex) {
@@ -153,6 +154,34 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 }
             });
 
+            decoders().add(0, new Decoder<byte[], byte[]>() {
+
+                private AtomicBoolean protocolReceived = new AtomicBoolean();
+                /**
+                 * Handle the Atmosphere's Protocol.
+                 */
+                @Override
+                public byte[] decode(Event e, byte[] b) {
+                    if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
+                        try {
+                            String[] proto = new String(b, "UTF-8").trim().split("\\|");
+                            List<String> l = new ArrayList<String>();
+                            l.add(proto[0]);
+                            queryString.put("X-Atmosphere-tracking-id", l);
+                            l = new ArrayList<String>();
+                            l.add(proto[1]);
+                            queryString.put("X-Cache-Date", l);
+                            decoders.remove(this);
+
+                            b = null;
+                        } catch (Exception ex) {
+                            logger.warn("Unable to decode the protocol {}", new String(b));
+                            logger.warn("",e);
+                        }
+                    }
+                    return b;
+                }
+            });
 
             return new AtmosphereRequest(this);
         }
