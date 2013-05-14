@@ -4,6 +4,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -109,7 +110,7 @@ public class LongPollingTest extends StreamingTest {
     		@Override
     		public void on(byte[] message) {
     			logger.info("received : {}", message);
-    			if (message.equals(binaryEcho)) {
+    			if (Arrays.equals(message,binaryEcho)) {
     				hasEchoReplied.getAndSet(true);
     			}
     			latch.countDown();
