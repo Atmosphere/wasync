@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Construct a {@link Request}
@@ -31,8 +32,8 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     protected final List<Request.TRANSPORT> transports = new ArrayList<Request.TRANSPORT>();
     protected Request.METHOD method = Request.METHOD.GET;
     protected String uri = "http://localhost:8080";
-    protected final List<Encoder<?, ?>> encoders = new ArrayList<Encoder<?, ?>>();
-    protected final List<Decoder<?, ?>> decoders = new ArrayList<Decoder<?, ?>>();
+    protected final List<Encoder<?, ?>> encoders = new CopyOnWriteArrayList<Encoder<?, ?>>();
+    protected final List<Decoder<?, ?>> decoders = new CopyOnWriteArrayList<Decoder<?, ?>>();
     protected final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
     protected final Map<String, List<String>> queryString = new HashMap<String, List<String>>();
     protected FunctionResolver resolver = FunctionResolver.DEFAULT;
