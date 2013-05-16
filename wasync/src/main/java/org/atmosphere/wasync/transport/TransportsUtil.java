@@ -80,7 +80,7 @@ public class TransportsUtil {
     public static Object matchDecoder(Event e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
         for (Decoder d : decoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
-            if (instanceType != null && typeArguments.length > 0 && typeArguments[0].equals(instanceType.getClass())) {
+            if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(instanceType.getClass())) {
                 boolean replay = ReplayDecoder.class.isAssignableFrom(d.getClass());
 
                 logger.trace("{} is trying to decode {}", d, instanceType);
