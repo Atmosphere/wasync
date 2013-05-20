@@ -57,7 +57,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         public AtmosphereRequestBuilder() {
             super(AtmosphereRequestBuilder.class);
             List<String> l = new ArrayList<String>();
-            l.add("1.0");
+            l.add("1.1.0");
             queryString.put("X-Atmosphere-Framework", l);
 
             l = new ArrayList<String>();
