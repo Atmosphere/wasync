@@ -65,6 +65,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected final boolean isBinary;
     protected STATUS status =  Socket.STATUS.INIT;
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
+    
+    private boolean protocolReceived = false;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -112,7 +114,18 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
-            TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+			if (payload[0] == 0x20) {
+				if (!protocolReceived) {
+					String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+		            if (!m.isEmpty()) {
+		            	// need to forward this chunk, else the AtmosphereRequest decoder for the initial handshake is not successful.
+		            	TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+		            	protocolReceived = true;
+		            }
+				}
+			} else {
+				TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+			}
         } else {
             String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
             if (!m.isEmpty()) {
