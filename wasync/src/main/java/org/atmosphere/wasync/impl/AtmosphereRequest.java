@@ -135,14 +135,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 public String decode(Event e, String s) {
                     if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
                         try {
-                            String[] proto = s.trim().split("\\|");
-                            List<String> l = new ArrayList<String>();
-                            l.add(proto[0]);
-                            queryString.put("X-Atmosphere-tracking-id", l);
-                            l = new ArrayList<String>();
-                            l.add(proto[1]);
-                            queryString.put("X-Cache-Date", l);
-                            decoders.remove(this);
+                            handleProtocol(s);
 
                             s = null;
                         } catch (Exception ex) {
@@ -164,14 +157,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 public byte[] decode(Event e, byte[] b) {
                     if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
                         try {
-                            String[] proto = new String(b, "UTF-8").trim().split("\\|");
-                            List<String> l = new ArrayList<String>();
-                            l.add(proto[0]);
-                            queryString.put("X-Atmosphere-tracking-id", l);
-                            l = new ArrayList<String>();
-                            l.add(proto[1]);
-                            queryString.put("X-Cache-Date", l);
-                            decoders.remove(this);
+                            handleProtocol(new String(b, "UTF-8"));
 
                             b = null;
                         } catch (Exception ex) {
@@ -185,7 +171,20 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
             return new AtmosphereRequest(this);
         }
-    }
 
+        private final void handleProtocol(String s){
+            String[] proto = s.trim().split("\\|");
+            // Track message size may have been appended
+            int pos = proto.length > 2 ? pos = 1 : 0;
+
+            List<String> l = new ArrayList<String>();
+            l.add(proto[pos]);
+            queryString.put("X-Atmosphere-tracking-id", l);
+            l = new ArrayList<String>();
+            l.add(proto[pos + 1]);
+            queryString.put("X-Cache-Date", l);
+            decoders.remove(this);
+        }
+    }
 
 }
