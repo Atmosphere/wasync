@@ -1263,12 +1263,12 @@ public abstract class BaseTest {
         });
         for (int i = 0; i < getCount(); i++) {
             sockets[i] = client.create(client.newOptionsBuilder().runtime(c, true).build());
-            sockets[i] .on(new Function<Integer>() {
+            sockets[i].on(new Function<Integer>() {
                 @Override
                 public void on(Integer statusCode) {
                 }
             });
-            sockets[i] .on(new Function<String>() {
+            sockets[i].on(new Function<String>() {
                 @Override
                 public void on(String s) {
                     if (s.equalsIgnoreCase("yo!")) {
@@ -1277,7 +1277,7 @@ public abstract class BaseTest {
                     }
                 }
             });
-            sockets[i] .on(new Function<Throwable>() {
+            sockets[i].on(new Function<Throwable>() {
                 @Override
                 public void on(Throwable t) {
                     t.printStackTrace();
@@ -1290,7 +1290,7 @@ public abstract class BaseTest {
 
         boolean pass = l.await(60, TimeUnit.SECONDS);
         try {
-            for (int i=0; i< sockets.length; i++) {
+            for (int i = 0; i < sockets.length; i++) {
                 sockets[i].close();
             }
             c.close();
@@ -1483,5 +1483,79 @@ public abstract class BaseTest {
         assertEquals(response.get().getClass(), ConnectException.class);
         assertEquals(response2.get().getClass(), IOException.class);
 
+    }
+
+    @Test
+    public void shutdownServerTest() throws Exception {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(RESUME);
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (!r.isResuming() || !r.isCancelled()) {
+                            r.getResource().getResponse().getWriter().print(r.getMessage());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference response = new AtomicReference();
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build());
+        socket.on(Event.CLOSE.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                //Can I receive close message when server is stopped?
+                logger.info("Function invoked {}", t);
+                response.set(t);
+                latch.countDown();
+            }
+        }).on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+        }).open(request.build()).fire("PING");
+
+        latch.await(10, TimeUnit.SECONDS);
+
+        server.stop();
+
+        latch.await(10, TimeUnit.SECONDS);
+        socket.close();
+
+        assertEquals(socket.status(), Socket.STATUS.CLOSE);//or ERROR?
     }
 }
