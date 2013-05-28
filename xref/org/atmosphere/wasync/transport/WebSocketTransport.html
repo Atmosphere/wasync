@@ -98,7 +98,7 @@
 <a class="jxr_linenumber" name="88" href="#88">88</a>      @Override
 <a class="jxr_linenumber" name="89" href="#89">89</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> onThrowable(Throwable t) {
 <a class="jxr_linenumber" name="90" href="#90">90</a>          status = Socket.STATUS.ERROR;
-<a class="jxr_linenumber" name="91" href="#91">91</a>          errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+<a class="jxr_linenumber" name="91" href="#91">91</a>          errorHandled.set(TransportsUtil.invokeFunction(Event.ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
 <a class="jxr_linenumber" name="92" href="#92">92</a>      }
 <a class="jxr_linenumber" name="93" href="#93">93</a>  
 <a class="jxr_linenumber" name="94" href="#94">94</a>      <em class="jxr_javadoccomment">/**</em>
@@ -135,7 +135,7 @@
 <a class="jxr_linenumber" name="125" href="#125">125</a>     @Override
 <a class="jxr_linenumber" name="126" href="#126">126</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> error(Throwable t) {
 <a class="jxr_linenumber" name="127" href="#127">127</a>         logger.warn(<span class="jxr_string">""</span>, t);
-<a class="jxr_linenumber" name="128" href="#128">128</a>         TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+<a class="jxr_linenumber" name="128" href="#128">128</a>         TransportsUtil.invokeFunction(Event.ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
 <a class="jxr_linenumber" name="129" href="#129">129</a>     }
 <a class="jxr_linenumber" name="130" href="#130">130</a> 
 <a class="jxr_linenumber" name="131" href="#131">131</a>     <em class="jxr_javadoccomment">/**</em>
@@ -151,12 +151,12 @@
 <a class="jxr_linenumber" name="141" href="#141">141</a> <em class="jxr_javadoccomment">     */</em>
 <a class="jxr_linenumber" name="142" href="#142">142</a>     @Override
 <a class="jxr_linenumber" name="143" href="#143">143</a>     <strong class="jxr_keyword">public</strong> STATE onStatusReceived(HttpResponseStatus responseStatus) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="144" href="#144">144</a>         TransportsUtil.invokeFunction(decoders, functions, Integer.<strong class="jxr_keyword">class</strong>, <strong class="jxr_keyword">new</strong> Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
+<a class="jxr_linenumber" name="144" href="#144">144</a>         TransportsUtil.invokeFunction(STATUS, decoders, functions, Integer.<strong class="jxr_keyword">class</strong>, <strong class="jxr_keyword">new</strong> Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
 <a class="jxr_linenumber" name="145" href="#145">145</a>         <strong class="jxr_keyword">if</strong> (responseStatus.getStatusCode() == 101) {
 <a class="jxr_linenumber" name="146" href="#146">146</a>             <strong class="jxr_keyword">return</strong> STATE.UPGRADE;
 <a class="jxr_linenumber" name="147" href="#147">147</a>         } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="148" href="#148">148</a>             status = Socket.STATUS.ERROR;
-<a class="jxr_linenumber" name="149" href="#149">149</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/TransportNotSupported.html">TransportNotSupported</a>();
+<a class="jxr_linenumber" name="149" href="#149">149</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/TransportNotSupported.html">TransportNotSupported</a>(responseStatus.getStatusCode(), responseStatus.getStatusText());
 <a class="jxr_linenumber" name="150" href="#150">150</a>         }
 <a class="jxr_linenumber" name="151" href="#151">151</a>     }
 <a class="jxr_linenumber" name="152" href="#152">152</a> 
@@ -165,7 +165,7 @@
 <a class="jxr_linenumber" name="155" href="#155">155</a> <em class="jxr_javadoccomment">     */</em>
 <a class="jxr_linenumber" name="156" href="#156">156</a>     @Override
 <a class="jxr_linenumber" name="157" href="#157">157</a>     <strong class="jxr_keyword">public</strong> STATE onHeadersReceived(HttpResponseHeaders headers) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="158" href="#158">158</a>         TransportsUtil.invokeFunction(decoders, functions, Map.<strong class="jxr_keyword">class</strong>, headers.getHeaders(), HEADERS.name(), resolver);
+<a class="jxr_linenumber" name="158" href="#158">158</a>         TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.<strong class="jxr_keyword">class</strong>, headers.getHeaders(), HEADERS.name(), resolver);
 <a class="jxr_linenumber" name="159" href="#159">159</a> 
 <a class="jxr_linenumber" name="160" href="#160">160</a>         <strong class="jxr_keyword">return</strong> STATE.CONTINUE;
 <a class="jxr_linenumber" name="161" href="#161">161</a>     }
@@ -179,7 +179,7 @@
 <a class="jxr_linenumber" name="169" href="#169">169</a>             status = Socket.STATUS.ERROR;
 <a class="jxr_linenumber" name="170" href="#170">170</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="171" href="#171">171</a>         }
-<a class="jxr_linenumber" name="172" href="#172">172</a>         TransportsUtil.invokeFunction(decoders, functions, Request.TRANSPORT.<strong class="jxr_keyword">class</strong>, name(), TRANSPORT.name(), resolver);
+<a class="jxr_linenumber" name="172" href="#172">172</a>         TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.<strong class="jxr_keyword">class</strong>, name(), TRANSPORT.name(), resolver);
 <a class="jxr_linenumber" name="173" href="#173">173</a>         <strong class="jxr_keyword">return</strong> webSocket;
 <a class="jxr_linenumber" name="174" href="#174">174</a>     }
 <a class="jxr_linenumber" name="175" href="#175">175</a> 
@@ -254,7 +254,7 @@
 <a class="jxr_linenumber" name="244" href="#244">244</a>             <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> onError(Throwable t) {
 <a class="jxr_linenumber" name="245" href="#245">245</a>                 status = Socket.STATUS.ERROR;
 <a class="jxr_linenumber" name="246" href="#246">246</a> 
-<a class="jxr_linenumber" name="247" href="#247">247</a>                 errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+<a class="jxr_linenumber" name="247" href="#247">247</a>                 errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
 <a class="jxr_linenumber" name="248" href="#248">248</a>             }
 <a class="jxr_linenumber" name="249" href="#249">249</a>         };
 <a class="jxr_linenumber" name="250" href="#250">250</a>         webSocket.addWebSocketListener(l);
@@ -291,7 +291,7 @@
 <a class="jxr_linenumber" name="281" href="#281">281</a> <em class="jxr_javadoccomment">     */</em>
 <a class="jxr_linenumber" name="282" href="#282">282</a>     @Override
 <a class="jxr_linenumber" name="283" href="#283">283</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">void</strong> onFailure(Throwable t) {
-<a class="jxr_linenumber" name="284" href="#284">284</a>         errorHandled.set(TransportsUtil.invokeFunction(decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+<a class="jxr_linenumber" name="284" href="#284">284</a>         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
 <a class="jxr_linenumber" name="285" href="#285">285</a>     }
 <a class="jxr_linenumber" name="286" href="#286">286</a> 
 <a class="jxr_linenumber" name="287" href="#287">287</a> }

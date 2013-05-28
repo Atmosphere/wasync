@@ -61,7 +61,7 @@
 <a class="jxr_linenumber" name="51" href="#51">51</a>          List&lt;String&gt; ct = headers.getHeaders().get(<span class="jxr_string">"Content-Type"</span>);
 <a class="jxr_linenumber" name="52" href="#52">52</a>          <strong class="jxr_keyword">if</strong> ( ct == <strong class="jxr_keyword">null</strong> || ct.size() == 0 || !ct.get(0).contains(<span class="jxr_string">"text/event-stream"</span>)) {
 <a class="jxr_linenumber" name="53" href="#53">53</a>              status = Socket.STATUS.ERROR;
-<a class="jxr_linenumber" name="54" href="#54">54</a>              <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/TransportNotSupported.html">TransportNotSupported</a>();
+<a class="jxr_linenumber" name="54" href="#54">54</a>              <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/TransportNotSupported.html">TransportNotSupported</a>(500, <span class="jxr_string">"Invalid Content-Type"</span> + ct);
 <a class="jxr_linenumber" name="55" href="#55">55</a>          }
 <a class="jxr_linenumber" name="56" href="#56">56</a>  
 <a class="jxr_linenumber" name="57" href="#57">57</a>          TransportsUtil.invokeFunction(decoders, functions, Map.<strong class="jxr_keyword">class</strong>, headers.getHeaders(), MESSAGE.name(), resolver);
