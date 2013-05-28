@@ -1202,7 +1202,7 @@ public abstract class BaseTest {
         }
     }
 
-    @Test(enabled = true)
+    @Test(enabled = false)
     public void basicLoadTest() throws IOException, InterruptedException {
         Config config = new Config.Builder()
                 .port(port)

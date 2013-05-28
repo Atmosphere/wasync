@@ -15,67 +15,60 @@
  */
 package org.atmosphere.wasync.samples;
 
+import org.atmosphere.config.service.Disconnect;
 import org.atmosphere.config.service.ManagedService;
-import org.atmosphere.config.service.Message;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.atmosphere.config.service.Ready;
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Date;
 
+/**
+ * Simple annotated class that demonstrate the power of Atmosphere. This class supports all transports, support
+ * message length garantee, heart beat, message cache thanks to the @managedAService.
+ */
 @ManagedService(path = "/chat")
 public class Chat {
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final Logger logger = LoggerFactory.getLogger(Chat.class);
 
-    @Message
-    public String onMessage(String message) throws IOException {
-        return mapper.writeValueAsString(mapper.readValue(message, Data.class));
+    /**
+     * Invoked when the connection as been fully established and suspended, e.g ready for receiving messages.
+     *
+     * @param r
+     */
+    @Ready
+    public void onReady(final AtmosphereResource r) {
+        logger.info("Browser {} connected.", r.uuid());
     }
 
-    public final static class Data {
-
-        private String message;
-        private String author;
-        private long time;
-
-        public Data() {
-            this("", "");
+    /**
+     * Invoked when the client disconnect or when an unexpected closing of the underlying connection happens.
+     *
+     * @param event
+     */
+    @Disconnect
+    public void onDisconnect(AtmosphereResourceEvent event) {
+        if (event.isCancelled()) {
+            logger.info("Browser {} unexpectedly disconnected", event.getResource().uuid());
+        } else if (event.isClosedByClient()) {
+            logger.info("Browser {} closed the connection", event.getResource().uuid());
         }
-
-        public Data(String author, String message) {
-            this.author = author;
-            this.message = message;
-            this.time = new Date().getTime();
-        }
-
-        public Data(String author, String message, long time) {
-            this.author = author;
-            this.message = message;
-            this.time = time;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getAuthor() {
-            return author;
-        }
-
-        public void setAuthor(String author) {
-            this.author = author;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public long getTime() {
-            return time;
-        }
-
-        public void setTime(long time) {
-            this.time = time;
-        }
-
     }
+
+    /**
+     * Simple annotated class that demonstrate how {@link org.atmosphere.config.managed.Encoder} and {@link org.atmosphere.config.managed.Decoder
+     * can be used.
+     *
+     * @param message an instance of {@link Message}
+     * @return
+     * @throws IOException
+     */
+    @org.atmosphere.config.service.Message(encoders = {JacksonEncoder.class}, decoders = {JacksonDecoder.class})
+    public Message onMessage(Message message) throws IOException {
+        logger.info("{} just send {}", message.getAuthor(), message.getMessage());
+        return message;
+    }
+
 }

@@ -50,9 +50,9 @@ public class wAsyncChat {
                 .method(Request.METHOD.GET)
                 .uri(args[0] + "/chat")
                 .trackMessageLength(true)
-                .encoder(new Encoder<Chat.Data, String>() {
+                .encoder(new Encoder<Message, String>() {
                     @Override
-                    public String encode(Chat.Data data) {
+                    public String encode(Message data) {
                         try {
                             return mapper.writeValueAsString(data);
                         } catch (IOException e) {
@@ -60,9 +60,9 @@ public class wAsyncChat {
                         }
                     }
                 })
-                .decoder(new Decoder<String, Chat.Data>() {
+                .decoder(new Decoder<String, Message>() {
                     @Override
-                    public Chat.Data decode(Event type, String data) {
+                    public Message decode(Event type, String data) {
 
                         data = data.trim();
 
@@ -73,7 +73,7 @@ public class wAsyncChat {
 
                         if (type.equals(Event.MESSAGE)) {
                             try {
-                                return mapper.readValue(data, Chat.Data.class);
+                                return mapper.readValue(data, Message.class);
                             } catch (IOException e) {
                                 logger.debug("Invalid message {}", data);
                                 return null;
@@ -88,9 +88,9 @@ public class wAsyncChat {
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
-        socket.on("message", new Function<Chat.Data>() {
+        socket.on("message", new Function<Message>() {
             @Override
-            public void on(Chat.Data t) {
+            public void on(Message t) {
                 Date d = new Date(t.getTime()) ;
                 logger.info("Author {}: {}", t.getAuthor() + "@ " + d.getHours() + ":" + d.getMinutes(), t.getMessage());
             }
@@ -112,7 +112,7 @@ public class wAsyncChat {
             if (name == null) {
                 name = a;
             }
-            socket.fire(new Chat.Data(name, a));
+            socket.fire(new Message(name, a));
         }
         socket.close();
     }
