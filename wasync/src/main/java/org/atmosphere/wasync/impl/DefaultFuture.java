@@ -98,7 +98,7 @@ public class DefaultFuture implements Future {
         time = timeout;
         tu = unit;
         if (!latch.await(timeout, unit) || te != null) {
-            throw te;
+            throw te == null ? new TimeoutException() : te;
         }
         return socket;
     }
