@@ -167,7 +167,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public WebSocket onCompleted() throws Exception {
         if (webSocket == null) {
-            Thread.dumpStack();
             logger.error("WebSocket Handshake Failed");
             status = Socket.STATUS.ERROR;
             return null;
