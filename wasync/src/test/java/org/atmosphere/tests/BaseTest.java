@@ -1304,6 +1304,10 @@ public abstract class BaseTest {
     @Test(enabled = true)
     public void serializeTest() throws Exception {
         System.out.println("=============== STARTING SerializedTest");
+        if (server != null) {
+            server.stop();
+        }
+
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
