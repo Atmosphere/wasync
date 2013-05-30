@@ -70,9 +70,23 @@ public class TransportsUtil {
             }
         }
 
-        if (!hasMatch) {
-            logger.trace("No Function {} matching {}", functionName, instanceType);
+        if (!hasMatch && instanceType != null) {
+            // Since we have no match, most probably because a decoder isn't matching a function or the Event's type, try
+            // to match Event type directly with a String.
+            // This can happens if a decoder is not behaving properly.
+            // instanceType != null because a ReplayDecoder may have interrupted
+            for (FunctionWrapper wrapper : functions) {
+                Function f = wrapper.function();
+                if (wrapper.functionName().equalsIgnoreCase(functionName)) {
+                    hasMatch = true;
+                    logger.trace("{} .on {}", functionName, instanceType);
+                    f.on(originalMessage);
+                }
+            }
         }
+
+
+
 
         return hasMatch;
     }

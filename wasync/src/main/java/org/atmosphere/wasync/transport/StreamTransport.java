@@ -44,7 +44,7 @@ import static org.atmosphere.wasync.Event.ERROR;
 import static org.atmosphere.wasync.Event.HEADERS;
 import static org.atmosphere.wasync.Event.MESSAGE;
 import static org.atmosphere.wasync.Event.OPEN;
-import static org.atmosphere.wasync.Event.RECONNECT;
+import static org.atmosphere.wasync.Event.REOPENED;
 import static org.atmosphere.wasync.Event.STATUS;
 import static org.atmosphere.wasync.Event.TRANSPORT;
 import static org.atmosphere.wasync.Socket.STATUS;
@@ -159,7 +159,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         status = Socket.STATUS.OPEN;
 
         errorHandled.set(false);
-        TransportsUtil.invokeFunction(reconnect ? RECONNECT : OPEN,
+        TransportsUtil.invokeFunction(reconnect ? REOPENED : OPEN,
                 decoders, functions, String.class, OPEN.name(), OPEN.name(), resolver);
         TransportsUtil.invokeFunction(MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
 

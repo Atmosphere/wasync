@@ -40,7 +40,7 @@ public enum Event {
     /**
      * This event is fired every time the connection re-opened
      */
-    RECONNECT,
+    REOPENED,
 
     /**
      * This event is fired when unexpected error happens. This event is only fired once.

@@ -45,7 +45,7 @@ import static org.atmosphere.wasync.Event.ERROR;
 import static org.atmosphere.wasync.Event.HEADERS;
 import static org.atmosphere.wasync.Event.MESSAGE;
 import static org.atmosphere.wasync.Event.OPEN;
-import static org.atmosphere.wasync.Event.RECONNECT;
+import static org.atmosphere.wasync.Event.REOPENED;
 import static org.atmosphere.wasync.Event.STATUS;
 import static org.atmosphere.wasync.Event.TRANSPORT;
 import static org.atmosphere.wasync.Socket.STATUS;
@@ -206,25 +206,18 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                 // Could have been closed during the handshake.
                 if (status.equals(Socket.STATUS.CLOSE)) return;
 
-                boolean reconnect = false;
-                if (!status.equals(Socket.STATUS.INIT)) {
-                    reconnect = true;
-                }
-
-                status = Socket.STATUS.OPEN;
-
-                TransportsUtil.invokeFunction(reconnect ? RECONNECT : OPEN,
-                        decoders, functions, String.class, OPEN.name(), OPEN.name(), resolver);
+                Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+                TransportsUtil.invokeFunction(newStatus,
+                        decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
             }
 
             @Override
             public void onClose(WebSocket websocket) {
                 if (closed.get()) return;
 
-                status = Socket.STATUS.INIT;
-
                 TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
                 if (options.reconnect()) {
+                    status = Socket.STATUS.REOPENED;
                     if (options.reconnectInSeconds() > 0) {
                         ScheduledExecutorService e = options.runtime().getConfig().reaper();
                         e.schedule(new Runnable() {

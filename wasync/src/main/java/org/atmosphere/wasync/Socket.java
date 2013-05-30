@@ -84,6 +84,10 @@ public interface Socket {
          */
         OPEN,
         /**
+         * The socket was closed and re-opened
+         */
+        REOPENED,
+        /**
          * The socket is close
          */
         CLOSE,

@@ -1558,4 +1558,81 @@ public abstract class BaseTest {
 
         assertEquals(socket.status(), Socket.STATUS.CLOSE);//or ERROR?
     }
+
+    @Test
+    public void timeoutTest() throws IOException, InterruptedException {
+        final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
+        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch elatch = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.suspend(5, TimeUnit.SECONDS);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        Client client = ClientFactory.getDefault().newClient();
+        RequestBuilder clientRequest = client.newRequestBuilder().method(Request.METHOD.GET).uri(targetUrl)
+                .decoder(new Decoder<String, Reader>() {
+                    @Override
+                    public Reader decode(Event e, String s) {
+                        // Fool the decoder mapping
+                        return new StringReader(s);
+                    }
+                }).transport(Request.TRANSPORT.WEBSOCKET)
+                .transport(Request.TRANSPORT.LONG_POLLING);
+
+        Socket socket = client.create();
+        socket.on(Event.CLOSE.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                b.get().append(t);
+            }
+        }).on(Event.REOPENED.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                b.get().append(t);
+            }
+        }).on(new Function<IOException>() {
+            @Override
+            public void on(IOException ioe) {
+                ioe.printStackTrace();
+                elatch.countDown();
+            }
+        }).on(Event.OPEN.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                b.get().append(t);
+            }
+        }).open(clientRequest.build());
+
+        latch.await();
+
+        server.stop();
+
+        elatch.await();
+
+        assertEquals(b.get().toString(), "OPENCLOSEREOPENEDCLOSE");
+    }
 }
