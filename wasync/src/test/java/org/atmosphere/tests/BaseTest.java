@@ -1372,9 +1372,6 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
-                response.get().append("ERROR");
-                latch.countDown();
             }
 
         }).open(request.build())
