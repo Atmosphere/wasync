@@ -85,9 +85,6 @@ public class TransportsUtil {
             }
         }
 
-
-
-
         return hasMatch;
     }
 
