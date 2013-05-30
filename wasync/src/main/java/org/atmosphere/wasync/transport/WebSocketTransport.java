@@ -102,7 +102,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
 
-        if (webSocket != null)
+        if (webSocket != null && webSocket.isOpen())
             webSocket.close();
     }
 
@@ -206,6 +206,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                 // Could have been closed during the handshake.
                 if (status.equals(Socket.STATUS.CLOSE)) return;
 
+                closed.set(false);
+
                 Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
                 TransportsUtil.invokeFunction(newStatus,
                         decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
@@ -215,7 +217,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             public void onClose(WebSocket websocket) {
                 if (closed.get()) return;
 
-                TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
+                close();
                 if (options.reconnect()) {
                     status = Socket.STATUS.REOPENED;
                     if (options.reconnectInSeconds() > 0) {
@@ -228,8 +230,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                     } else {
                         reconnect();
                     }
-                } else {
-                    status = Socket.STATUS.CLOSE;
                 }
             }
 

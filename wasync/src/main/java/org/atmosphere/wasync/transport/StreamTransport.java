@@ -152,15 +152,14 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
-        boolean reconnect = false;
-        if (!status.equals(Socket.STATUS.INIT)) {
-            reconnect = true;
-        }
-        status = Socket.STATUS.OPEN;
 
         errorHandled.set(false);
-        TransportsUtil.invokeFunction(reconnect ? REOPENED : OPEN,
-                decoders, functions, String.class, OPEN.name(), OPEN.name(), resolver);
+        closed.set(false);
+
+        Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+        TransportsUtil.invokeFunction(newStatus,
+                decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
+
         TransportsUtil.invokeFunction(MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
 
         return AsyncHandler.STATE.CONTINUE;
@@ -177,9 +176,11 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             return "";
         }
 
-        status = Socket.STATUS.INIT;
+        close();
 
         if (options.reconnect()) {
+            // We can't let the STATUS to close as fire() method won't work.
+            status = Socket.STATUS.REOPENED;
             if (options.reconnectInSeconds() > 0) {
                 ScheduledExecutorService e = options.runtime().getConfig().reaper();
                 e.schedule(new Runnable() {
@@ -190,8 +191,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             } else {
                 reconnect();
             }
-        } else {
-            status = Socket.STATUS.CLOSE;
         }
         return "";
     }
