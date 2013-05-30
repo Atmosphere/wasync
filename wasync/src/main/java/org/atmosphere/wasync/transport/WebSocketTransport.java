@@ -145,6 +145,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
         } else {
+            logger.debug("Invalid status code {} for WebSocket Handshake", responseStatus.getStatusCode());
             status = Socket.STATUS.ERROR;
             throw new TransportNotSupported(responseStatus.getStatusCode(), responseStatus.getStatusText());
         }
@@ -166,6 +167,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public WebSocket onCompleted() throws Exception {
         if (webSocket == null) {
+            logger.error("WebSocket Handshake Failed");
             status = Socket.STATUS.ERROR;
             return null;
         }
