@@ -1,18 +1,5 @@
 package org.atmosphere.tests;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -26,6 +13,19 @@ import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class LongPollingTest extends StreamingTest {
 
@@ -203,11 +203,11 @@ public class LongPollingTest extends StreamingTest {
        Thread.sleep(1000);
        socket.fire("ECHO2");
        Thread.sleep(2000);
-       socket.fire("ECHO3").get();
-       socket.fire("ECHO4").get();
-       socket.fire("ECHO5").get();
+       socket.fire("ECHO3");
+       socket.fire("ECHO4");
+       socket.fire("ECHO5");
        
-       latch.await(10, TimeUnit.SECONDS);
+       latch.await(60, TimeUnit.SECONDS);
        socket.close();
 
        assertEquals(response.get().size(), 5);
