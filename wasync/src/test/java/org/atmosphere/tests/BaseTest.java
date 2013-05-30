@@ -69,7 +69,7 @@ public abstract class BaseTest {
 
     @AfterMethod(alwaysRun = true)
     public void tearDownGlobal() throws Exception {
-        if (server != null) {
+        if (server != null && server.isStarted()) {
             server.stop();
         }
     }
@@ -275,7 +275,7 @@ public abstract class BaseTest {
 
     @Test
     public void allStringFunctionTest() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(3);
+        final CountDownLatch latch = new CountDownLatch(2);
 
         Config config = new Config.Builder()
                 .port(port)
@@ -332,7 +332,8 @@ public abstract class BaseTest {
         }).open(request.build()).fire("PING");
 
         latch.await(20, TimeUnit.SECONDS);
-        assertEquals(builder.toString(), Event.OPEN + RESUME);
+
+        assertEquals(builder.toString(), RESUME);
     }
 
     @Test

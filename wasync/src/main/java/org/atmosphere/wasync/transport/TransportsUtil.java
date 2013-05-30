@@ -61,7 +61,9 @@ public class TransportsUtil {
                 }
             }
 
-            if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {
+            if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)
+                    // Don't invoke function with Event message.
+                    && !e.name().equalsIgnoreCase(instanceType.toString())) {
                 if (resolver.resolve(originalMessage, functionName, wrapper)) {
                     hasMatch = true;
                     logger.trace("{} .on {}", functionName, instanceType);
