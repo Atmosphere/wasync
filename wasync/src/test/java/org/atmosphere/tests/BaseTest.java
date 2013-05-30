@@ -1364,7 +1364,7 @@ public abstract class BaseTest {
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
-                logger.info("Function invoked {}", t);
+                logger.info("Serialized Function invoked {}", t);
                 response.get().append(t);
                 latch.countDown();
             }
@@ -1372,6 +1372,8 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
+                System.out.println("=============== ERROR");
+                t.printStackTrace();
             }
 
         }).open(request.build())
