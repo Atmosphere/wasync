@@ -1303,6 +1303,7 @@ public abstract class BaseTest {
 
     @Test(enabled = true)
     public void serializeTest() throws Exception {
+        System.out.println("=============== STARTING SerializedTest");
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -1346,6 +1347,9 @@ public abstract class BaseTest {
         server = new Nettosphere.Builder().config(config).build();
         assertNotNull(server);
         server.start();
+
+        // Jenkins => Make sure the server is fully started before running the test
+        Thread.sleep(2000);
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
