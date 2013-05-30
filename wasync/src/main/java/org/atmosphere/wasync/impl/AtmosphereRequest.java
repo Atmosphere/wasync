@@ -83,7 +83,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 if (t.equals(TRANSPORT.LONG_POLLING)) {
                     l.add("long-polling");
                 } else {
-                    l.add(t.name());
+                    l.add(t.name().toLowerCase());
                 }
 
                 queryString.put("X-Atmosphere-Transport", l);
