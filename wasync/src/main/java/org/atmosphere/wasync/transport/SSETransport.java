@@ -28,6 +28,11 @@ import java.util.Map;
 
 import static org.atmosphere.wasync.Event.MESSAGE;
 
+/**
+ * Server Side Events {@link org.atmosphere.wasync.Transport} implementation
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class SSETransport extends StreamTransport {
 
     public SSETransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {

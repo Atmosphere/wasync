@@ -20,7 +20,6 @@ import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 import com.ning.http.client.websocket.WebSocket;
 import org.atmosphere.wasync.Encoder;
-import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
@@ -42,6 +41,11 @@ import java.util.concurrent.TimeoutException;
 
 import static org.atmosphere.wasync.Event.MESSAGE;
 
+/**
+ * This class implement the logic for communicating with a remote server.
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class SocketRuntime {
 
     private final static Logger logger = LoggerFactory.getLogger(SocketRuntime.class);

@@ -20,6 +20,11 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 
+/**
+ * Util class for building {@link AsyncHttpClient}
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class ClientUtil {
     private static final String WASYNC_USER_AGENT = "wAsync/1.0";
 
@@ -49,11 +54,4 @@ public class ClientUtil {
 
         return getSocket(new DefaultOptionsBuilder().runtime(asyncHttpClient, false).build());
     }
-
-//    public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
-//		AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
-//		b.setFollowRedirects(true).setRequestTimeoutInMs(o.requestTimeout()).setUserAgent(WASYNC_USER_AGENT);
-//        AsyncHttpClientConfig config = b.build();
-//		return new AsyncHttpClient(new GrizzlyAsyncHttpProvider(config), config);
-//	}
 }

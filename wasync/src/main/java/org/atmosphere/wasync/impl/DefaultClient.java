@@ -21,6 +21,11 @@ import org.atmosphere.wasync.OptionsBuilder;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 
+/**
+ * The default implementation of the {@link Client}
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class DefaultClient implements Client<DefaultOptions, OptionsBuilder,RequestBuilder> {
 
     public DefaultClient() {

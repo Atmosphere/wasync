@@ -25,6 +25,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Default implementation of the {@link org.atmosphere.wasync.Request}
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class DefaultRequest<T extends RequestBuilder> implements Request {
 
     protected final T builder;

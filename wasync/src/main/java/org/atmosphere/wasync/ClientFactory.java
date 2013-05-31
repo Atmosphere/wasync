@@ -58,7 +58,6 @@ public class ClientFactory {
         }
     }
 
-
     /**
      * Return a new {@link Client} instance
      *

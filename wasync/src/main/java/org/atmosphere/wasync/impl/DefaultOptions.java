@@ -21,7 +21,7 @@ import org.atmosphere.wasync.OptionsBuilder;
 import org.atmosphere.wasync.Transport;
 
 /**
- * Configure the underlying WebSocket/HTTP client.
+ * Default implementation of the {@link Options}
  *
  * @author Jeanfrancois Arcand
  */

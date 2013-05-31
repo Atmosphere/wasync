@@ -17,6 +17,9 @@ package org.atmosphere.wasync.serial;
 
 import org.atmosphere.wasync.impl.DefaultOptions;
 
+/**
+ * An implementation of {@link DefaultOptions}.
+ */
 public class SerializedOptions extends DefaultOptions {
 
     public SerializedOptions(SerializedOptionsBuilder b) {

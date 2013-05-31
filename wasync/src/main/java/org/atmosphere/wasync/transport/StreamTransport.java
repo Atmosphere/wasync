@@ -49,6 +49,11 @@ import static org.atmosphere.wasync.Event.STATUS;
 import static org.atmosphere.wasync.Event.TRANSPORT;
 import static org.atmosphere.wasync.Socket.STATUS;
 
+/**
+ * Streaming {@link org.atmosphere.wasync.Transport} implementation
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class StreamTransport implements AsyncHandler<String>, Transport {
     private final static String DEFAULT_CHARSET = "UTF-8";
     private final Logger logger = LoggerFactory.getLogger(StreamTransport.class);

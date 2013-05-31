@@ -37,6 +37,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Serial extension for the {@link SocketRuntime}
+ *
+ * @author Jeanfrancois Arcand
+ *
+ */
 public class SerialSocketRuntime extends SocketRuntime {
 
     private final static Logger logger = LoggerFactory.getLogger(SerialSocketRuntime.class);

@@ -22,6 +22,11 @@ import org.atmosphere.wasync.Request;
 
 import java.util.List;
 
+/**
+ * Long-Polling {@link org.atmosphere.wasync.Transport} implementation
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class LongPollingTransport extends StreamTransport {
 
     public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {

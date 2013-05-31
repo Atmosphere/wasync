@@ -17,6 +17,11 @@ package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.RequestBuilder;
 
+/**
+ * Default implementation of the {@link org.atmosphere.wasync.RequestBuilder}
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class DefaultRequestBuilder extends RequestBuilder<DefaultRequestBuilder> {
 
     public DefaultRequestBuilder() {

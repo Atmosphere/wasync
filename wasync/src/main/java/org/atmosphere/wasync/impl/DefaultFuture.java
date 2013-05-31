@@ -25,6 +25,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * The default {@link Future} used by the library, based on the {@link CountDownLatch}
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class DefaultFuture implements Future {
 
     private final DefaultSocket socket;

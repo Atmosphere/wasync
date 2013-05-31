@@ -45,6 +45,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Default implementation of the {@link org.atmosphere.wasync.Socket}
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class DefaultSocket implements Socket {
 
     private final static Logger logger = LoggerFactory.getLogger(DefaultSocket.class);

@@ -26,21 +26,22 @@ import org.atmosphere.wasync.impl.DefaultRequestBuilder;
 import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 
 /**
- * {@code SerializedClient} is a {@link org.atmosphere.wasync.Client} that guarantees ordered message delivery, in-line with the 
- * {@link Socket#fire(Object)} invocation sequence. 
+ * {@code SerializedClient} is a {@link org.atmosphere.wasync.Client} that guarantees ordered message delivery, in-line with the
+ * {@link Socket#fire(Object)} invocation sequence.
  * <p/>
  * A sequence of fire calls over a {@code SerializedClient}'s socket (created through {@link SerializedClient#create()} :
  * <blockquote><pre>
  *     socket.fire("message1").fire("message2");
  * </pre></blockquote>
- * guarantees that {@code message1} arrives at the recipient-side before {@code message2}. By default, wAsync uses multiple underlying 
- * connections in delivering fire payloads. The {@code SerializedClient} guarantees that only one connection is used at any moment 
+ * guarantees that {@code message1} arrives at the recipient-side before {@code message2}. By default, wAsync uses multiple underlying
+ * connections in delivering fire payloads. The {@code SerializedClient} guarantees that only one connection is used at any moment
  * in time, while still providing an asynchronous fire interface to clients.
  * <p/>
  * {@code SerializedClient} instances can be configured by means of a {@link SerializedFireStage} in deciding on the exact
- * staging semantics and the (non-functional) quality properties of a supporting stage. The default implementation provided is 
- * {@link DefaultSerializedFireStage}. 
+ * staging semantics and the (non-functional) quality properties of a supporting stage. The default implementation provided is
+ * {@link DefaultSerializedFireStage}.
  * <p/>
+ *
  * @author Christian Bach
  */
 public class SerializedClient implements Client<SerializedOptions, SerializedOptionsBuilder, AtmosphereRequest.AtmosphereRequestBuilder> {
@@ -66,10 +67,10 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
         AsyncHttpClient asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(newOptionsBuilder().reconnect(true).build());
 
         return new SerializedSocket(
-        		new SerializedOptionsBuilder()
-        		.runtime(asyncHttpClient)
-        		.serializedFireStage(new DefaultSerializedFireStage())
-        		.build());
+                new SerializedOptionsBuilder()
+                        .runtime(asyncHttpClient)
+                        .serializedFireStage(new DefaultSerializedFireStage())
+                        .build());
     }
 
     /**

@@ -21,6 +21,13 @@ import org.atmosphere.wasync.Socket;
 
 import static org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 
+/**
+ * A specialized {@link Client} for the Atmosphere Framework. This client support the Atmosphere Protocol.
+ * <br/>
+ * An {@link AtmosphereRequestBuilder} will be created and Atmosphere's specific protocol information can be set using this object.
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class AtmosphereClient implements Client<DefaultOptions, DefaultOptionsBuilder,AtmosphereRequest.AtmosphereRequestBuilder> {
 
     public AtmosphereClient() {

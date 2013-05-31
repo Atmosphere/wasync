@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Construct a {@link Request}
+ * Base class for building {@link Request}
  *
  * @author jeanfrancois Arcand
  */

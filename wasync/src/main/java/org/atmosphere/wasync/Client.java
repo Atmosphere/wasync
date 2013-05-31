@@ -59,7 +59,7 @@ public interface Client<O extends Options, U extends OptionsBuilder, T extends R
     /**
      * Create a new {@link RequestBuilder} based on the class' implementation.
      *
-     * @param clazz an impplementation of {@link RequestBuilder}
+     * @param clazz an implementation of {@link RequestBuilder}
      * @return a {@link RequestBuilder}
      */
     T newRequestBuilder(Class<T> clazz);

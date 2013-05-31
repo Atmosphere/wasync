@@ -49,14 +49,14 @@ import java.nio.charset.CodingErrorAction;
  * encodings supported by the JRE are handled correctly. In particular for charsets such as
  * UTF-16, the implementation ensures that one and only one byte order marker
  * is produced.
- * <p>
+ * <p/>
  * Since in general it is not possible to predict the number of characters to be read from the
  * {@link Reader} to satisfy a read request on the {@link ReaderInputStream}, all reads from
  * the {@link Reader} are buffered. There is therefore no well defined correlation
  * between the current position of the {@link Reader} and that of the {@link ReaderInputStream}.
  * This also implies that in general there is no need to wrap the underlying {@link Reader}
  * in a {@link java.io.BufferedReader}.
- * <p>
+ * <p/>
  * {@link ReaderInputStream} implements the inverse transformation of {@link java.io.InputStreamReader};
  * in the following example, reading from <tt>in2</tt> would return the same byte
  * sequence as reading from <tt>in</tt> (provided that the initial byte sequence is legal
@@ -70,7 +70,7 @@ import java.nio.charset.CodingErrorAction;
  * except that the control flow is reversed: both classes transform a character stream
  * into a byte stream, but {@link java.io.OutputStreamWriter} pushes data to the underlying stream,
  * while {@link ReaderInputStream} pulls it from the underlying stream.
- * <p>
+ *
  * Note that while there are use cases where there is no alternative to using
  * this class, very often the need to use this class is an indication of a flaw
  * in the design of the code. This class is typically used in situations where an existing
@@ -78,15 +78,14 @@ import java.nio.charset.CodingErrorAction;
  * is as a character stream, i.e. by providing a {@link Reader} instance. An example of a situation
  * where this problem may appear is when implementing the {@link javax.activation.DataSource}
  * interface from the Java Activation Framework.
- * <p>
+ *
  * Given the fact that the {@link Reader} class doesn't provide any way to predict whether the next
  * read operation will block or not, it is not possible to provide a meaningful
  * implementation of the {@link InputStream#available()} method. A call to this method
  * will always return 0. Also, this class doesn't support {@link InputStream#mark(int)}.
- * <p>
+ *
  * Instances of {@link ReaderInputStream} are not thread safe.
- *  *
- * @since 2.0
+ *
  */
 public class ReaderInputStream extends InputStream {
     private static final int DEFAULT_BUFFER_SIZE = 1024;
@@ -113,7 +112,7 @@ public class ReaderInputStream extends InputStream {
     /**
      * Construct a new {@link ReaderInputStream}.
      *
-     * @param reader the target {@link Reader}
+     * @param reader  the target {@link Reader}
      * @param encoder the charset encoder
      * @since 2.1
      */
@@ -124,8 +123,8 @@ public class ReaderInputStream extends InputStream {
     /**
      * Construct a new {@link ReaderInputStream}.
      *
-     * @param reader the target {@link Reader}
-     * @param encoder the charset encoder
+     * @param reader     the target {@link Reader}
+     * @param encoder    the charset encoder
      * @param bufferSize the size of the input buffer in number of characters
      * @since 2.1
      */
@@ -141,23 +140,23 @@ public class ReaderInputStream extends InputStream {
     /**
      * Construct a new {@link ReaderInputStream}.
      *
-     * @param reader the target {@link Reader}
-     * @param charset the charset encoding
+     * @param reader     the target {@link Reader}
+     * @param charset    the charset encoding
      * @param bufferSize the size of the input buffer in number of characters
      */
     public ReaderInputStream(Reader reader, Charset charset, int bufferSize) {
         this(reader,
-             charset.newEncoder()
-                    .onMalformedInput(CodingErrorAction.REPLACE)
-                    .onUnmappableCharacter(CodingErrorAction.REPLACE),
-             bufferSize);
+                charset.newEncoder()
+                        .onMalformedInput(CodingErrorAction.REPLACE)
+                        .onUnmappableCharacter(CodingErrorAction.REPLACE),
+                bufferSize);
     }
 
     /**
      * Construct a new {@link ReaderInputStream} with a default input buffer size of
      * 1024 characters.
      *
-     * @param reader the target {@link Reader}
+     * @param reader  the target {@link Reader}
      * @param charset the charset encoding
      */
     public ReaderInputStream(Reader reader, Charset charset) {
@@ -167,9 +166,9 @@ public class ReaderInputStream extends InputStream {
     /**
      * Construct a new {@link ReaderInputStream}.
      *
-     * @param reader the target {@link Reader}
+     * @param reader      the target {@link Reader}
      * @param charsetName the name of the charset encoding
-     * @param bufferSize the size of the input buffer in number of characters
+     * @param bufferSize  the size of the input buffer in number of characters
      */
     public ReaderInputStream(Reader reader, String charsetName, int bufferSize) {
         this(reader, Charset.forName(charsetName), bufferSize);
@@ -179,7 +178,7 @@ public class ReaderInputStream extends InputStream {
      * Construct a new {@link ReaderInputStream} with a default input buffer size of
      * 1024 characters.
      *
-     * @param reader the target {@link Reader}
+     * @param reader      the target {@link Reader}
      * @param charsetName the name of the charset encoding
      */
     public ReaderInputStream(Reader reader, String charsetName) {
@@ -199,8 +198,7 @@ public class ReaderInputStream extends InputStream {
     /**
      * Fills the internal char buffer from the reader.
      *
-     * @throws IOException
-     *             If an I/O error occurs
+     * @throws IOException If an I/O error occurs
      */
     private void fillBuffer() throws IOException {
         if (!endOfInput && (lastCoderResult == null || lastCoderResult.isUnderflow())) {
@@ -213,7 +211,7 @@ public class ReaderInputStream extends InputStream {
             if (c == -1) {
                 endOfInput = true;
             } else {
-                encoderIn.position(position+c);
+                encoderIn.position(position + c);
             }
             encoderIn.flip();
         }
@@ -225,7 +223,7 @@ public class ReaderInputStream extends InputStream {
     /**
      * Read the specified number of bytes into an array.
      *
-     * @param b the byte array to read into
+     * @param b   the byte array to read into
      * @param off the offset to start reading bytes into
      * @param len the number of bytes to read
      * @return the number of bytes read or <code>-1</code>
@@ -284,7 +282,7 @@ public class ReaderInputStream extends InputStream {
      */
     @Override
     public int read() throws IOException {
-        for (;;) {
+        for (; ; ) {
             if (encoderOut.hasRemaining()) {
                 return encoderOut.get() & 0xFF;
             } else {
@@ -299,6 +297,7 @@ public class ReaderInputStream extends InputStream {
     /**
      * Close the stream. This method will cause the underlying {@link Reader}
      * to be closed.
+     *
      * @throws IOException if an I/O error occurs
      */
     @Override

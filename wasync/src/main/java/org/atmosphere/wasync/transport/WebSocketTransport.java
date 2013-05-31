@@ -50,6 +50,11 @@ import static org.atmosphere.wasync.Event.STATUS;
 import static org.atmosphere.wasync.Event.TRANSPORT;
 import static org.atmosphere.wasync.Socket.STATUS;
 
+/**
+ * WebSocket {@link org.atmosphere.wasync.Transport} implementation
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class WebSocketTransport extends WebSocketUpgradeHandler implements Transport {
 
     private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);

@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author jeanfrancois Arcand
  */
-public class WebSocketLoadTest {
+public class WebSocketLoader {
 
     public static void main(String[] s) throws InterruptedException, IOException {
 

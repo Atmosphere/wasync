@@ -17,6 +17,11 @@ package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.OptionsBuilder;
 
+/**
+ * Default implementation of the {@link org.atmosphere.wasync.OptionsBuilder}
+ *
+ * @author Jeanfrancois Arcand
+ */
 public class DefaultOptionsBuilder extends OptionsBuilder {
 
     protected DefaultOptionsBuilder() {
