@@ -56,6 +56,31 @@ As simple as
             .fire("echo")
             .fire("bong");
 ```
+Life cycle of the underlying Socket can easily be implemented as well
+```java
+
+           Socket socket = client.create();
+           socket.on(Event.CLOSE.name(), new Function<String>() {
+               @Override
+               public void on(String t) {
+               }
+           }).on(Event.REOPENED.name(), new Function<String>() {
+               @Override
+               public void on(String t) {
+               }
+           }).on(new Function<IOException>() {
+               @Override
+               public void on(IOException ioe) {
+                   ioe.printStackTrace();
+               }
+           }).on(Event.OPEN.name(), new Function<String>() {
+               @Override
+               public void on(String t) {
+               }
+           }).open(clientRequest.build());
+```
+
+
 
 You can also use the specialized clients. For example, to transparently enable Atmosphere's Protocol
 
