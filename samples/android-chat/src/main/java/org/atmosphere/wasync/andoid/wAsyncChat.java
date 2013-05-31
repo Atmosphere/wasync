@@ -61,9 +61,9 @@ public class wAsyncChat extends Activity {
                     .method(Request.METHOD.GET)
                     .uri(serverIpAddress + "/chat")
                     .trackMessageLength(true)
-                    .encoder(new Encoder<Data, String>() {
+                    .encoder(new Encoder<Message, String>() {
                         @Override
-                        public String encode(Data data) {
+                        public String encode(Message data) {
                             try {
                                 return mapper.writeValueAsString(data);
                             } catch (IOException e) {
@@ -71,9 +71,9 @@ public class wAsyncChat extends Activity {
                             }
                         }
                     })
-                    .decoder(new Decoder<String, Data>() {
+                    .decoder(new Decoder<String, Message>() {
                         @Override
-                        public Data decode(Event type, String data) {
+                        public Message decode(Event type, String data) {
 
                             data = data.trim();
 
@@ -84,7 +84,7 @@ public class wAsyncChat extends Activity {
 
                             if (type.equals(Event.MESSAGE)) {
                                 try {
-                                    return mapper.readValue(data, Data.class);
+                                    return mapper.readValue(data, Message.class);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                     return null;
@@ -97,9 +97,9 @@ public class wAsyncChat extends Activity {
                     .transport(Request.TRANSPORT.WEBSOCKET);
 
             final org.atmosphere.wasync.Socket socket = client.create();
-            socket.on("message", new Function<Data>() {
+            socket.on("message", new Function<Message>() {
                 @Override
-                public void on(final Data t) {
+                public void on(final Message t) {
                     uiHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -129,7 +129,7 @@ public class wAsyncChat extends Activity {
                         if (name == null) {
                             name = str;
                         }
-                        socket.fire(new Data(name, str));
+                        socket.fire(new Message(name, str));
                         et.setText("");
                         Log.d("Client", "Client sent message");
                     } catch (Throwable e) {

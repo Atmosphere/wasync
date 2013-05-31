@@ -13,20 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.wasync.samples;
+package org.atmosphere.wasync.andoid;
 
 import java.util.Date;
 
-public class Data {
+public class Message {
     private String message;
     private String author;
     private long time;
 
-    public Data() {
+    public Message() {
         this("", "");
     }
 
-    public Data(String author, String message) {
+    public Message(String author, String message) {
         this.author = author;
         this.message = message;
         this.time = new Date().getTime();

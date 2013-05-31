@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.wasync.samples;
+package org.atmosphere.wasync.samples.node;
 
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
@@ -49,9 +49,9 @@ public class wAsyncNodeChat {
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(args[0] + "/chat")
-                .encoder(new Encoder<Data, String>() {
+                .encoder(new Encoder<Message, String>() {
                     @Override
-                    public String encode(Data data) {
+                    public String encode(Message data) {
                         try {
                             return mapper.writeValueAsString(data);
                         } catch (IOException e) {
@@ -59,9 +59,9 @@ public class wAsyncNodeChat {
                         }
                     }
                 })
-                .decoder(new Decoder<String, Data>() {
+                .decoder(new Decoder<String, Message>() {
                     @Override
-                    public Data decode(Event type, String data) {
+                    public Message decode(Event type, String data) {
 
                         data = data.trim();
 
@@ -72,7 +72,7 @@ public class wAsyncNodeChat {
 
                         if (type.equals(Event.MESSAGE)) {
                             try {
-                                return mapper.readValue(data, Data.class);
+                                return mapper.readValue(data, Message.class);
                             } catch (IOException e) {
                                 logger.debug("Invalid message {}", data);
                                 return null;
@@ -86,9 +86,9 @@ public class wAsyncNodeChat {
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
-        socket.on("message", new Function<Data>() {
+        socket.on("message", new Function<Message>() {
             @Override
-            public void on(Data t) {
+            public void on(Message t) {
                 Date d = new Date(t.getTime()) ;
                 logger.info("Author {}: {}", t.getAuthor() + "@ " + d.getHours() + ":" + d.getMinutes(), t.getMessage());
             }
@@ -110,7 +110,7 @@ public class wAsyncNodeChat {
             if (name == null) {
                 name = a;
             }
-            socket.fire(new Data(name, a));
+            socket.fire(new Message(name, a));
         }
         socket.close();
     }
