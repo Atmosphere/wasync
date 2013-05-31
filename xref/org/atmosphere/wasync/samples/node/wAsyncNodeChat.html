@@ -3,10 +3,10 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <title>wAsyncNodeChat xref</title>
-<link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
+<link type="text/css" rel="stylesheet" href="../../../../../stylesheet.css" />
 </head>
 <body>
-<div id="overview"><a href="../../../../../apidocs/org/atmosphere/wasync/samples/wAsyncNodeChat.html">View Javadoc</a></div><pre>
+<div id="overview"><a href="../../../../../../apidocs/org/atmosphere/wasync/samples/node/wAsyncNodeChat.html">View Javadoc</a></div><pre>
 
 <a class="jxr_linenumber" name="1" href="#1">1</a>   <em class="jxr_comment">/*</em>
 <a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_comment"> * Copyright 2013 Jeanfrancois Arcand</em>
@@ -23,7 +23,7 @@
 <a class="jxr_linenumber" name="13" href="#13">13</a>  <em class="jxr_comment"> * License for the specific language governing permissions and limitations under</em>
 <a class="jxr_linenumber" name="14" href="#14">14</a>  <em class="jxr_comment"> * the License.</em>
 <a class="jxr_linenumber" name="15" href="#15">15</a>  <em class="jxr_comment"> */</em>
-<a class="jxr_linenumber" name="16" href="#16">16</a>  <strong class="jxr_keyword">package</strong> org.atmosphere.wasync.samples;
+<a class="jxr_linenumber" name="16" href="#16">16</a>  <strong class="jxr_keyword">package</strong> org.atmosphere.wasync.samples.node;
 <a class="jxr_linenumber" name="17" href="#17">17</a>  
 <a class="jxr_linenumber" name="18" href="#18">18</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Client;
 <a class="jxr_linenumber" name="19" href="#19">19</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.ClientFactory;
@@ -43,7 +43,7 @@
 <a class="jxr_linenumber" name="33" href="#33">33</a>  <strong class="jxr_keyword">import</strong> java.io.InputStreamReader;
 <a class="jxr_linenumber" name="34" href="#34">34</a>  <strong class="jxr_keyword">import</strong> java.util.Date;
 <a class="jxr_linenumber" name="35" href="#35">35</a>  
-<a class="jxr_linenumber" name="36" href="#36">36</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/samples/wAsyncNodeChat.html">wAsyncNodeChat</a> {
+<a class="jxr_linenumber" name="36" href="#36">36</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../org/atmosphere/wasync/samples/node/wAsyncNodeChat.html">wAsyncNodeChat</a> {
 <a class="jxr_linenumber" name="37" href="#37">37</a>  
 <a class="jxr_linenumber" name="38" href="#38">38</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> Logger logger = LoggerFactory.getLogger(wAsyncNodeChat.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="39" href="#39">39</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> ObjectMapper mapper = <strong class="jxr_keyword">new</strong> ObjectMapper();
@@ -54,14 +54,14 @@
 <a class="jxr_linenumber" name="44" href="#44">44</a>              args = <strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"http://127.0.0.1:8080"</span>};
 <a class="jxr_linenumber" name="45" href="#45">45</a>          }
 <a class="jxr_linenumber" name="46" href="#46">46</a>  
-<a class="jxr_linenumber" name="47" href="#47">47</a>          <a href="../../../../org/atmosphere/wasync/Client.html">Client</a> client = ClientFactory.getDefault().newClient();
+<a class="jxr_linenumber" name="47" href="#47">47</a>          <a href="../../../../../org/atmosphere/wasync/Client.html">Client</a> client = ClientFactory.getDefault().newClient();
 <a class="jxr_linenumber" name="48" href="#48">48</a>  
-<a class="jxr_linenumber" name="49" href="#49">49</a>          <a href="../../../../org/atmosphere/wasync/RequestBuilder.html">RequestBuilder</a> request = client.newRequestBuilder()
+<a class="jxr_linenumber" name="49" href="#49">49</a>          <a href="../../../../../org/atmosphere/wasync/RequestBuilder.html">RequestBuilder</a> request = client.newRequestBuilder()
 <a class="jxr_linenumber" name="50" href="#50">50</a>                  .method(Request.METHOD.GET)
 <a class="jxr_linenumber" name="51" href="#51">51</a>                  .uri(args[0] + <span class="jxr_string">"/chat"</span>)
-<a class="jxr_linenumber" name="52" href="#52">52</a>                  .encoder(<strong class="jxr_keyword">new</strong> Encoder&lt;Data, String&gt;() {
+<a class="jxr_linenumber" name="52" href="#52">52</a>                  .encoder(<strong class="jxr_keyword">new</strong> Encoder&lt;Message, String&gt;() {
 <a class="jxr_linenumber" name="53" href="#53">53</a>                      @Override
-<a class="jxr_linenumber" name="54" href="#54">54</a>                      <strong class="jxr_keyword">public</strong> String encode(<a href="../../../../org/atmosphere/wasync/samples/Data.html">Data</a> data) {
+<a class="jxr_linenumber" name="54" href="#54">54</a>                      <strong class="jxr_keyword">public</strong> String encode(<a href="../../../../../org/atmosphere/wasync/samples/node/Message.html">Message</a> data) {
 <a class="jxr_linenumber" name="55" href="#55">55</a>                          <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="56" href="#56">56</a>                              <strong class="jxr_keyword">return</strong> mapper.writeValueAsString(data);
 <a class="jxr_linenumber" name="57" href="#57">57</a>                          } <strong class="jxr_keyword">catch</strong> (IOException e) {
@@ -69,9 +69,9 @@
 <a class="jxr_linenumber" name="59" href="#59">59</a>                          }
 <a class="jxr_linenumber" name="60" href="#60">60</a>                      }
 <a class="jxr_linenumber" name="61" href="#61">61</a>                  })
-<a class="jxr_linenumber" name="62" href="#62">62</a>                  .decoder(<strong class="jxr_keyword">new</strong> Decoder&lt;String, Data&gt;() {
+<a class="jxr_linenumber" name="62" href="#62">62</a>                  .decoder(<strong class="jxr_keyword">new</strong> Decoder&lt;String, Message&gt;() {
 <a class="jxr_linenumber" name="63" href="#63">63</a>                      @Override
-<a class="jxr_linenumber" name="64" href="#64">64</a>                      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/samples/Data.html">Data</a> decode(<a href="../../../../org/atmosphere/wasync/Event.html">Event</a> type, String data) {
+<a class="jxr_linenumber" name="64" href="#64">64</a>                      <strong class="jxr_keyword">public</strong> <a href="../../../../../org/atmosphere/wasync/samples/node/Message.html">Message</a> decode(<a href="../../../../../org/atmosphere/wasync/Event.html">Event</a> type, String data) {
 <a class="jxr_linenumber" name="65" href="#65">65</a>  
 <a class="jxr_linenumber" name="66" href="#66">66</a>                          data = data.trim();
 <a class="jxr_linenumber" name="67" href="#67">67</a>  
@@ -82,7 +82,7 @@
 <a class="jxr_linenumber" name="72" href="#72">72</a>  
 <a class="jxr_linenumber" name="73" href="#73">73</a>                          <strong class="jxr_keyword">if</strong> (type.equals(Event.MESSAGE)) {
 <a class="jxr_linenumber" name="74" href="#74">74</a>                              <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="75" href="#75">75</a>                                  <strong class="jxr_keyword">return</strong> mapper.readValue(data, Data.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="75" href="#75">75</a>                                  <strong class="jxr_keyword">return</strong> mapper.readValue(data, Message.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="76" href="#76">76</a>                              } <strong class="jxr_keyword">catch</strong> (IOException e) {
 <a class="jxr_linenumber" name="77" href="#77">77</a>                                  logger.debug(<span class="jxr_string">"Invalid message {}"</span>, data);
 <a class="jxr_linenumber" name="78" href="#78">78</a>                                  <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
@@ -95,10 +95,10 @@
 <a class="jxr_linenumber" name="85" href="#85">85</a>                  .transport(Request.TRANSPORT.WEBSOCKET)
 <a class="jxr_linenumber" name="86" href="#86">86</a>                  .transport(Request.TRANSPORT.LONG_POLLING);
 <a class="jxr_linenumber" name="87" href="#87">87</a>  
-<a class="jxr_linenumber" name="88" href="#88">88</a>          <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> socket = client.create();
-<a class="jxr_linenumber" name="89" href="#89">89</a>          socket.on(<span class="jxr_string">"message"</span>, <strong class="jxr_keyword">new</strong> Function&lt;Data&gt;() {
+<a class="jxr_linenumber" name="88" href="#88">88</a>          <a href="../../../../../org/atmosphere/wasync/Socket.html">Socket</a> socket = client.create();
+<a class="jxr_linenumber" name="89" href="#89">89</a>          socket.on(<span class="jxr_string">"message"</span>, <strong class="jxr_keyword">new</strong> Function&lt;Message&gt;() {
 <a class="jxr_linenumber" name="90" href="#90">90</a>              @Override
-<a class="jxr_linenumber" name="91" href="#91">91</a>              <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> on(<a href="../../../../org/atmosphere/wasync/samples/Data.html">Data</a> t) {
+<a class="jxr_linenumber" name="91" href="#91">91</a>              <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> on(<a href="../../../../../org/atmosphere/wasync/samples/node/Message.html">Message</a> t) {
 <a class="jxr_linenumber" name="92" href="#92">92</a>                  Date d = <strong class="jxr_keyword">new</strong> Date(t.getTime()) ;
 <a class="jxr_linenumber" name="93" href="#93">93</a>                  logger.info(<span class="jxr_string">"Author {}: {}"</span>, t.getAuthor() + <span class="jxr_string">"@ "</span> + d.getHours() + <span class="jxr_string">":"</span> + d.getMinutes(), t.getMessage());
 <a class="jxr_linenumber" name="94" href="#94">94</a>              }
@@ -120,7 +120,7 @@
 <a class="jxr_linenumber" name="110" href="#110">110</a>             <strong class="jxr_keyword">if</strong> (name == <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="111" href="#111">111</a>                 name = a;
 <a class="jxr_linenumber" name="112" href="#112">112</a>             }
-<a class="jxr_linenumber" name="113" href="#113">113</a>             socket.fire(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/samples/Data.html">Data</a>(name, a));
+<a class="jxr_linenumber" name="113" href="#113">113</a>             socket.fire(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/atmosphere/wasync/samples/node/Message.html">Message</a>(name, a));
 <a class="jxr_linenumber" name="114" href="#114">114</a>         }
 <a class="jxr_linenumber" name="115" href="#115">115</a>         socket.close();
 <a class="jxr_linenumber" name="116" href="#116">116</a>     }
