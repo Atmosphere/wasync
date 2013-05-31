@@ -72,7 +72,7 @@ public class TransportsUtil {
             }
         }
 
-        if (!hasMatch && instanceType != null) {
+        if (!hasMatch && !e.equals(Event.MESSAGE)) {
             // Since we have no match, most probably because a decoder isn't matching a function or the Event's type, try
             // to match Event type directly with a String.
             // This can happens if a decoder is not behaving properly.

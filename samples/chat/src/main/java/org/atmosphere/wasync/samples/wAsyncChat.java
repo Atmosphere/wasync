@@ -41,7 +41,7 @@ public class wAsyncChat {
     public static void main(String[] args) throws IOException {
 
         if (args.length == 0) {
-            args = new String[] {"http://127.0.0.1:8080"};
+            args = new String[]{"http://127.0.0.1:8080"};
         }
 
         AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
@@ -91,7 +91,7 @@ public class wAsyncChat {
         socket.on("message", new Function<Message>() {
             @Override
             public void on(Message t) {
-                Date d = new Date(t.getTime()) ;
+                Date d = new Date(t.getTime());
                 logger.info("Author {}: {}", t.getAuthor() + "@ " + d.getHours() + ":" + d.getMinutes(), t.getMessage());
             }
         }).on(new Function<Throwable>() {
@@ -101,6 +101,11 @@ public class wAsyncChat {
                 t.printStackTrace();
             }
 
+        }).on(Event.CLOSE.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Connection closed");
+            }
         }).open(request.build());
 
         logger.info("Choose Name: ");
