@@ -284,4 +284,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
 
+    public WebSocket webSocket() {
+        return webSocket;
+    }
 }

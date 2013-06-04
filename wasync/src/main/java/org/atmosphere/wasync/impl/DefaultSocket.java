@@ -164,8 +164,8 @@ public class DefaultSocket implements Socket {
                 java.util.concurrent.Future<WebSocket> fw = options.runtime().prepareRequest(r.build()).execute(
                         (AsyncHandler<WebSocket>) transportInUse);
 
-                WebSocket w = fw.get(timeout, tu);
-                socketRuntime = new SocketRuntime(w, options, socketRuntime.future(), functions);
+                fw.get(timeout, tu);
+                socketRuntime = new SocketRuntime(WebSocketTransport.class.cast(transportInUse), options, socketRuntime.future(), functions);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 

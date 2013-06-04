@@ -18,13 +18,13 @@ package org.atmosphere.wasync.impl;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
-import com.ning.http.client.websocket.WebSocket;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.transport.TransportsUtil;
+import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.atmosphere.wasync.util.ReaderInputStream;
 import org.atmosphere.wasync.util.TypeResolver;
 import org.slf4j.Logger;
@@ -50,13 +50,13 @@ public class SocketRuntime {
 
     private final static Logger logger = LoggerFactory.getLogger(SocketRuntime.class);
 
-    protected final WebSocket webSocket;
+    protected WebSocketTransport webSocketTransport;
     protected final Options options;
     protected final DefaultFuture rootFuture;
     protected final List<FunctionWrapper> functions;
 
-    public SocketRuntime(WebSocket webSocket, Options options, DefaultFuture rootFuture, List<FunctionWrapper> functions) {
-        this.webSocket = webSocket;
+    public SocketRuntime(WebSocketTransport webSocket, Options options, DefaultFuture rootFuture, List<FunctionWrapper> functions) {
+        this.webSocketTransport = webSocket;
         this.options = options;
         this.rootFuture = rootFuture;
         this.functions = functions;
@@ -84,7 +84,7 @@ public class SocketRuntime {
     public Future write(Request request, Object data) throws IOException {
         // Execute encoder
         Object object = invokeEncoder(request.encoders(), data);
-        if (webSocket != null) {
+        if (webSocketTransport != null) {
             webSocketWrite(request, object, data);
         } else {
             try {
@@ -114,7 +114,7 @@ public class SocketRuntime {
             while (-1 != (n = is.read(buffer))) {
                 bs.write(buffer, 0, n);
             }
-            webSocket.sendMessage(bs.toByteArray());
+            webSocketTransport.webSocket().sendMessage(bs.toByteArray());
         } else if (Reader.class.isAssignableFrom(object.getClass())) {
             Reader is = (Reader) object;
             StringWriter bs = new StringWriter();
@@ -124,11 +124,11 @@ public class SocketRuntime {
             while (-1 != (n = is.read(chars))) {
                 bs.write(chars, 0, n);
             }
-            webSocket.sendTextMessage(bs.getBuffer().toString());
+            webSocketTransport.webSocket().sendTextMessage(bs.getBuffer().toString());
         } else if (String.class.isAssignableFrom(object.getClass())) {
-            webSocket.sendTextMessage(object.toString());
+            webSocketTransport.webSocket().sendTextMessage(object.toString());
         } else if (byte[].class.isAssignableFrom(object.getClass())) {
-            webSocket.sendMessage((byte[]) object);
+            webSocketTransport.webSocket().sendMessage((byte[]) object);
         } else {
             throw new IllegalStateException("No Encoder for " + data);
         }

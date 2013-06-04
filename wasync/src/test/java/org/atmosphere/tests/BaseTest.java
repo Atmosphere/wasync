@@ -1735,4 +1735,108 @@ public abstract class BaseTest {
 
         assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDCLOSEERROR");
     }
+
+    @Test
+    public void reconnectFireTest() throws IOException, InterruptedException {
+        final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
+        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch flatch = new CountDownLatch(2);
+        final CountDownLatch elatch = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (r.getRequest().getMethod().equals("GET")) {
+                            r.suspend();
+                            latch.countDown();
+                        } else {
+                            r.write(r.getRequest().getReader().readLine()).close();
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        Client client = ClientFactory.getDefault().newClient();
+        RequestBuilder clientRequest = client.newRequestBuilder().method(Request.METHOD.GET).uri(targetUrl)
+                .encoder(new Encoder<String, String>() {
+                    @Override
+                    public String encode(String s) {
+                        System.out.println("[Encode]:" + s);
+                        return s;
+                    }
+                })
+                .decoder(new Decoder<String, String>() {
+                    @Override
+                    public String decode(Event e, String s) {
+                        // Fool the decoder mapping
+                        return s;
+                    }
+                }).transport(Request.TRANSPORT.WEBSOCKET)
+                .transport(Request.TRANSPORT.LONG_POLLING);
+
+        final Socket socket = client.create();
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                b.get().append(t);
+                flatch.countDown();
+            }
+        }).on(Event.CLOSE.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                b.get().append(t);
+            }
+        }).on(Event.REOPENED.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                b.get().append(t);
+                try {
+                    socket.fire("PONG");
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }).on(new Function<IOException>() {
+            @Override
+            public void on(IOException ioe) {
+                ioe.printStackTrace();
+                b.get().append("ERROR");
+                elatch.countDown();
+            }
+        }).on(Event.OPEN.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                b.get().append(t);
+            }
+        }).open(clientRequest.build());
+
+        socket.fire("PING");
+        latch.await();
+        flatch.await();
+
+        server.stop();
+
+        elatch.await();
+
+        assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSEERROR");
+    }
 }

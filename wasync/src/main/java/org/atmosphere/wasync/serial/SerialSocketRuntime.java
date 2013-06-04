@@ -18,7 +18,6 @@ package org.atmosphere.wasync.serial;
 import com.google.common.util.concurrent.SettableFuture;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
-import com.ning.http.client.websocket.WebSocket;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
@@ -26,6 +25,7 @@ import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.impl.DefaultFuture;
 import org.atmosphere.wasync.impl.SocketRuntime;
+import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class SerialSocketRuntime extends SocketRuntime {
     private final static Logger logger = LoggerFactory.getLogger(SerialSocketRuntime.class);
     private final SerializedSocket serializedSocket;
 
-    public SerialSocketRuntime(WebSocket webSocket, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket,  List<FunctionWrapper> functions) {
+    public SerialSocketRuntime(WebSocketTransport webSocket, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket,  List<FunctionWrapper> functions) {
         super(webSocket, options, rootFuture, functions);
         this.serializedSocket = serializedSocket;
     }
@@ -59,7 +59,7 @@ public class SerialSocketRuntime extends SocketRuntime {
 
     public Future write(Request request, Object data) throws IOException {
 
-        if (webSocket != null) {
+        if (webSocketTransport != null) {
             Object object = invokeEncoder(request.encoders(), data);
             webSocketWrite(request, object, data);
         } else {
