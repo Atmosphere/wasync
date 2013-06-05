@@ -28,13 +28,13 @@
 <a class="jxr_linenumber" name="18" href="#18">18</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.AsyncHttpClient;
 <a class="jxr_linenumber" name="19" href="#19">19</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.ListenableFuture;
 <a class="jxr_linenumber" name="20" href="#20">20</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.Response;
-<a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.websocket.WebSocket;
-<a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Encoder;
-<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.FunctionWrapper;
-<a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Future;
-<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Options;
-<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Request;
-<a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.transport.TransportsUtil;
+<a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Encoder;
+<a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.FunctionWrapper;
+<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Future;
+<a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Options;
+<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Request;
+<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.transport.TransportsUtil;
+<a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.transport.WebSocketTransport;
 <a class="jxr_linenumber" name="28" href="#28">28</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.util.ReaderInputStream;
 <a class="jxr_linenumber" name="29" href="#29">29</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.util.TypeResolver;
 <a class="jxr_linenumber" name="30" href="#30">30</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
@@ -60,13 +60,13 @@
 <a class="jxr_linenumber" name="50" href="#50">50</a>  
 <a class="jxr_linenumber" name="51" href="#51">51</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> Logger logger = LoggerFactory.getLogger(SocketRuntime.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="52" href="#52">52</a>  
-<a class="jxr_linenumber" name="53" href="#53">53</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">final</strong> WebSocket webSocket;
+<a class="jxr_linenumber" name="53" href="#53">53</a>      <strong class="jxr_keyword">protected</strong> <a href="../../../../org/atmosphere/wasync/transport/WebSocketTransport.html">WebSocketTransport</a> webSocketTransport;
 <a class="jxr_linenumber" name="54" href="#54">54</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options;
 <a class="jxr_linenumber" name="55" href="#55">55</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultFuture.html">DefaultFuture</a> rootFuture;
 <a class="jxr_linenumber" name="56" href="#56">56</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">final</strong> List&lt;FunctionWrapper&gt; functions;
 <a class="jxr_linenumber" name="57" href="#57">57</a>  
-<a class="jxr_linenumber" name="58" href="#58">58</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a>(WebSocket webSocket, <a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options, <a href="../../../../org/atmosphere/wasync/impl/DefaultFuture.html">DefaultFuture</a> rootFuture, List&lt;FunctionWrapper&gt; functions) {
-<a class="jxr_linenumber" name="59" href="#59">59</a>          <strong class="jxr_keyword">this</strong>.webSocket = webSocket;
+<a class="jxr_linenumber" name="58" href="#58">58</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a>(<a href="../../../../org/atmosphere/wasync/transport/WebSocketTransport.html">WebSocketTransport</a> webSocket, <a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options, <a href="../../../../org/atmosphere/wasync/impl/DefaultFuture.html">DefaultFuture</a> rootFuture, List&lt;FunctionWrapper&gt; functions) {
+<a class="jxr_linenumber" name="59" href="#59">59</a>          <strong class="jxr_keyword">this</strong>.webSocketTransport = webSocket;
 <a class="jxr_linenumber" name="60" href="#60">60</a>          <strong class="jxr_keyword">this</strong>.options = options;
 <a class="jxr_linenumber" name="61" href="#61">61</a>          <strong class="jxr_keyword">this</strong>.rootFuture = rootFuture;
 <a class="jxr_linenumber" name="62" href="#62">62</a>          <strong class="jxr_keyword">this</strong>.functions = functions;
@@ -94,7 +94,7 @@
 <a class="jxr_linenumber" name="84" href="#84">84</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Future.html">Future</a> write(<a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request, Object data) <strong class="jxr_keyword">throws</strong> IOException {
 <a class="jxr_linenumber" name="85" href="#85">85</a>          <em class="jxr_comment">// Execute encoder</em>
 <a class="jxr_linenumber" name="86" href="#86">86</a>          Object object = invokeEncoder(request.encoders(), data);
-<a class="jxr_linenumber" name="87" href="#87">87</a>          <strong class="jxr_keyword">if</strong> (webSocket != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="87" href="#87">87</a>          <strong class="jxr_keyword">if</strong> (webSocketTransport != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="88" href="#88">88</a>              webSocketWrite(request, object, data);
 <a class="jxr_linenumber" name="89" href="#89">89</a>          } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="90" href="#90">90</a>              <strong class="jxr_keyword">try</strong> {
@@ -124,7 +124,7 @@
 <a class="jxr_linenumber" name="114" href="#114">114</a>             <strong class="jxr_keyword">while</strong> (-1 != (n = is.read(buffer))) {
 <a class="jxr_linenumber" name="115" href="#115">115</a>                 bs.write(buffer, 0, n);
 <a class="jxr_linenumber" name="116" href="#116">116</a>             }
-<a class="jxr_linenumber" name="117" href="#117">117</a>             webSocket.sendMessage(bs.toByteArray());
+<a class="jxr_linenumber" name="117" href="#117">117</a>             webSocketTransport.webSocket().sendMessage(bs.toByteArray());
 <a class="jxr_linenumber" name="118" href="#118">118</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (Reader.<strong class="jxr_keyword">class</strong>.isAssignableFrom(object.getClass())) {
 <a class="jxr_linenumber" name="119" href="#119">119</a>             Reader is = (Reader) object;
 <a class="jxr_linenumber" name="120" href="#120">120</a>             StringWriter bs = <strong class="jxr_keyword">new</strong> StringWriter();
@@ -134,11 +134,11 @@
 <a class="jxr_linenumber" name="124" href="#124">124</a>             <strong class="jxr_keyword">while</strong> (-1 != (n = is.read(chars))) {
 <a class="jxr_linenumber" name="125" href="#125">125</a>                 bs.write(chars, 0, n);
 <a class="jxr_linenumber" name="126" href="#126">126</a>             }
-<a class="jxr_linenumber" name="127" href="#127">127</a>             webSocket.sendTextMessage(bs.getBuffer().toString());
+<a class="jxr_linenumber" name="127" href="#127">127</a>             webSocketTransport.webSocket().sendTextMessage(bs.getBuffer().toString());
 <a class="jxr_linenumber" name="128" href="#128">128</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (String.<strong class="jxr_keyword">class</strong>.isAssignableFrom(object.getClass())) {
-<a class="jxr_linenumber" name="129" href="#129">129</a>             webSocket.sendTextMessage(object.toString());
+<a class="jxr_linenumber" name="129" href="#129">129</a>             webSocketTransport.webSocket().sendTextMessage(object.toString());
 <a class="jxr_linenumber" name="130" href="#130">130</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (byte[].<strong class="jxr_keyword">class</strong>.isAssignableFrom(object.getClass())) {
-<a class="jxr_linenumber" name="131" href="#131">131</a>             webSocket.sendMessage((byte[]) object);
+<a class="jxr_linenumber" name="131" href="#131">131</a>             webSocketTransport.webSocket().sendMessage((byte[]) object);
 <a class="jxr_linenumber" name="132" href="#132">132</a>         } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="133" href="#133">133</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"No Encoder for "</span> + data);
 <a class="jxr_linenumber" name="134" href="#134">134</a>         }

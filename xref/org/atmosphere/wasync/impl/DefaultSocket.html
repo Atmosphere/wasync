@@ -174,8 +174,8 @@
 <a class="jxr_linenumber" name="164" href="#164">164</a>                 java.util.concurrent.Future&lt;WebSocket&gt; fw = options.runtime().prepareRequest(r.build()).execute(
 <a class="jxr_linenumber" name="165" href="#165">165</a>                         (AsyncHandler&lt;WebSocket&gt;) transportInUse);
 <a class="jxr_linenumber" name="166" href="#166">166</a> 
-<a class="jxr_linenumber" name="167" href="#167">167</a>                 WebSocket w = fw.get(timeout, tu);
-<a class="jxr_linenumber" name="168" href="#168">168</a>                 socketRuntime = <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a>(w, options, socketRuntime.future(), functions);
+<a class="jxr_linenumber" name="167" href="#167">167</a>                 fw.get(timeout, tu);
+<a class="jxr_linenumber" name="168" href="#168">168</a>                 socketRuntime = <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a>(WebSocketTransport.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(transportInUse), options, socketRuntime.future(), functions);
 <a class="jxr_linenumber" name="169" href="#169">169</a>             } <strong class="jxr_keyword">catch</strong> (ExecutionException t) {
 <a class="jxr_linenumber" name="170" href="#170">170</a>                 Throwable e = t.getCause();
 <a class="jxr_linenumber" name="171" href="#171">171</a> 
