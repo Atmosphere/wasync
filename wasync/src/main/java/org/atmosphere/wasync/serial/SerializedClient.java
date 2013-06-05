@@ -18,12 +18,9 @@ package org.atmosphere.wasync.serial;
 import com.ning.http.client.AsyncHttpClient;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
-import org.atmosphere.wasync.impl.AtmosphereRequest;
-import org.atmosphere.wasync.impl.ClientUtil;
-import org.atmosphere.wasync.impl.DefaultRequestBuilder;
 import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
+import org.atmosphere.wasync.impl.ClientUtil;
 
 /**
  * {@code SerializedClient} is a {@link org.atmosphere.wasync.Client} that guarantees ordered message delivery, in-line with the
@@ -44,7 +41,7 @@ import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
  *
  * @author Christian Bach
  */
-public class SerializedClient implements Client<SerializedOptions, SerializedOptionsBuilder, AtmosphereRequest.AtmosphereRequestBuilder> {
+public class SerializedClient implements Client<SerializedOptions, SerializedOptionsBuilder, SerializedClient.SerializedRequestBuilder> {
 
     /**
      * {@inheritDoc}
@@ -85,16 +82,16 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
      * {@inheritDoc}
      */
     @Override
-    public AtmosphereRequestBuilder newRequestBuilder() {
-        AtmosphereRequestBuilder b = new AtmosphereRequestBuilder();
-        return AtmosphereRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
+    public SerializedRequestBuilder newRequestBuilder() {
+        SerializedRequestBuilder b = new SerializedRequestBuilder();
+        return SerializedRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public AtmosphereRequestBuilder newRequestBuilder(Class<AtmosphereRequest.AtmosphereRequestBuilder> clazz) {
+    public SerializedRequestBuilder newRequestBuilder(Class<SerializedRequestBuilder> clazz) {
         AtmosphereRequestBuilder b;
         try {
             b = clazz.newInstance();
@@ -103,6 +100,13 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return AtmosphereRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
+        return SerializedRequestBuilder.class.cast(b.resolver(FunctionResolver.DEFAULT));
+    }
+
+    public static class SerializedRequestBuilder extends AtmosphereRequestBuilder {
+        public SerializedRequestBuilder() {
+            super();
+            enableProtocol(false);
+        }
     }
 }

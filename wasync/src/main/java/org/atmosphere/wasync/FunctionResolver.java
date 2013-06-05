@@ -78,7 +78,21 @@ public interface FunctionResolver {
          */
         @Override
         public boolean resolve(String message, Object functionName, FunctionWrapper fn) {
-            return fn.functionName().isEmpty() || functionName.toString().equalsIgnoreCase(fn.functionName());
+            return (fn.functionName().isEmpty() && !find(message)) || functionName.toString().equalsIgnoreCase(fn.functionName());
+        }
+
+        /**
+         * Discard empty function name fired by the library
+         * @param functionName
+         * @return
+         */
+        private boolean find(String functionName) {
+            for (Event e: Event.values()) {
+                if (e.name().equalsIgnoreCase(functionName)) {
+                    return true;
+                }
+            }
+            return false;
         }
     };
 

@@ -96,6 +96,7 @@ public class DefaultSocket implements Socket {
         return this;
     }
 
+
     public Socket open(Request request) throws IOException {
         return open(request, -1, TimeUnit.MILLISECONDS);
     }

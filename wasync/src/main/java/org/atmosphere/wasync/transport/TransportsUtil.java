@@ -27,48 +27,50 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TransportsUtil {
 
     private final static Logger logger = LoggerFactory.getLogger(TransportsUtil.class);
 
     public static boolean invokeFunction(List<Decoder<? extends Object, ?>> decoders,
-                               List<FunctionWrapper> functions,
-                               Class<?> implementedType,
-                               Object instanceType,
-                               String functionName,
-                               FunctionResolver resolver) {
+                                         List<FunctionWrapper> functions,
+                                         Class<?> implementedType,
+                                         Object instanceType,
+                                         String functionName,
+                                         FunctionResolver resolver) {
         return invokeFunction(Event.MESSAGE, decoders, functions, implementedType, instanceType, functionName, resolver);
     }
 
     public static boolean invokeFunction(Event e,
-                               List<Decoder<? extends Object, ?>> decoders,
-                               List<FunctionWrapper> functions,
-                               Class<?> implementedType,
-                               Object instanceType,
-                               String functionName,
-                               FunctionResolver resolver) {
+                                         List<Decoder<? extends Object, ?>> decoders,
+                                         List<FunctionWrapper> functions,
+                                         Class<?> implementedType,
+                                         Object instanceType,
+                                         String functionName,
+                                         FunctionResolver resolver) {
         boolean hasMatch = false;
-        String originalMessage = instanceType == null? "" : instanceType.toString();
+        String originalMessage = instanceType == null ? "" : instanceType.toString();
+
+        List<Object> decodedObjects = new CopyOnWriteArrayList<Object>();
+        if (instanceType != null) {
+            decodedObjects = matchDecoder(e, instanceType, decoders, decodedObjects);
+        }
+
         for (FunctionWrapper wrapper : functions) {
             Function f = wrapper.function();
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
-
             if (typeArguments.length > 0 && instanceType != null) {
-                instanceType = matchDecoder(e, instanceType, decoders);
-                if (instanceType != null) {
+                boolean b = false;
+                if (decodedObjects.isEmpty()) {
                     implementedType = instanceType.getClass();
+                    b = matchFunction(instanceType, typeArguments, implementedType, resolver, originalMessage, functionName, wrapper, f);
+                } else {
+                    for (Object o : decodedObjects) {
+                        b = matchFunction(o, typeArguments, o.getClass(), resolver, originalMessage, functionName, wrapper, f);
+                    }
                 }
-            }
-
-            if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)
-                    // Don't invoke function with Event message.
-                    && !e.name().equalsIgnoreCase(instanceType.toString())) {
-                if (resolver.resolve(originalMessage, functionName, wrapper)) {
-                    hasMatch = true;
-                    logger.trace("{} .on {}", functionName, instanceType);
-                    f.on(instanceType);
-                }
+                if (b) hasMatch = true;
             }
         }
 
@@ -90,25 +92,50 @@ public class TransportsUtil {
         return hasMatch;
     }
 
-    public static Object matchDecoder(Event e, Object instanceType, List<Decoder<? extends Object, ?>> decoders) {
+    public static boolean matchFunction(Object instanceType,
+                                        Class[] typeArguments,
+                                        Class<?> implementedType,
+                                        FunctionResolver resolver,
+                                        String originalMessage,
+                                        Object functionName,
+                                        FunctionWrapper wrapper,
+                                        Function f) {
+        boolean hasMatch = false;
+        if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(implementedType)) {
+            if (resolver.resolve(originalMessage, functionName, wrapper)) {
+                hasMatch = true;
+                logger.trace("{} .on {}", functionName, instanceType);
+                try {
+                    f.on(instanceType);
+                } catch (Exception e) {
+                    logger.warn("Function {} thrown an exception", functionName, e);
+                }
+            }
+        }
+        return hasMatch;
+    }
+
+    public static List<Object> matchDecoder(Event e, Object instanceType, List<Decoder<? extends Object, ?>> decoders, List<Object> decodedObjects) {
         for (Decoder d : decoders) {
             Class<?>[] typeArguments = TypeResolver.resolveArguments(d.getClass(), Decoder.class);
             if (instanceType != null && typeArguments.length > 0 && typeArguments[0].isAssignableFrom(instanceType.getClass())) {
                 boolean replay = ReplayDecoder.class.isAssignableFrom(d.getClass());
 
                 logger.trace("{} is trying to decode {}", d, instanceType);
-                instanceType = d.decode(e, instanceType);
+                Object decoded = d.decode(e, instanceType);
 
-                if (instanceType != null) {
+                if (decoded != null) {
                     logger.trace("Decoder {} match {}", d, instanceType);
+                    decodedObjects.add(decoded);
                 }
 
+                // The decoded message is a list, so we re-inject.
                 if (replay) {
                     List<?> l = List.class.cast(instanceType);
                     List<Decoder<? extends Object, ?>> nd = new ArrayList<Decoder<? extends Object, ?>>();
                     boolean add = false;
-                    for (Decoder d2: decoders) {
-                        if (d2.equals(d)){
+                    for (Decoder d2 : decoders) {
+                        if (d2.equals(d)) {
                             add = true;
                             continue;
                         }
@@ -117,12 +144,12 @@ public class TransportsUtil {
                     }
 
                     for (Object m : l) {
-                        return matchDecoder(e, m, nd);
+                        return matchDecoder(e, m, nd, decodedObjects);
                     }
                 }
             }
         }
-        return instanceType;
+        return decodedObjects;
     }
 
 }

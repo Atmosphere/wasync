@@ -57,7 +57,15 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
      * @return true if enabled
      */
     public boolean isTrackMessageLength() {
-        return builder.isTrackeMessageLength();
+        return builder.trackMessageLength;
+    }
+
+    /**
+     * True if the Atmosphere Protocol is enabled
+     * @return true if the Atmosphere Protocol is enabled.
+     */
+    public boolean enableProtocol(){
+        return builder.enableProtocol;
     }
 
     /**
@@ -65,7 +73,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
      * @return delimiter used. Default is '|'
      */
     public String getTrackMessageLengthDelimiter() {
-        return builder.getTrackMessageLengthDelimiter();
+        return builder.trackMessageLengthDelimiter;
     }
 
     /**
@@ -76,24 +84,10 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         private CACHE cacheType = CACHE.NO_BROADCAST_CACHE;
         private boolean trackMessageLength = false;
         private String trackMessageLengthDelimiter = "|";
+        private boolean enableProtocol = true;
 
         public AtmosphereRequestBuilder() {
             super(AtmosphereRequestBuilder.class);
-            List<String> l = new ArrayList<String>();
-            l.add("1.1.0");
-            queryString.put("X-Atmosphere-Framework", l);
-
-            l = new ArrayList<String>();
-            l.add("0");
-            queryString.put("X-Atmosphere-tracking-id", l);
-
-            l = new ArrayList<String>();
-            l.add("0");
-            queryString.put("X-Cache-Date", l);
-
-            l = new ArrayList<String>();
-            l.add("true");
-            queryString.put("X-atmo-protocol", l);
         }
 
         /**
@@ -155,19 +149,13 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         }
 
         /**
-         * Is track message's length enabled?
-         * @return  true if enabled.
-         */
-        private boolean isTrackeMessageLength() {
-            return trackMessageLength;
-        }
-
-        /**
-         * The delimiter used to track message size.
+         * Set to true to enable the Atmosphere Protocol. Default is true.
+         * @param enableProtocol  false to disable.
          * @return
          */
-        private String getTrackMessageLengthDelimiter() {
-            return trackMessageLengthDelimiter;
+        public  AtmosphereRequestBuilder enableProtocol(boolean enableProtocol) {
+            this.enableProtocol = enableProtocol;
+            return this;
         }
 
         /**
@@ -175,6 +163,23 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
          */
         @Override
         public AtmosphereRequest build() {
+            if (enableProtocol) {
+                List<String> l = new ArrayList<String>();
+                l.add("1.1.0");
+                queryString.put("X-Atmosphere-Framework", l);
+
+                l = new ArrayList<String>();
+                l.add("0");
+                queryString.put("X-Atmosphere-tracking-id", l);
+
+                l = new ArrayList<String>();
+                l.add("0");
+                queryString.put("X-Cache-Date", l);
+
+                l = new ArrayList<String>();
+                l.add("true");
+                queryString.put("X-atmo-protocol", l);
+            }
 
             if (trackMessageLength) {
                 decoders().add(0, new TrackMessageSizeDecoder());

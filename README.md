@@ -80,8 +80,6 @@ Life cycle of the underlying Socket can easily be implemented as well
            }).open(clientRequest.build());
 ```
 
-
-
 You can also use the specialized clients. For example, to transparently enable Atmosphere's Protocol
 
 ```java

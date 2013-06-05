@@ -868,82 +868,6 @@ public abstract class BaseTest {
     }
 
     @Test
-    public void chainingDecoder() throws Exception {
-        final CountDownLatch l = new CountDownLatch(1);
-
-        Config config = new Config.Builder()
-                .port(port)
-                .host("127.0.0.1")
-                .resource("/suspend", new AtmosphereHandler() {
-
-                    private final AtomicBoolean b = new AtomicBoolean(false);
-
-                    @Override
-                    public void onRequest(AtmosphereResource r) throws IOException {
-                        if (!b.getAndSet(true)) {
-                            r.suspend(-1);
-                        } else {
-                            r.getBroadcaster().broadcast(r.getRequest().getReader().readLine());
-                        }
-                    }
-
-                    @Override
-                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
-                        if (!r.isResuming() || !r.isCancelled()) {
-                            r.getResource().getResponse().getWriter().print(r.getMessage());
-                            r.getResource().resume();
-                        }
-                    }
-
-                    @Override
-                    public void destroy() {
-
-                    }
-                }).build();
-
-        server = new Nettosphere.Builder().config(config).build();
-        assertNotNull(server);
-        server.start();
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<POJO> response = new AtomicReference<POJO>();
-        Client client = ClientFactory.getDefault().newClient();
-
-        RequestBuilder request = client.newRequestBuilder()
-                .method(Request.METHOD.GET)
-                .uri(targetUrl + "/suspend")
-                .decoder(new Decoder<String, POJO>() {
-                    @Override
-                    public POJO decode(Event e, String s) {
-                        return new POJO(s);
-                    }
-                })
-                .decoder(new Decoder<POJO, POJO2>() {
-                    @Override
-                    public POJO2 decode(Event e, POJO s) {
-                        return new POJO2(s);
-                    }
-                })
-                .transport(transport());
-
-        Socket socket = client.create();
-        socket.on("message", new Function<POJO2>() {
-            @Override
-            public void on(POJO2 t) {
-                response.set(t.message);
-                latch.countDown();
-            }
-        }).open(request.build()).fire("echo");
-
-        latch.await(10, TimeUnit.SECONDS);
-
-        assertNotNull(response.get());
-        assertEquals(response.get().getClass(), POJO.class);
-        socket.close();
-    }
-
-
-    @Test
     public void encodersChainingTests() throws Exception {
         final CountDownLatch l = new CountDownLatch(1);
 
@@ -1838,5 +1762,128 @@ public abstract class BaseTest {
         elatch.await();
 
         assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSEERROR");
+    }
+
+    @Test
+    public void eventDecoderTest() throws Exception {
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (!b.getAndSet(true)) {
+                            r.suspend(-1);
+                        } else {
+                            r.getBroadcaster().broadcast(r.getRequest().getReader().readLine());
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (!r.isResuming() || !r.isCancelled()) {
+                            r.getResource().getResponse().getWriter().print(r.getMessage());
+                            r.getResource().resume();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch xlatch = new CountDownLatch(1);
+
+        final AtomicReference<POJO> response = new AtomicReference<POJO>();
+        final AtomicReference<EventPOJO> open = new AtomicReference<EventPOJO>();
+        final AtomicReference<EventPOJO> close = new AtomicReference<EventPOJO>();
+
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .decoder(new Decoder<String, POJO>() {
+                    @Override
+                    public POJO decode(Event e, String s) {
+                        if (e.equals(Event.MESSAGE)) {
+                            return new POJO(s);
+                        } else {
+                            return null;
+                        }
+                    }
+                })
+                .decoder(new Decoder<String, EventPOJO>() {
+                    @Override
+                    public EventPOJO decode(Event e, String s) {
+                        return new EventPOJO(e, s);
+                    }
+                })
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on(new Function<POJO>() {
+            @Override
+            public void on(POJO t) {
+                response.set(t);
+                latch.countDown();
+            }
+        }).on(Event.OPEN.name(), new Function<EventPOJO>() {
+            @Override
+            public void on(EventPOJO t) {
+                open.set(t);
+                latch.countDown();
+            }
+        }).on(Event.CLOSE.name(), new Function<EventPOJO>() {
+            @Override
+            public void on(EventPOJO t) {
+                close.set(t);
+                xlatch.countDown();
+            }
+        }).open(request.build()).fire("echo");
+
+        latch.await(10, TimeUnit.SECONDS);
+
+        socket.close();
+
+        xlatch.await(10, TimeUnit.SECONDS);
+
+        assertNotNull(response.get());
+        assertNotNull(open.get());
+        assertNotNull(close.get());
+
+        assertEquals(response.get().getClass(), POJO.class);
+        assertEquals(open.get().getClass(), EventPOJO.class);
+        assertEquals(close.get().getClass(), EventPOJO.class);
+        assertEquals(open.get().e, Event.OPEN);
+        assertEquals(close.get().e, Event.CLOSE);
+        assertEquals(open.get().message, Event.OPEN.name());
+        assertEquals(close.get().message, Event.CLOSE.name());
+
+    }
+
+    public final static class EventPOJO {
+
+        public final String message;
+        public final Event e;
+
+        public EventPOJO(String message) {
+            this(null, message);
+        }
+
+        public EventPOJO(Event e, String message) {
+            this.message = message;
+            this.e = e;
+        }
     }
 }
