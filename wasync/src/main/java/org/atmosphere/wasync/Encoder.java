@@ -16,7 +16,8 @@
 package org.atmosphere.wasync;
 
 /**
- * Encode the request's body (or transform) of type U into an object of type T.
+ * Encode the request's body (or transform) of type U into an object of type T. Encoder can be chained, e.g the result of
+ * one Encoder can be passed to the next Encoder.
  *
  * @param <U> Any object.
  * @param <T> An instance of {@link String}, {@link java.io.InputStream} and {@link java.io.Reader}

@@ -29,6 +29,7 @@ package org.atmosphere.wasync;
              }
          }
  * </pre></blockquote>
+ * Important: Decoder cannot be chained, e.g the result of a Decoder will never be passed to another Decoder, like {@link Encoder}
  * @param <U>
  * @param <T>
  * @author Jeanfrancois Arcand
