@@ -1,9 +1,7 @@
 ## wAsync: A WebSockets/HTTP Client Library for Asynchronous Communication
 
 wAsync is a Java based library allowing asynchronous communication with any WebServer supporting the WebSocket or Http Protocol.
-wAsync can be used with Node.js, Android, Atmosphere or any WebSocket Framework.
-
-[Getting Started with Android, Node.js and Atmosphere](http://jfarcand.wordpress.com/2013/04/04/wasync-websockets-with-fallbacks-transports-for-android-node-js-and-atmosphere/)
+wAsync can be used with Node.js, Android, Atmosphere or any WebSocket Framework. To get started, read this super simple [Tutorial](https://github.com/Atmosphere/wasync/wiki/Getting-Started-with-wAsync)
 
 You can browse the [javadoc](http://atmosphere.github.com/wasync/apidocs/) or browse our [samples](https://github.com/Atmosphere/wasync/tree/master/samples).
 
@@ -138,5 +136,8 @@ You can also implement your own FunctionResolver to associate the Function with 
          socket.on("myEvent", new Function<Reader>() { ...}
 ```
 where myEvent could be read from the response's body.
+
+Want to write an Android Client? [See](http://jfarcand.wordpress.com/2013/04/04/wasync-websockets-with-fallbacks-transports-for-android-node-js-and-atmosphere/)
+
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/6565d992c41200f6a5617e646f291569 "githalytics.com")](http://githalytics.com/Atmosphere/wasync)
