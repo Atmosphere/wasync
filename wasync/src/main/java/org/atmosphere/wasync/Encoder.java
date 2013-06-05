@@ -18,8 +18,9 @@ package org.atmosphere.wasync;
 /**
  * Encode the request's body (or transform) of type U into an object of type T.
  *
- * @param <U>
- * @param <T>
+ * @param <U> Any object.
+ * @param <T> An instance of {@link String}, {@link java.io.InputStream} and {@link java.io.Reader}
+ *
  * @author Jeanfrancois Arcand
  */
 public interface Encoder<U, T> {
@@ -27,7 +28,7 @@ public interface Encoder<U, T> {
     /**
      * Encode the object of type U into an object of type T.
      * @param s a request's body that has already been encoded or not
-     * @return an encoded object.
+     * @return an encoded object. The list of supported encoded object are {@link String}, {@link java.io.InputStream} and {@link java.io.Reader}
      */
     T encode(U s);
 

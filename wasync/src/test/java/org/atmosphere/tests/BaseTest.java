@@ -988,18 +988,18 @@ public abstract class BaseTest {
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
-                .encoder(new Encoder<String, POJO>() {
-                    @Override
-                    public POJO encode(String s) {
-                        return new POJO("<-" + s + "->");
-                    }
-                })
-                .encoder(new Encoder<POJO, Reader>() {
-                    @Override
-                    public Reader encode(POJO s) {
-                        return new StringReader(s.message);
-                    }
-                })
+    .encoder(new Encoder<String, POJO>() {
+        @Override
+        public POJO encode(String s) {
+            return new POJO("<-" + s + "->");
+        }
+    })
+    .encoder(new Encoder<POJO, Reader>() {
+        @Override
+        public Reader encode(POJO s) {
+            return new StringReader(s.message);
+        }
+    })
                 .transport(transport());
 
         Socket socket = client.create();

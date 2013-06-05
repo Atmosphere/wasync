@@ -45,7 +45,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
 
     /**
      * The {@link Request.TRANSPORT} to use. This method can be invoked several time and the library will loop over the list
-     * until one {@link Request.TRANSPORT} succeed.
+     * until one {@link Request.TRANSPORT} succeed. The first added is always the first used.
      * @param t
      * @return this
      */
