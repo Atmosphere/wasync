@@ -124,6 +124,15 @@ public interface Socket {
     Socket on(String functionMessage, Function<?> function);
 
     /**
+     * Associate a {@link Function} with an {@link Event}. When the event happen the library will try to associated
+     * the decoded event (decoded by {@link Decoder}) to the defined type of the {@link Function}. The default event
+     * are defined by {@link org.atmosphere.wasync.Event} but handling of custom event can be done using a {@link FunctionResolver}
+     * @param function a {@link Function}
+     * @return this
+     */
+    Socket on(Event event, Function<?> function);
+
+    /**
      * Connect to the remote Server using the {@link Request}'s information.
      * @param request a {@link Request}
      * @return this

@@ -134,7 +134,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build());
-        socket.on(Event.MESSAGE.name(), new Function<String>() {
+        socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
                 logger.info("Function invoked {}", t);
@@ -788,7 +788,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create();
-        socket.on(Event.MESSAGE.name(), new Function<POJO>() {
+        socket.on(Event.MESSAGE, new Function<POJO>() {
             @Override
             public void on(POJO t) {
                 response.set(t);
@@ -852,7 +852,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create();
-        socket.on(Event.TRANSPORT.name(), new Function<Request.TRANSPORT>() {
+        socket.on(Event.TRANSPORT, new Function<Request.TRANSPORT>() {
             @Override
             public void on(Request.TRANSPORT t) {
                 response.set(t);
@@ -927,7 +927,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create();
-        socket.on(Event.MESSAGE.name(), new Function<String>() {
+        socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
                 response.set(t);
@@ -1360,7 +1360,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create();
-        socket.on(Event.MESSAGE.name(), new Function<String>() {
+        socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
                 response.set(t);
@@ -1464,7 +1464,7 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build());
-        socket.on(Event.CLOSE.name(), new Function<String>() {
+        socket.on(Event.CLOSE, new Function<String>() {
             @Override
             public void on(String t) {
                 //Can I receive close message when server is stopped?
@@ -1537,12 +1537,12 @@ public abstract class BaseTest {
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
         Socket socket = client.create();
-        socket.on(Event.CLOSE.name(), new Function<String>() {
+        socket.on(Event.CLOSE, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
             }
-        }).on(Event.REOPENED.name(), new Function<String>() {
+        }).on(Event.REOPENED, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
@@ -1553,7 +1553,7 @@ public abstract class BaseTest {
                 ioe.printStackTrace();
                 elatch.countDown();
             }
-        }).on(Event.OPEN.name(), new Function<String>() {
+        }).on(Event.OPEN, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
@@ -1625,12 +1625,12 @@ public abstract class BaseTest {
                 b.get().append(t);
                 flatch.countDown();
             }
-        }).on(Event.CLOSE.name(), new Function<String>() {
+        }).on(Event.CLOSE, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
             }
-        }).on(Event.REOPENED.name(), new Function<String>() {
+        }).on(Event.REOPENED, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
@@ -1642,7 +1642,7 @@ public abstract class BaseTest {
                 b.get().append("ERROR");
                 elatch.countDown();
             }
-        }).on(Event.OPEN.name(), new Function<String>() {
+        }).on(Event.OPEN, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
@@ -1723,12 +1723,12 @@ public abstract class BaseTest {
                 b.get().append(t);
                 flatch.countDown();
             }
-        }).on(Event.CLOSE.name(), new Function<String>() {
+        }).on(Event.CLOSE, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
             }
-        }).on(Event.REOPENED.name(), new Function<String>() {
+        }).on(Event.REOPENED, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
@@ -1746,7 +1746,7 @@ public abstract class BaseTest {
                 b.get().append("ERROR");
                 elatch.countDown();
             }
-        }).on(Event.OPEN.name(), new Function<String>() {
+        }).on(Event.OPEN, new Function<String>() {
             @Override
             public void on(String t) {
                 b.get().append(t);
@@ -1838,13 +1838,13 @@ public abstract class BaseTest {
                 response.set(t);
                 latch.countDown();
             }
-        }).on(Event.OPEN.name(), new Function<EventPOJO>() {
+        }).on(Event.OPEN, new Function<EventPOJO>() {
             @Override
             public void on(EventPOJO t) {
                 open.set(t);
                 latch.countDown();
             }
-        }).on(Event.CLOSE.name(), new Function<EventPOJO>() {
+        }).on(Event.CLOSE, new Function<EventPOJO>() {
             @Override
             public void on(EventPOJO t) {
                 close.set(t);
@@ -1887,3 +1887,4 @@ public abstract class BaseTest {
         }
     }
 }
+

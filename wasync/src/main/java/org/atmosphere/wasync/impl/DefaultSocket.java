@@ -19,6 +19,7 @@ import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
@@ -94,6 +95,11 @@ public class DefaultSocket implements Socket {
     public Socket on(String functionName, Function<? extends Object> function) {
         functions.add(new FunctionWrapper(functionName, function));
         return this;
+    }
+
+    @Override
+    public Socket on(Event event, Function<?> function) {
+        return on(event.name(), function);
     }
 
 
@@ -296,6 +302,11 @@ public class DefaultSocket implements Socket {
 
         @Override
         public Socket on(String functionMessage, Function<? extends Object> function) {
+            throw new IllegalStateException("An error occurred during connection. Please add a Function(Throwable) to debug.");
+        }
+
+        @Override
+        public Socket on(Event event, Function<?> function) {
             throw new IllegalStateException("An error occurred during connection. Please add a Function(Throwable) to debug.");
         }
 
