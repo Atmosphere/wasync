@@ -54,7 +54,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
     /**
      * Is tracking message's length enabled.
-     * @return
+     * @return true if enabled
      */
     public boolean isTrackMessageLength() {
         return builder.isTrackeMessageLength();
