@@ -16,8 +16,7 @@
 package org.atmosphere.wasync;
 
 /**
- * FunctionResolver are useful for mapping received message with a {@link Function}. By default, only the predefined
- * function {@link org.atmosphere.wasync.Event} are automatically mapped to Function,
+ * FunctionResolver are useful for mapping received message with a {@link Function}.
  * <blockquote><pre>
      Client client = ClientFactory.getDefault().newClient();
 
@@ -33,7 +32,7 @@ package org.atmosphere.wasync;
              .transport(Request.TRANSPORT.WEBSOCKET);
 
      Socket socket = client.create();
-     socket.on(Function.EVENT_TYPE.message.name(), new Function&lt;POJO&gt;() {
+     socket.on(Event.MESSAGE, new Function&lt;POJO&gt;() {
          &#64;Override
          public void on(POJO t) {
              response.set(t);
@@ -64,7 +63,7 @@ package org.atmosphere.wasync;
          }
      })
  * </pre></blockquote>
- * An application can define its own Function.EVENT_TYPE be writing the appropriate FunctionResolver.
+ * An application can define its own Decoder to Function Mapper be writing the appropriate FunctionResolver.
  *
  * By default, the {@link #DEFAULT} is used.
  *
@@ -97,7 +96,7 @@ public interface FunctionResolver {
     };
 
     /**
-     * Resolve the current message with
+     * Resolve the current message
      * @param message the original response's body received
      * @param functionName the default function name taken from {@link org.atmosphere.wasync.Event} or from a custom FunctionResolver
      * @param fn The current {@link FunctionWrapper}
