@@ -109,7 +109,7 @@ public class LongPollingTest extends StreamingTest {
         socket.on("message", new Function<byte[]>() {
             @Override
             public void on(byte[] message) {
-                logger.info("received : {}", message);
+                logger.info("===Received : {}", message);
                 if (Arrays.equals(message, binaryEcho)) {
                     hasEchoReplied.getAndSet(true);
                 }

@@ -17,7 +17,7 @@ package org.atmosphere.wasync.serial;
 
 import org.atmosphere.wasync.OptionsBuilder;
 
-public class SerializedOptionsBuilder extends OptionsBuilder<SerializedOptionsBuilder> {
+public class SerializedOptionsBuilder extends OptionsBuilder<SerializedOptions, SerializedOptionsBuilder> {
 
     private SerializedFireStage serializedFireStage;
 

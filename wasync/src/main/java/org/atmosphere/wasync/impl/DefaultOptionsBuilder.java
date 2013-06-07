@@ -22,7 +22,7 @@ import org.atmosphere.wasync.OptionsBuilder;
  *
  * @author Jeanfrancois Arcand
  */
-public class DefaultOptionsBuilder extends OptionsBuilder {
+public class DefaultOptionsBuilder extends OptionsBuilder<DefaultOptions, DefaultOptionsBuilder> {
 
     protected DefaultOptionsBuilder() {
         super(DefaultOptionsBuilder.class);

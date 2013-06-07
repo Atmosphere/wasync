@@ -23,7 +23,7 @@ import com.ning.http.client.AsyncHttpClient;
  * @author Jeanfrancois Arcand
  * @param <T>
  */
-public abstract class OptionsBuilder<T extends OptionsBuilder<T>> {
+public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder<U,T>> {
 
     private Transport transport;
     private boolean reconnect = true;
@@ -138,7 +138,7 @@ public abstract class OptionsBuilder<T extends OptionsBuilder<T>> {
      *
      * @return {@link Options}
      */
-    public abstract Options build();
+    public abstract U build();
 
     /**
      * The used {@link Transport}
