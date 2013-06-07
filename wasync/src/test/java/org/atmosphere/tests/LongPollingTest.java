@@ -183,7 +183,7 @@ public class LongPollingTest extends StreamingTest {
                 .uri(targetUrl + "/suspend")
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
-        Socket socket = client.create(client.newOptionsBuilder().build());
+        final Socket socket = client.create(client.newOptionsBuilder().build());
 
         socket.on("message", new Function<String>() {
             @Override
@@ -208,9 +208,9 @@ public class LongPollingTest extends StreamingTest {
         socket.fire("ECHO5");
 
         latch.await(60, TimeUnit.SECONDS);
-        socket.close();
 
         assertEquals(response.get().size(), 5);
+        socket.close();
 
     }
 }
