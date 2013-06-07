@@ -104,16 +104,17 @@ public class LongPollingTest extends StreamingTest {
                 .header("Content-Type", "application/octet-stream")
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
-        Socket socket = client.create(client.newOptionsBuilder().build());
+        final Socket socket = client.create(client.newOptionsBuilder().build());
 
         socket.on("message", new Function<byte[]>() {
             @Override
             public void on(byte[] message) {
                 logger.info("===Received : {}", message);
-                if (Arrays.equals(message, binaryEcho)) {
+                if (Arrays.equals(message, binaryEcho) && !hasEchoReplied.get()) {
                     hasEchoReplied.getAndSet(true);
+                    socket.close();
+                    latch.countDown();
                 }
-                latch.countDown();
             }
         }).on(new Function<Throwable>() {
             @Override
@@ -125,7 +126,6 @@ public class LongPollingTest extends StreamingTest {
         socket.fire(binaryEcho).get();
 
         latch.await(10, TimeUnit.SECONDS);
-        socket.close();
 
         assertEquals(hasEchoReplied.get(), true);
     }
