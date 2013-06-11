@@ -115,7 +115,7 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
      * @return this;
      */
     public T runtime(AsyncHttpClient client) {
-        return runtime(client, false);
+        return runtime(client, true);
     }
 
     /**
