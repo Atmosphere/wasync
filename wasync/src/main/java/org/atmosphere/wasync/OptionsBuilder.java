@@ -109,7 +109,8 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
 
     /**
      * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used
-     * by the library.
+     * by the library. Application must call {@link com.ning.http.client.AsyncHttpClient#close()} at the end of their
+     * execution as the library won't close it since shared.
      *
      * @param client
      * @return this;
