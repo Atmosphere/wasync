@@ -162,6 +162,8 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
         /**
          * {@inheritDoc}
+         * Important: You cannot call the build() method more than once if {@link #enableProtocol} or {@link #trackMessageLength}
+         * are set to true.
          */
         @Override
         public AtmosphereRequest build() {
