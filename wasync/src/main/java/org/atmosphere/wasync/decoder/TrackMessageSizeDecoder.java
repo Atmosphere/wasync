@@ -75,7 +75,7 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
                     logger.error("", e);
                     //discard whole message
                     messagesBuffer.setLength(0);
-                    throw new Error("Message format is not as expected for tracking message size"); //this error causes invocation of onThrowable of AsyncHandler if not caught in between
+                    throw new Error("Message format is not as expected for tracking message size " +  message); //this error causes invocation of onThrowable of AsyncHandler if not caught in between
                 }
 
                 messageStartIndex = delimiterIndex < (message.length() - 1) ? delimiterIndex + 1 : message.length();
