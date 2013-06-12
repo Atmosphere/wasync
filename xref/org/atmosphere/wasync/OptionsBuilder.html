@@ -33,7 +33,7 @@
 <a class="jxr_linenumber" name="23" href="#23">23</a>  <em class="jxr_javadoccomment"> * @author Jeanfrancois Arcand</em>
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <em class="jxr_javadoccomment"> * @param &lt;T&gt;</em>
 <a class="jxr_linenumber" name="25" href="#25">25</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> <strong class="jxr_keyword">class</strong> OptionsBuilder&lt;T <strong class="jxr_keyword">extends</strong> OptionsBuilder&lt;T&gt;&gt; {
+<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> <strong class="jxr_keyword">class</strong> OptionsBuilder&lt;U <strong class="jxr_keyword">extends</strong> Options, T <strong class="jxr_keyword">extends</strong> OptionsBuilder&lt;U,T&gt;&gt; {
 <a class="jxr_linenumber" name="27" href="#27">27</a>  
 <a class="jxr_linenumber" name="28" href="#28">28</a>      <strong class="jxr_keyword">private</strong> <a href="../../../org/atmosphere/wasync/Transport.html">Transport</a> transport;
 <a class="jxr_linenumber" name="29" href="#29">29</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> reconnect = <strong class="jxr_keyword">true</strong>;
@@ -119,90 +119,91 @@
 <a class="jxr_linenumber" name="109" href="#109">109</a> 
 <a class="jxr_linenumber" name="110" href="#110">110</a>     <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="111" href="#111">111</a> <em class="jxr_javadoccomment">     * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used</em>
-<a class="jxr_linenumber" name="112" href="#112">112</a> <em class="jxr_javadoccomment">     * by the library.</em>
-<a class="jxr_linenumber" name="113" href="#113">113</a> <em class="jxr_javadoccomment">     *</em>
-<a class="jxr_linenumber" name="114" href="#114">114</a> <em class="jxr_javadoccomment">     * @param client</em>
-<a class="jxr_linenumber" name="115" href="#115">115</a> <em class="jxr_javadoccomment">     * @return this;</em>
-<a class="jxr_linenumber" name="116" href="#116">116</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="117" href="#117">117</a>     <strong class="jxr_keyword">public</strong> T runtime(AsyncHttpClient client) {
-<a class="jxr_linenumber" name="118" href="#118">118</a>         <strong class="jxr_keyword">return</strong> runtime(client, false);
-<a class="jxr_linenumber" name="119" href="#119">119</a>     }
-<a class="jxr_linenumber" name="120" href="#120">120</a> 
-<a class="jxr_linenumber" name="121" href="#121">121</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="122" href="#122">122</a> <em class="jxr_javadoccomment">     * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used</em>
-<a class="jxr_linenumber" name="123" href="#123">123</a> <em class="jxr_javadoccomment">     * by the library.</em>
-<a class="jxr_linenumber" name="124" href="#124">124</a> <em class="jxr_javadoccomment">     *</em>
-<a class="jxr_linenumber" name="125" href="#125">125</a> <em class="jxr_javadoccomment">     * @param client</em>
-<a class="jxr_linenumber" name="126" href="#126">126</a> <em class="jxr_javadoccomment">     * @param runtimeShared to true if the runtime is shared between clients. If shared, the asyncHttpClient.close()</em>
-<a class="jxr_linenumber" name="127" href="#127">127</a> <em class="jxr_javadoccomment">     *                      must be invoked by the application itself.</em>
-<a class="jxr_linenumber" name="128" href="#128">128</a> <em class="jxr_javadoccomment">     * @return this;</em>
-<a class="jxr_linenumber" name="129" href="#129">129</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="130" href="#130">130</a>     <strong class="jxr_keyword">public</strong> T runtime(AsyncHttpClient client, <strong class="jxr_keyword">boolean</strong> runtimeShared) {
-<a class="jxr_linenumber" name="131" href="#131">131</a>         <strong class="jxr_keyword">this</strong>.client = client;
-<a class="jxr_linenumber" name="132" href="#132">132</a>         <strong class="jxr_keyword">this</strong>.runtimeShared = runtimeShared;
-<a class="jxr_linenumber" name="133" href="#133">133</a>         <strong class="jxr_keyword">return</strong> derived.<strong class="jxr_keyword">cast</strong>(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="134" href="#134">134</a>     }
-<a class="jxr_linenumber" name="135" href="#135">135</a> 
-<a class="jxr_linenumber" name="136" href="#136">136</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="137" href="#137">137</a> <em class="jxr_javadoccomment">     * Build an {@link Options}</em>
-<a class="jxr_linenumber" name="138" href="#138">138</a> <em class="jxr_javadoccomment">     *</em>
-<a class="jxr_linenumber" name="139" href="#139">139</a> <em class="jxr_javadoccomment">     * @return {@link Options}</em>
-<a class="jxr_linenumber" name="140" href="#140">140</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="141" href="#141">141</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> <a href="../../../org/atmosphere/wasync/Options.html">Options</a> build();
-<a class="jxr_linenumber" name="142" href="#142">142</a> 
-<a class="jxr_linenumber" name="143" href="#143">143</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="144" href="#144">144</a> <em class="jxr_javadoccomment">     * The used {@link Transport}</em>
-<a class="jxr_linenumber" name="145" href="#145">145</a> <em class="jxr_javadoccomment">     * @return {@link Transport}</em>
-<a class="jxr_linenumber" name="146" href="#146">146</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="147" href="#147">147</a>     <strong class="jxr_keyword">public</strong> <a href="../../../org/atmosphere/wasync/Transport.html">Transport</a> transport() {
-<a class="jxr_linenumber" name="148" href="#148">148</a>         <strong class="jxr_keyword">return</strong> transport;
-<a class="jxr_linenumber" name="149" href="#149">149</a>     }
-<a class="jxr_linenumber" name="150" href="#150">150</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="151" href="#151">151</a> <em class="jxr_javadoccomment">     * Reconnect after a network failure or when the server close the connection.</em>
-<a class="jxr_linenumber" name="152" href="#152">152</a> <em class="jxr_javadoccomment">     * @return reconnect</em>
-<a class="jxr_linenumber" name="153" href="#153">153</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="154" href="#154">154</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> reconnect(){
-<a class="jxr_linenumber" name="155" href="#155">155</a>         <strong class="jxr_keyword">return</strong> reconnect;
-<a class="jxr_linenumber" name="156" href="#156">156</a>     }
-<a class="jxr_linenumber" name="157" href="#157">157</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="158" href="#158">158</a> <em class="jxr_javadoccomment">     * The delay, in second, before reconnecting.</em>
-<a class="jxr_linenumber" name="159" href="#159">159</a> <em class="jxr_javadoccomment">     * @return The delay, in second, before reconnecting.</em>
-<a class="jxr_linenumber" name="160" href="#160">160</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="161" href="#161">161</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> reconnectInSeconds(){
-<a class="jxr_linenumber" name="162" href="#162">162</a>         <strong class="jxr_keyword">return</strong> reconnectInSecond;
-<a class="jxr_linenumber" name="163" href="#163">163</a>     }
-<a class="jxr_linenumber" name="164" href="#164">164</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="165" href="#165">165</a> <em class="jxr_javadoccomment">     * When using long-polling and the {@link Request}, the delay before considering the long-polling connection has been fully processed by the server. If you use</em>
-<a class="jxr_linenumber" name="166" href="#166">166</a> <em class="jxr_javadoccomment">     * the {@link org.atmosphere.wasync.impl.AtmosphereClient}, the server will send some handshake so this value is not needed.</em>
-<a class="jxr_linenumber" name="167" href="#167">167</a> <em class="jxr_javadoccomment">     * @return the delay before considering the long-polling connection has been fully processed</em>
-<a class="jxr_linenumber" name="168" href="#168">168</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="169" href="#169">169</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">long</strong> waitBeforeUnlocking() {
-<a class="jxr_linenumber" name="170" href="#170">170</a>         <strong class="jxr_keyword">return</strong> waitBeforeUnlocking;
-<a class="jxr_linenumber" name="171" href="#171">171</a>     }
-<a class="jxr_linenumber" name="172" href="#172">172</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="173" href="#173">173</a> <em class="jxr_javadoccomment">     * The {@link AsyncHttpClient} used to communicate with server.</em>
-<a class="jxr_linenumber" name="174" href="#174">174</a> <em class="jxr_javadoccomment">     * @return {@link AsyncHttpClient} used to communicate with server.</em>
-<a class="jxr_linenumber" name="175" href="#175">175</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="176" href="#176">176</a>     <strong class="jxr_keyword">public</strong> AsyncHttpClient runtime(){
-<a class="jxr_linenumber" name="177" href="#177">177</a>         <strong class="jxr_keyword">return</strong> client;
-<a class="jxr_linenumber" name="178" href="#178">178</a>     }
-<a class="jxr_linenumber" name="179" href="#179">179</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="180" href="#180">180</a> <em class="jxr_javadoccomment">     * Return true is the {@link AsyncHttpClient} is shared between {@link Socket}. Default is false. You need to invoke {@link #runtime(com.ning.http.client.AsyncHttpClient)} to make</em>
-<a class="jxr_linenumber" name="181" href="#181">181</a> <em class="jxr_javadoccomment">     * it shared.</em>
-<a class="jxr_linenumber" name="182" href="#182">182</a> <em class="jxr_javadoccomment">     * @return true is the {@link AsyncHttpClient}</em>
-<a class="jxr_linenumber" name="183" href="#183">183</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="184" href="#184">184</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> runtimeShared(){
-<a class="jxr_linenumber" name="185" href="#185">185</a>         <strong class="jxr_keyword">return</strong> runtimeShared;
-<a class="jxr_linenumber" name="186" href="#186">186</a>     }
-<a class="jxr_linenumber" name="187" href="#187">187</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="188" href="#188">188</a> <em class="jxr_javadoccomment">     * The time, in seconds to wait before closing the connection.</em>
-<a class="jxr_linenumber" name="189" href="#189">189</a> <em class="jxr_javadoccomment">     * @return The time, in seconds to wait before closing the connection.</em>
-<a class="jxr_linenumber" name="190" href="#190">190</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="191" href="#191">191</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> requestTimeoutInSeconds() {
-<a class="jxr_linenumber" name="192" href="#192">192</a>         <strong class="jxr_keyword">return</strong> requestTimeout;
-<a class="jxr_linenumber" name="193" href="#193">193</a>     }
-<a class="jxr_linenumber" name="194" href="#194">194</a> 
-<a class="jxr_linenumber" name="195" href="#195">195</a> }
+<a class="jxr_linenumber" name="112" href="#112">112</a> <em class="jxr_javadoccomment">     * by the library. Application must call {@link com.ning.http.client.AsyncHttpClient#close()} at the end of their</em>
+<a class="jxr_linenumber" name="113" href="#113">113</a> <em class="jxr_javadoccomment">     * execution as the library won't close it since shared.</em>
+<a class="jxr_linenumber" name="114" href="#114">114</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="115" href="#115">115</a> <em class="jxr_javadoccomment">     * @param client</em>
+<a class="jxr_linenumber" name="116" href="#116">116</a> <em class="jxr_javadoccomment">     * @return this;</em>
+<a class="jxr_linenumber" name="117" href="#117">117</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="118" href="#118">118</a>     <strong class="jxr_keyword">public</strong> T runtime(AsyncHttpClient client) {
+<a class="jxr_linenumber" name="119" href="#119">119</a>         <strong class="jxr_keyword">return</strong> runtime(client, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="120" href="#120">120</a>     }
+<a class="jxr_linenumber" name="121" href="#121">121</a> 
+<a class="jxr_linenumber" name="122" href="#122">122</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="123" href="#123">123</a> <em class="jxr_javadoccomment">     * Allow an application that want to share {@link AsyncHttpClient} or configure it before it gets used</em>
+<a class="jxr_linenumber" name="124" href="#124">124</a> <em class="jxr_javadoccomment">     * by the library.</em>
+<a class="jxr_linenumber" name="125" href="#125">125</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="126" href="#126">126</a> <em class="jxr_javadoccomment">     * @param client</em>
+<a class="jxr_linenumber" name="127" href="#127">127</a> <em class="jxr_javadoccomment">     * @param runtimeShared to true if the runtime is shared between clients. If shared, the asyncHttpClient.close()</em>
+<a class="jxr_linenumber" name="128" href="#128">128</a> <em class="jxr_javadoccomment">     *                      must be invoked by the application itself.</em>
+<a class="jxr_linenumber" name="129" href="#129">129</a> <em class="jxr_javadoccomment">     * @return this;</em>
+<a class="jxr_linenumber" name="130" href="#130">130</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="131" href="#131">131</a>     <strong class="jxr_keyword">public</strong> T runtime(AsyncHttpClient client, <strong class="jxr_keyword">boolean</strong> runtimeShared) {
+<a class="jxr_linenumber" name="132" href="#132">132</a>         <strong class="jxr_keyword">this</strong>.client = client;
+<a class="jxr_linenumber" name="133" href="#133">133</a>         <strong class="jxr_keyword">this</strong>.runtimeShared = runtimeShared;
+<a class="jxr_linenumber" name="134" href="#134">134</a>         <strong class="jxr_keyword">return</strong> derived.<strong class="jxr_keyword">cast</strong>(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="135" href="#135">135</a>     }
+<a class="jxr_linenumber" name="136" href="#136">136</a> 
+<a class="jxr_linenumber" name="137" href="#137">137</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="138" href="#138">138</a> <em class="jxr_javadoccomment">     * Build an {@link Options}</em>
+<a class="jxr_linenumber" name="139" href="#139">139</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="140" href="#140">140</a> <em class="jxr_javadoccomment">     * @return {@link Options}</em>
+<a class="jxr_linenumber" name="141" href="#141">141</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="142" href="#142">142</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> U build();
+<a class="jxr_linenumber" name="143" href="#143">143</a> 
+<a class="jxr_linenumber" name="144" href="#144">144</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="145" href="#145">145</a> <em class="jxr_javadoccomment">     * The used {@link Transport}</em>
+<a class="jxr_linenumber" name="146" href="#146">146</a> <em class="jxr_javadoccomment">     * @return {@link Transport}</em>
+<a class="jxr_linenumber" name="147" href="#147">147</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="148" href="#148">148</a>     <strong class="jxr_keyword">public</strong> <a href="../../../org/atmosphere/wasync/Transport.html">Transport</a> transport() {
+<a class="jxr_linenumber" name="149" href="#149">149</a>         <strong class="jxr_keyword">return</strong> transport;
+<a class="jxr_linenumber" name="150" href="#150">150</a>     }
+<a class="jxr_linenumber" name="151" href="#151">151</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="152" href="#152">152</a> <em class="jxr_javadoccomment">     * Reconnect after a network failure or when the server close the connection.</em>
+<a class="jxr_linenumber" name="153" href="#153">153</a> <em class="jxr_javadoccomment">     * @return reconnect</em>
+<a class="jxr_linenumber" name="154" href="#154">154</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="155" href="#155">155</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> reconnect(){
+<a class="jxr_linenumber" name="156" href="#156">156</a>         <strong class="jxr_keyword">return</strong> reconnect;
+<a class="jxr_linenumber" name="157" href="#157">157</a>     }
+<a class="jxr_linenumber" name="158" href="#158">158</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="159" href="#159">159</a> <em class="jxr_javadoccomment">     * The delay, in second, before reconnecting.</em>
+<a class="jxr_linenumber" name="160" href="#160">160</a> <em class="jxr_javadoccomment">     * @return The delay, in second, before reconnecting.</em>
+<a class="jxr_linenumber" name="161" href="#161">161</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="162" href="#162">162</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> reconnectInSeconds(){
+<a class="jxr_linenumber" name="163" href="#163">163</a>         <strong class="jxr_keyword">return</strong> reconnectInSecond;
+<a class="jxr_linenumber" name="164" href="#164">164</a>     }
+<a class="jxr_linenumber" name="165" href="#165">165</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="166" href="#166">166</a> <em class="jxr_javadoccomment">     * When using long-polling and the {@link Request}, the delay before considering the long-polling connection has been fully processed by the server. If you use</em>
+<a class="jxr_linenumber" name="167" href="#167">167</a> <em class="jxr_javadoccomment">     * the {@link org.atmosphere.wasync.impl.AtmosphereClient}, the server will send some handshake so this value is not needed.</em>
+<a class="jxr_linenumber" name="168" href="#168">168</a> <em class="jxr_javadoccomment">     * @return the delay before considering the long-polling connection has been fully processed</em>
+<a class="jxr_linenumber" name="169" href="#169">169</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="170" href="#170">170</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">long</strong> waitBeforeUnlocking() {
+<a class="jxr_linenumber" name="171" href="#171">171</a>         <strong class="jxr_keyword">return</strong> waitBeforeUnlocking;
+<a class="jxr_linenumber" name="172" href="#172">172</a>     }
+<a class="jxr_linenumber" name="173" href="#173">173</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="174" href="#174">174</a> <em class="jxr_javadoccomment">     * The {@link AsyncHttpClient} used to communicate with server.</em>
+<a class="jxr_linenumber" name="175" href="#175">175</a> <em class="jxr_javadoccomment">     * @return {@link AsyncHttpClient} used to communicate with server.</em>
+<a class="jxr_linenumber" name="176" href="#176">176</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="177" href="#177">177</a>     <strong class="jxr_keyword">public</strong> AsyncHttpClient runtime(){
+<a class="jxr_linenumber" name="178" href="#178">178</a>         <strong class="jxr_keyword">return</strong> client;
+<a class="jxr_linenumber" name="179" href="#179">179</a>     }
+<a class="jxr_linenumber" name="180" href="#180">180</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="181" href="#181">181</a> <em class="jxr_javadoccomment">     * Return true is the {@link AsyncHttpClient} is shared between {@link Socket}. Default is false. You need to invoke {@link #runtime(com.ning.http.client.AsyncHttpClient)} to make</em>
+<a class="jxr_linenumber" name="182" href="#182">182</a> <em class="jxr_javadoccomment">     * it shared.</em>
+<a class="jxr_linenumber" name="183" href="#183">183</a> <em class="jxr_javadoccomment">     * @return true is the {@link AsyncHttpClient}</em>
+<a class="jxr_linenumber" name="184" href="#184">184</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="185" href="#185">185</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> runtimeShared(){
+<a class="jxr_linenumber" name="186" href="#186">186</a>         <strong class="jxr_keyword">return</strong> runtimeShared;
+<a class="jxr_linenumber" name="187" href="#187">187</a>     }
+<a class="jxr_linenumber" name="188" href="#188">188</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="189" href="#189">189</a> <em class="jxr_javadoccomment">     * The time, in seconds to wait before closing the connection.</em>
+<a class="jxr_linenumber" name="190" href="#190">190</a> <em class="jxr_javadoccomment">     * @return The time, in seconds to wait before closing the connection.</em>
+<a class="jxr_linenumber" name="191" href="#191">191</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="192" href="#192">192</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> requestTimeoutInSeconds() {
+<a class="jxr_linenumber" name="193" href="#193">193</a>         <strong class="jxr_keyword">return</strong> requestTimeout;
+<a class="jxr_linenumber" name="194" href="#194">194</a>     }
+<a class="jxr_linenumber" name="195" href="#195">195</a> 
+<a class="jxr_linenumber" name="196" href="#196">196</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

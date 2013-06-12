@@ -253,7 +253,7 @@
 <a class="jxr_linenumber" name="243" href="#243">243</a>             @Override
 <a class="jxr_linenumber" name="244" href="#244">244</a>             <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> onError(Throwable t) {
 <a class="jxr_linenumber" name="245" href="#245">245</a>                 status = Socket.STATUS.ERROR;
-<a class="jxr_linenumber" name="246" href="#246">246</a> 
+<a class="jxr_linenumber" name="246" href="#246">246</a>                 logger.debug(<span class="jxr_string">""</span>, t);
 <a class="jxr_linenumber" name="247" href="#247">247</a>                 errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
 <a class="jxr_linenumber" name="248" href="#248">248</a>             }
 <a class="jxr_linenumber" name="249" href="#249">249</a>         };

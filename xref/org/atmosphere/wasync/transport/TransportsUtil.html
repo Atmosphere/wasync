@@ -134,35 +134,44 @@
 <a class="jxr_linenumber" name="124" href="#124">124</a>                 logger.trace(<span class="jxr_string">"{} is trying to decode {}"</span>, d, instanceType);
 <a class="jxr_linenumber" name="125" href="#125">125</a>                 Object decoded = d.decode(e, instanceType);
 <a class="jxr_linenumber" name="126" href="#126">126</a> 
-<a class="jxr_linenumber" name="127" href="#127">127</a>                 <strong class="jxr_keyword">if</strong> (decoded != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="128" href="#128">128</a>                     logger.trace(<span class="jxr_string">"Decoder {} match {}"</span>, d, instanceType);
-<a class="jxr_linenumber" name="129" href="#129">129</a>                     decodedObjects.add(decoded);
-<a class="jxr_linenumber" name="130" href="#130">130</a>                 }
-<a class="jxr_linenumber" name="131" href="#131">131</a> 
-<a class="jxr_linenumber" name="132" href="#132">132</a>                 <em class="jxr_comment">// The decoded message is a list, so we re-inject.</em>
-<a class="jxr_linenumber" name="133" href="#133">133</a>                 <strong class="jxr_keyword">if</strong> (replay) {
-<a class="jxr_linenumber" name="134" href="#134">134</a>                     List&lt;?&gt; l = List.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(instanceType);
-<a class="jxr_linenumber" name="135" href="#135">135</a>                     List&lt;Decoder&lt;? <strong class="jxr_keyword">extends</strong> Object, ?&gt;&gt; nd = <strong class="jxr_keyword">new</strong> ArrayList&lt;Decoder&lt;? <strong class="jxr_keyword">extends</strong> Object, ?&gt;&gt;();
-<a class="jxr_linenumber" name="136" href="#136">136</a>                     <strong class="jxr_keyword">boolean</strong> add = false;
-<a class="jxr_linenumber" name="137" href="#137">137</a>                     <strong class="jxr_keyword">for</strong> (Decoder d2 : decoders) {
-<a class="jxr_linenumber" name="138" href="#138">138</a>                         <strong class="jxr_keyword">if</strong> (d2.equals(d)) {
-<a class="jxr_linenumber" name="139" href="#139">139</a>                             add = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="140" href="#140">140</a>                             <strong class="jxr_keyword">continue</strong>;
-<a class="jxr_linenumber" name="141" href="#141">141</a>                         }
-<a class="jxr_linenumber" name="142" href="#142">142</a> 
-<a class="jxr_linenumber" name="143" href="#143">143</a>                         <strong class="jxr_keyword">if</strong> (add) nd.add(d2);
-<a class="jxr_linenumber" name="144" href="#144">144</a>                     }
-<a class="jxr_linenumber" name="145" href="#145">145</a> 
-<a class="jxr_linenumber" name="146" href="#146">146</a>                     <strong class="jxr_keyword">for</strong> (Object m : l) {
-<a class="jxr_linenumber" name="147" href="#147">147</a>                         <strong class="jxr_keyword">return</strong> matchDecoder(e, m, nd, decodedObjects);
-<a class="jxr_linenumber" name="148" href="#148">148</a>                     }
-<a class="jxr_linenumber" name="149" href="#149">149</a>                 }
-<a class="jxr_linenumber" name="150" href="#150">150</a>             }
-<a class="jxr_linenumber" name="151" href="#151">151</a>         }
-<a class="jxr_linenumber" name="152" href="#152">152</a>         <strong class="jxr_keyword">return</strong> decodedObjects;
-<a class="jxr_linenumber" name="153" href="#153">153</a>     }
-<a class="jxr_linenumber" name="154" href="#154">154</a> 
-<a class="jxr_linenumber" name="155" href="#155">155</a> }
+<a class="jxr_linenumber" name="127" href="#127">127</a>                 <strong class="jxr_keyword">if</strong> (decoded != <strong class="jxr_keyword">null</strong> &amp;&amp; Decoder.Decoded.<strong class="jxr_keyword">class</strong>.isAssignableFrom(decoded.getClass())) {
+<a class="jxr_linenumber" name="128" href="#128">128</a>                     Decoder.Decoded&lt;?&gt; o = Decoder.Decoded.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(decoded);
+<a class="jxr_linenumber" name="129" href="#129">129</a>                     <em class="jxr_comment">// The object has been decoded and doesn't need to be dispatched.</em>
+<a class="jxr_linenumber" name="130" href="#130">130</a>                     <strong class="jxr_keyword">if</strong> (o.action().equals(Decoder.Decoded.ACTION.ABORT)) {
+<a class="jxr_linenumber" name="131" href="#131">131</a>                         logger.trace(<span class="jxr_string">"Decoder {} fully decoded {}"</span>, d, instanceType);
+<a class="jxr_linenumber" name="132" href="#132">132</a>                         <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="133" href="#133">133</a>                     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="134" href="#134">134</a>                         decoded = o.decoded();
+<a class="jxr_linenumber" name="135" href="#135">135</a>                     }
+<a class="jxr_linenumber" name="136" href="#136">136</a>                 }
+<a class="jxr_linenumber" name="137" href="#137">137</a> 
+<a class="jxr_linenumber" name="138" href="#138">138</a>                 <em class="jxr_comment">// The decoded message is a list, so we re-inject.</em>
+<a class="jxr_linenumber" name="139" href="#139">139</a>                 <strong class="jxr_keyword">if</strong> (replay &amp;&amp; List.<strong class="jxr_keyword">class</strong>.isAssignableFrom(decoded.getClass())) {
+<a class="jxr_linenumber" name="140" href="#140">140</a>                     List&lt;?&gt; l = List.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(decoded);
+<a class="jxr_linenumber" name="141" href="#141">141</a>                     List&lt;Decoder&lt;? <strong class="jxr_keyword">extends</strong> Object, ?&gt;&gt; nd = <strong class="jxr_keyword">new</strong> ArrayList&lt;Decoder&lt;? <strong class="jxr_keyword">extends</strong> Object, ?&gt;&gt;();
+<a class="jxr_linenumber" name="142" href="#142">142</a>                     <strong class="jxr_keyword">boolean</strong> add = false;
+<a class="jxr_linenumber" name="143" href="#143">143</a>                     <strong class="jxr_keyword">for</strong> (Decoder d2 : decoders) {
+<a class="jxr_linenumber" name="144" href="#144">144</a>                         <strong class="jxr_keyword">if</strong> (d2.equals(d)) {
+<a class="jxr_linenumber" name="145" href="#145">145</a>                             add = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="146" href="#146">146</a>                             <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="147" href="#147">147</a>                         }
+<a class="jxr_linenumber" name="148" href="#148">148</a> 
+<a class="jxr_linenumber" name="149" href="#149">149</a>                         <strong class="jxr_keyword">if</strong> (add) nd.add(d2);
+<a class="jxr_linenumber" name="150" href="#150">150</a>                     }
+<a class="jxr_linenumber" name="151" href="#151">151</a> 
+<a class="jxr_linenumber" name="152" href="#152">152</a>                     <strong class="jxr_keyword">for</strong> (Object m : l) {
+<a class="jxr_linenumber" name="153" href="#153">153</a>                         <strong class="jxr_keyword">return</strong> matchDecoder(e, m, nd, decodedObjects);
+<a class="jxr_linenumber" name="154" href="#154">154</a>                     }
+<a class="jxr_linenumber" name="155" href="#155">155</a>                 } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (decoded != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="156" href="#156">156</a>                     logger.trace(<span class="jxr_string">"Decoder {} match {}"</span>, d, instanceType);
+<a class="jxr_linenumber" name="157" href="#157">157</a>                     decodedObjects.add(decoded);
+<a class="jxr_linenumber" name="158" href="#158">158</a>                 }
+<a class="jxr_linenumber" name="159" href="#159">159</a>             }
+<a class="jxr_linenumber" name="160" href="#160">160</a>         }
+<a class="jxr_linenumber" name="161" href="#161">161</a>         <strong class="jxr_keyword">return</strong> decodedObjects;
+<a class="jxr_linenumber" name="162" href="#162">162</a>     }
+<a class="jxr_linenumber" name="163" href="#163">163</a> 
+<a class="jxr_linenumber" name="164" href="#164">164</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>
