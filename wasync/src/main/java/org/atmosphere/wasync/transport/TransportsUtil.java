@@ -67,7 +67,9 @@ public class TransportsUtil {
                     b = matchFunction(instanceType, typeArguments, implementedType, resolver, originalMessage, functionName, wrapper, f);
                 } else {
                     for (Object o : decodedObjects) {
-                        b = matchFunction(o, typeArguments, o.getClass(), resolver, originalMessage, functionName, wrapper, f);
+                        if (!Decoder.Decoded.class.isAssignableFrom(o.getClass())) {
+                            b = matchFunction(o, typeArguments, o.getClass(), resolver, originalMessage, functionName, wrapper, f);
+                        }
                     }
                 }
                 if (b) hasMatch = true;
@@ -129,6 +131,7 @@ public class TransportsUtil {
                     // The object has been decoded and doesn't need to be dispatched.
                     if (o.action().equals(Decoder.Decoded.ACTION.ABORT)) {
                         logger.trace("Decoder {} fully decoded {}", d, instanceType);
+                        decodedObjects.add(o);
                         break;
                     } else {
                         decoded = o.decoded();
@@ -137,7 +140,10 @@ public class TransportsUtil {
 
                 // The decoded message is a list, so we re-inject.
                 if (replay && List.class.isAssignableFrom(decoded.getClass())) {
-                    List<?> l = List.class.cast(decoded);
+                    List<Object> l = List.class.cast(decoded);
+                    if (l.isEmpty()) {
+                        continue;
+                    }
                     List<Decoder<? extends Object, ?>> nd = new ArrayList<Decoder<? extends Object, ?>>();
                     boolean add = false;
                     for (Decoder d2 : decoders) {
@@ -147,6 +153,11 @@ public class TransportsUtil {
                         }
 
                         if (add) nd.add(d2);
+                    }
+
+                    // If no decoder found
+                    if (nd.isEmpty()) {
+                        return l;
                     }
 
                     for (Object m : l) {

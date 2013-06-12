@@ -85,6 +85,8 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         private boolean trackMessageLength = false;
         private String trackMessageLengthDelimiter = "|";
         private boolean enableProtocol = true;
+        private final BDecoder bDecoder = new BDecoder();
+        private final SDecoder sDecoder = new SDecoder();
 
         public AtmosphereRequestBuilder() {
             super(AtmosphereRequestBuilder.class);
@@ -181,55 +183,20 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 queryString.put("X-atmo-protocol", l);
             }
 
+            _addDecoder(0, sDecoder);
+            _addDecoder(0, bDecoder);
+
             if (trackMessageLength) {
-                decoders().add(0, new TrackMessageSizeDecoder());
+                _addDecoder(0, new TrackMessageSizeDecoder(enableProtocol));
             }
 
-            decoders().add(0, new Decoder<String, Decoder.Decoded<String>>() {
-
-                private AtomicBoolean protocolReceived = new AtomicBoolean();
-                /**
-                 * Handle the Atmosphere's Protocol.
-                 */
-                @Override
-                public Decoded<String> decode(Event e, String s) {
-                    if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
-                        try {
-                            handleProtocol(s);
-
-                            return Decoded.ABORT;
-                        } catch (Exception ex) {
-                            logger.warn("Unable to decode the protocol {}", s);
-                            logger.warn("",e);
-                        }
-                    }
-                    return new Decoded<String>(s);
-                }
-            });
-
-            decoders().add(0, new Decoder<byte[], Decoder.Decoded<byte[]>>() {
-
-                private AtomicBoolean protocolReceived = new AtomicBoolean();
-                /**
-                 * Handle the Atmosphere's Protocol.
-                 */
-                @Override
-                public Decoded<byte[]> decode(Event e, byte[] b) {
-                    if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
-                        try {
-                            handleProtocol(new String(b, "UTF-8"));
-
-                            return Decoded.ABORT;
-                        } catch (Exception ex) {
-                            logger.warn("Unable to decode the protocol {}", new String(b));
-                            logger.warn("",e);
-                        }
-                    }
-                    return new Decoded<byte[]>(b);
-                }
-            });
-
             return new AtmosphereRequest(this);
+        }
+
+        private void _addDecoder(int pos, Decoder decoder) {
+            if (!decoders.contains(decoder)) {
+                decoders.add(pos, decoder);
+            }
         }
 
         private final void handleProtocol(String s){
@@ -243,8 +210,56 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
             l = new ArrayList<String>();
             l.add(proto[pos + 1]);
             queryString.put("X-Cache-Date", l);
-            decoders.remove(this);
+        }
+
+        private final class SDecoder implements Decoder<String, Decoder.Decoded<String>> {
+
+            private AtomicBoolean protocolReceived = new AtomicBoolean();
+
+            /**
+             * Handle the Atmosphere's Protocol.
+             */
+            @Override
+            public Decoder.Decoded<String> decode(Event e, String s) {
+                if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
+                    try {
+                        handleProtocol(s);
+                        decoders.remove(this);
+                        decoders.remove(bDecoder);
+
+                        return Decoder.Decoded.ABORT;
+                    } catch (Exception ex) {
+                        logger.warn("Unable to decode the protocol {}", s);
+                        logger.warn("", e);
+                    }
+                }
+                return new Decoder.Decoded<String>(s);
+            }
+        }
+
+        private final class BDecoder implements Decoder<byte[], Decoder.Decoded<byte[]>> {
+
+            private AtomicBoolean protocolReceived = new AtomicBoolean();
+
+            /**
+             * Handle the Atmosphere's Protocol.
+             */
+            @Override
+            public Decoder.Decoded<byte[]> decode(Event e, byte[] b) {
+                if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
+                    try {
+                        handleProtocol(new String(b, "UTF-8"));
+                        decoders.remove(this);
+                        decoders.remove(sDecoder);
+
+                        return Decoder.Decoded.ABORT;
+                    } catch (Exception ex) {
+                        logger.warn("Unable to decode the protocol {}", new String(b));
+                        logger.warn("", e);
+                    }
+                }
+                return new Decoder.Decoded<byte[]>(b);
+            }
         }
     }
-
 }

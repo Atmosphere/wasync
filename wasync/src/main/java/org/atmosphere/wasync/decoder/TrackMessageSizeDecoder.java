@@ -22,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TrackMessageSizeDecoder implements ReplayDecoder {
 
@@ -30,18 +32,29 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
 
     private final String delimiter;
     private final StringBuffer messagesBuffer = new StringBuffer();
+    private final AtomicBoolean skipFirstMessage = new AtomicBoolean();
+    private final List<String> empty = Collections.<String>emptyList();
 
     public TrackMessageSizeDecoder() {
         this.delimiter = "|";
     }
 
-    public TrackMessageSizeDecoder(String delimiter) {
+    public TrackMessageSizeDecoder(boolean protocolEnabled) {
+        this.delimiter = "|";
+        skipFirstMessage.set(protocolEnabled);
+    }
+
+    public TrackMessageSizeDecoder(String delimiter, boolean protocolEnabled) {
         this.delimiter = delimiter;
+        skipFirstMessage.set(protocolEnabled);
     }
 
     @Override
     public List<String> decode(Event type, String message) {
         if (type.equals(Event.MESSAGE)) {
+
+            if (skipFirstMessage.getAndSet(false)) return empty;
+
             ArrayList<String> messages = new ArrayList<String>();
 
             int messageLength = -1;
@@ -87,9 +100,7 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
             }
             return messages;
         } else {
-            ArrayList<String> l = new ArrayList<String>();
-            l.add(message);
-            return l;
+            return empty;
         }
     }
 }

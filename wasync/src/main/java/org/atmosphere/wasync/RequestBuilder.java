@@ -75,22 +75,28 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     }
 
     /**
-     * Add an {@link Encoder}. Several Encoder can be added and will be invoked the order they were added.
+     * Add an {@link Encoder}. Several Encoder can be added and will be invoked the order they were added. This method
+     * doesn't allow duplicate.
      * @param e an {@link Encoder}
      * @return this
      */
     public T encoder(Encoder e) {
-        encoders.add(e);
+        if (!encoders.contains(e)) {
+            encoders.add(e);
+        }
         return derived.cast(this);
     }
 
     /**
-     * Add a {@link Decoder}. Several Decoder can be added and will be invoked the order they were added.
+     * Add a {@link Decoder}. Several Decoder can be added and will be invoked the order they were added. This method doesn't allow
+     * duplicate.
      * @param d a {@link Decoder}
      * @return this
      */
     public T decoder(Decoder d) {
-        decoders.add(d);
+        if (!decoders.contains(d)) {
+            decoders.add(d);
+        }
         return derived.cast(this);
     }
 
