@@ -1680,7 +1680,11 @@ public abstract class BaseTest {
                             r.suspend();
                             latch.countDown();
                         } else {
-                            r.write(r.getRequest().getReader().readLine()).close();
+                            if (!b.getAndSet(true)) {
+                                r.write(r.getRequest().getReader().readLine()).close();
+                            } else {
+                                r.write(r.getRequest().getReader().readLine());
+                            }
                         }
                     }
 
@@ -1735,7 +1739,6 @@ public abstract class BaseTest {
                 try {
                     socket.fire("PONG");
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }

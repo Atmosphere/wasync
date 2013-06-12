@@ -124,14 +124,20 @@ public class TransportsUtil {
                 logger.trace("{} is trying to decode {}", d, instanceType);
                 Object decoded = d.decode(e, instanceType);
 
-                if (decoded != null) {
-                    logger.trace("Decoder {} match {}", d, instanceType);
-                    decodedObjects.add(decoded);
+                if (decoded != null && Decoder.Decoded.class.isAssignableFrom(decoded.getClass())) {
+                    Decoder.Decoded<?> o = Decoder.Decoded.class.cast(decoded);
+                    // The object has been decoded and doesn't need to be dispatched.
+                    if (o.action().equals(Decoder.Decoded.ACTION.ABORT)) {
+                        logger.trace("Decoder {} fully decoded {}", d, instanceType);
+                        break;
+                    } else {
+                        decoded = o.decoded();
+                    }
                 }
 
                 // The decoded message is a list, so we re-inject.
-                if (replay) {
-                    List<?> l = List.class.cast(instanceType);
+                if (replay && List.class.isAssignableFrom(decoded.getClass())) {
+                    List<?> l = List.class.cast(decoded);
                     List<Decoder<? extends Object, ?>> nd = new ArrayList<Decoder<? extends Object, ?>>();
                     boolean add = false;
                     for (Decoder d2 : decoders) {
@@ -146,6 +152,9 @@ public class TransportsUtil {
                     for (Object m : l) {
                         return matchDecoder(e, m, nd, decodedObjects);
                     }
+                } else if (decoded != null) {
+                    logger.trace("Decoder {} match {}", d, instanceType);
+                    decodedObjects.add(decoded);
                 }
             }
         }

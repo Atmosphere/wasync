@@ -243,7 +243,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             @Override
             public void onError(Throwable t) {
                 status = Socket.STATUS.ERROR;
-
+                logger.debug("", t);
                 errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
             }
         };

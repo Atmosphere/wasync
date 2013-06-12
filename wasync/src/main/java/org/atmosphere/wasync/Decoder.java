@@ -44,4 +44,65 @@ public interface Decoder<U, T> {
      */
     T decode(Event e, U s);
 
+    /**
+     * A Decoder may return an instance of a Decoded object to prevent some messages from being delivered to a {@link Function},
+     * by returning a {@link Decoded#ABORT} instance. Returning an instance of Decoded with the action set to {@link Decoded.ACTION#CONTINUE}
+     * will allow dispatching messages to {@link Function}
+     * @param <T>
+     */
+    public final static class Decoded<T> {
+        /**
+         * Use this object to prevent the delivering of messages to {@link Function}
+         */
+        public final static Decoded ABORT = new Decoded(null, ACTION.ABORT);
+
+        public enum ACTION {
+            /**
+             * Continue the decoding/dispatching process.
+             */
+            CONTINUE,
+            /**
+             * Do not dispatch the message to {@link Function}
+             */
+            ABORT}
+
+        private final T decodedMessage;
+        private final ACTION action;
+
+        /**
+         * Create a decoded object
+         * @param decodedMessage the decoded message
+         * @param action the action
+         */
+        public Decoded(T decodedMessage, ACTION action) {
+            this.decodedMessage = decodedMessage;
+            this.action = action;
+        }
+
+        /**
+         * Create a decoded object with action set to {@link ACTION#CONTINUE}
+         * @param decodedMessage
+         */
+        public Decoded(T decodedMessage) {
+            this.decodedMessage = decodedMessage;
+            this.action = ACTION.CONTINUE;
+        }
+
+        /**
+         * Return the decoded message.
+         * @return the decoded message.
+         */
+        public T decoded() {
+            return decodedMessage;
+        }
+
+        /**
+         * Return the action.
+         * @return the action.
+         */
+        public ACTION action() {
+            return action;
+        }
+    }
+
 }

@@ -185,47 +185,47 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 decoders().add(0, new TrackMessageSizeDecoder());
             }
 
-            decoders().add(0, new Decoder<String, String>() {
+            decoders().add(0, new Decoder<String, Decoder.Decoded<String>>() {
 
                 private AtomicBoolean protocolReceived = new AtomicBoolean();
                 /**
                  * Handle the Atmosphere's Protocol.
                  */
                 @Override
-                public String decode(Event e, String s) {
+                public Decoded<String> decode(Event e, String s) {
                     if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
                         try {
                             handleProtocol(s);
 
-                            s = null;
+                            return Decoded.ABORT;
                         } catch (Exception ex) {
                             logger.warn("Unable to decode the protocol {}", s);
                             logger.warn("",e);
                         }
                     }
-                    return s;
+                    return new Decoded<String>(s);
                 }
             });
 
-            decoders().add(0, new Decoder<byte[], byte[]>() {
+            decoders().add(0, new Decoder<byte[], Decoder.Decoded<byte[]>>() {
 
                 private AtomicBoolean protocolReceived = new AtomicBoolean();
                 /**
                  * Handle the Atmosphere's Protocol.
                  */
                 @Override
-                public byte[] decode(Event e, byte[] b) {
+                public Decoded<byte[]> decode(Event e, byte[] b) {
                     if (e.equals(Event.MESSAGE) && !protocolReceived.getAndSet(true)) {
                         try {
                             handleProtocol(new String(b, "UTF-8"));
 
-                            b = null;
+                            return Decoded.ABORT;
                         } catch (Exception ex) {
                             logger.warn("Unable to decode the protocol {}", new String(b));
                             logger.warn("",e);
                         }
                     }
-                    return b;
+                    return new Decoded<byte[]>(b);
                 }
             });
 
