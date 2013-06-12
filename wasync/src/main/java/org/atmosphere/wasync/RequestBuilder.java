@@ -142,6 +142,11 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         return derived.cast(this);
     }
 
+    /**
+     * Build a {@link Request}. IMPORTANT: if you are using stateful {@link Decoder}, you must NOT call this method
+     * more than once to prevent response corruption.
+     * @return a {@link Request}
+     */
     public abstract Request build();
 
     /**
