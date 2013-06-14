@@ -108,6 +108,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public void onThrowable(Throwable t) {
+        logger.warn("", t);
         status = Socket.STATUS.ERROR;
         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
