@@ -193,7 +193,7 @@ public class DefaultSocket implements Socket {
             }
         } else {
             r.setUrl(request.uri().replace("ws", "http"));
-            options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse);
+            transportInUse.future(options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse));
 
             try {
                 // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the

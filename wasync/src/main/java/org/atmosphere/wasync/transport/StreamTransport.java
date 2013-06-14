@@ -20,6 +20,7 @@ import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -70,7 +72,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected final boolean isBinary;
     protected STATUS status =  Socket.STATUS.INIT;
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
-    
+    private ListenableFuture underlyingFuture;
     private boolean protocolReceived = false;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
@@ -108,6 +110,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public void onThrowable(Throwable t) {
+        if (CancellationException.class.isAssignableFrom(t.getClass())) return;
+
         logger.warn("", t);
         status = Socket.STATUS.ERROR;
         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
@@ -229,6 +233,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         status = Socket.STATUS.CLOSE;
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
+
+        if (underlyingFuture != null) underlyingFuture.cancel(false);
     }
 
     /**
@@ -247,10 +253,21 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         return errorHandled.get();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void error(Throwable t) {
         logger.warn("", t);
         TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void future(ListenableFuture f) {
+        this.underlyingFuture = f;
     }
 }
 

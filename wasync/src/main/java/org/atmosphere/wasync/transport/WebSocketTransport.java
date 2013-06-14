@@ -18,6 +18,7 @@ package org.atmosphere.wasync.transport;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
 import com.ning.http.client.websocket.WebSocketTextListener;
@@ -68,6 +69,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private STATUS status = Socket.STATUS.INIT;
     private final AtomicBoolean errorHandled = new AtomicBoolean();
+    private ListenableFuture underlyingFuture;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -110,6 +112,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         if (webSocket != null && webSocket.isOpen())
             webSocket.close();
+
+        if (underlyingFuture != null) underlyingFuture.done(null);
     }
 
     /**
@@ -128,10 +132,21 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         return errorHandled.get();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void error(Throwable t) {
         logger.warn("", t);
         TransportsUtil.invokeFunction(Event.ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void future(ListenableFuture f) {
+        this.underlyingFuture = f;
     }
 
     /**

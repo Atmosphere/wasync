@@ -46,6 +46,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
     /**
      * Return the {@link AtmosphereRequest.CACHE} used. The value must match the Atmosphere's Broadcaster cache implementation
      * of the server.
+     *
      * @return the {@link AtmosphereRequest.CACHE}
      */
     public AtmosphereRequest.CACHE getCacheType() {
@@ -54,6 +55,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
     /**
      * Is tracking message's length enabled.
+     *
      * @return true if enabled
      */
     public boolean isTrackMessageLength() {
@@ -62,14 +64,16 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
     /**
      * True if the Atmosphere Protocol is enabled
+     *
      * @return true if the Atmosphere Protocol is enabled.
      */
-    public boolean enableProtocol(){
+    public boolean enableProtocol() {
         return builder.enableProtocol;
     }
 
     /**
      * The delimiter used by the Atmosphere Framework when sending message length and message's size.
+     *
      * @return delimiter used. Default is '|'
      */
     public String getTrackMessageLengthDelimiter() {
@@ -95,6 +99,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         /**
          * Return the {@link AtmosphereRequest.CACHE} used. The value must match the Atmosphere's Broadcaster cache implementation
          * of the server.
+         *
          * @return the {@link AtmosphereRequest.CACHE}
          */
         private CACHE getCacheType() {
@@ -122,6 +127,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
         /**
          * Set the {@link CACHE} used by the server side implementation of Atmosphere.
+         *
          * @param c the cache type.
          * @return this;
          */
@@ -132,7 +138,8 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
         /**
          * Turn on/off tracking message.
-         * @param trackMessageLength  true to enable.
+         *
+         * @param trackMessageLength true to enable.
          * @return this
          */
         public AtmosphereRequestBuilder trackMessageLength(boolean trackMessageLength) {
@@ -142,7 +149,8 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
         /**
          * Set the tracking delimiter.
-         * @param trackMessageLengthDelimiter  true to enable.
+         *
+         * @param trackMessageLengthDelimiter true to enable.
          * @return this
          */
         public AtmosphereRequestBuilder trackMessageLengthDelimiter(String trackMessageLengthDelimiter) {
@@ -152,10 +160,11 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
 
         /**
          * Set to true to enable the Atmosphere Protocol. Default is true.
-         * @param enableProtocol  false to disable.
-         * @return
+         *
+         * @param enableProtocol false to disable.
+         * @return this
          */
-        public  AtmosphereRequestBuilder enableProtocol(boolean enableProtocol) {
+        public AtmosphereRequestBuilder enableProtocol(boolean enableProtocol) {
             this.enableProtocol = enableProtocol;
             return this;
         }
@@ -201,7 +210,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
             }
         }
 
-        private final void handleProtocol(String s){
+        private final void handleProtocol(String s) {
             String[] proto = s.trim().split("\\|");
             // Track message size may have been appended
             int pos = proto.length > 2 ? pos = 1 : 0;
