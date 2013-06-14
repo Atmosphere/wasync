@@ -16,6 +16,7 @@
 package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 import org.atmosphere.wasync.Encoder;
@@ -135,15 +136,17 @@ public class SocketRuntime {
     }
 
     public ListenableFuture<Response> httpWrite(Request request, Object object, Object data) throws IOException {
-        // Only for Atmosphere
+
+        FluentStringsMap m = DefaultSocket.decodeQueryString(request);
+        // TODO: Make it pluggable. Only for Atmosphere
         if (AtmosphereRequest.class.isAssignableFrom(request.getClass())) {
-            request.queryString().put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
-            request.queryString().remove("X-atmo-protocol");
+            m.put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
+            m.remove("X-atmo-protocol");
         }
 
         AsyncHttpClient.BoundRequestBuilder b = options.runtime().preparePost(request.uri())
                 .setHeaders(request.headers())
-                .setQueryParameters(DefaultSocket.decodeQueryString(request))
+                .setQueryParameters(m)
                 .setMethod(Request.METHOD.POST.name());
 
         if (InputStream.class.isAssignableFrom(object.getClass())) {
