@@ -77,10 +77,6 @@ public class SSETransport extends StreamTransport {
                 if (!d.isEmpty())
                     TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
             }
-
-            if (data.length == 0) {
-                return STATE.ABORT;
-            }
         }
         return STATE.CONTINUE;
     }
