@@ -27,6 +27,7 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
@@ -70,6 +71,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private STATUS status = Socket.STATUS.INIT;
     private final AtomicBoolean errorHandled = new AtomicBoolean();
     private ListenableFuture underlyingFuture;
+    private Future connectdFuture;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -149,6 +151,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.underlyingFuture = f;
     }
 
+    @Override
+    public void connectedFuture(Future f) {
+        this.connectdFuture = f;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -162,6 +169,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        if (connectdFuture != null) connectdFuture.done();
+
         TransportsUtil.invokeFunction(STATUS, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
@@ -208,7 +217,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             @Override
             public void onMessage(String message) {
                 message = message.trim();
-                logger.trace("{} received {}", name(), message );
+                logger.trace("{} received {}", name(), message);
                 if (message.length() > 0) {
                     TransportsUtil.invokeFunction(MESSAGE,
                             decoders,

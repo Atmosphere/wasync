@@ -17,13 +17,19 @@ package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.RequestBuilder;
+import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.transport.TransportNotSupported;
 import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AtmosphereSocket extends DefaultSocket {
@@ -78,6 +84,33 @@ public class AtmosphereSocket extends DefaultSocket {
                 logger.trace("", e);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void addFunction(final long timeout, final TimeUnit tu) {
+        functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
+            @Override
+            public void on(TransportNotSupported transportNotSupported) {
+                request.transport().remove(0);
+                if (request.transport().size() > 0) {
+                    try {
+                        if (request.queryString().get("X-Atmosphere-Transport") != null) {
+                            Request.TRANSPORT rt = request.transport().get(0);
+                            String t = rt == Request.TRANSPORT.LONG_POLLING ? "long-polling" : rt.name();
+                            request.queryString().put("X-Atmosphere-Transport", Arrays.asList(new String[]{t}));
+                        }
+                        open(request, timeout, tu);
+                    } catch (IOException e) {
+                        logger.error("", e);
+                    }
+                } else {
+                    throw new Error("No suitable transport supported by the server");
+                }
+            }
+        }));
     }
 
     /**

@@ -26,6 +26,7 @@ import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
@@ -74,6 +75,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
     private ListenableFuture underlyingFuture;
     private boolean protocolReceived = false;
+    private Future connectdFuture;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -161,6 +163,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        if (connectdFuture != null) connectdFuture.done();
+
         TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
 
         errorHandled.set(false);
@@ -268,6 +272,11 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void future(ListenableFuture f) {
         this.underlyingFuture = f;
+    }
+
+    @Override
+    public void connectedFuture(Future f) {
+        this.connectdFuture = f;
     }
 }
 

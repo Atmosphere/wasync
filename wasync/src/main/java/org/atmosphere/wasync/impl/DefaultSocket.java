@@ -144,26 +144,7 @@ public class DefaultSocket implements Socket {
         }
         socketRuntime = createRuntime();
 
-        functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
-            @Override
-            public void on(TransportNotSupported transportNotSupported) {
-                request.transport().remove(0);
-                if (request.transport().size() > 0) {
-                    try {
-                        if (request.queryString().get("X-Atmosphere-Transport") != null) {
-                            Request.TRANSPORT rt = request.transport().get(0);
-                            String t = rt == Request.TRANSPORT.LONG_POLLING ? "long-polling" : rt.name();
-                            request.queryString().put("X-Atmosphere-Transport", Arrays.asList(new String[]{t}));
-                        }
-                        open(request, timeout, tu);
-                    } catch (IOException e) {
-                        logger.error("", e);
-                    }
-                } else {
-                    throw new Error("No suitable transport supported by the server");
-                }
-            }
-        }));
+        addFunction(timeout, tu);
 
         if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
             r.setUrl(request.uri().replace("http", "ws"));
@@ -198,7 +179,11 @@ public class DefaultSocket implements Socket {
             try {
                 // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
                 // beginning for streaming and sse, but nothing for long-polling
+                if (options.waitBeforeUnlocking() > 0) {
+                    logger.info("Waiting {}, allowing the http connection to get handled by the server.", options.waitBeforeUnlocking());
+                }
                 socketRuntime.future().get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
+                socketRuntime.future().done();
             } catch (Throwable t) {
                 // Swallow  LOG ME
                 logger.trace("", t);
@@ -207,6 +192,24 @@ public class DefaultSocket implements Socket {
             socketRuntime = createRuntime();
         }
         return this;
+    }
+
+    protected void addFunction(final long timeout, final TimeUnit tu) {
+        functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
+            @Override
+            public void on(TransportNotSupported transportNotSupported) {
+                request.transport().remove(0);
+                if (request.transport().size() > 0) {
+                    try {
+                        open(request, timeout, tu);
+                    } catch (IOException e) {
+                        logger.error("", e);
+                    }
+                } else {
+                    throw new Error("No suitable transport supported by the server");
+                }
+            }
+        }));
     }
 
     /**

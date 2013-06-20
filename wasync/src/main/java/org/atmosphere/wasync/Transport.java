@@ -73,7 +73,13 @@ public interface Transport {
     /**
      * Set the {@link ListenableFuture}, which can be used to clone the connection.
      *
-     * @param {@link f}
+     * @param {@link ListenableFuture}
      */
     void future(ListenableFuture f);
+
+    /**
+     * Set the {@link Future}, which will unlock the {@link Socket#fire} method once the connection has been fully established. \
+     * @param {@link Future}
+     */
+    void connectedFuture(Future f);
 }

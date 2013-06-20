@@ -163,9 +163,10 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
         return reconnectInSecond;
     }
     /**
-     * When using long-polling and the {@link Request}, the delay before considering the long-polling connection has been fully processed by the server. If you use
-     * the {@link org.atmosphere.wasync.impl.AtmosphereClient}, the server will send some handshake so this value is not needed.
-     * @return the delay before considering the long-polling connection has been fully processed
+     * The delay before considering the http connection has been fully processed by the server. By default, the library will wait 2 seconds before allowing the {@link Socket#fire(Object)}
+     * to send message. Server side framework that aren't sending any data when suspending a connection may not be ready to fullfil request, hence some data may be lost.
+     *
+     * Framework like Atmosphere, Socket.io, Cometd do send some "handshake data" allow the fire operation to be available fast without loosing ant data.
      */
     public long waitBeforeUnlocking() {
         return waitBeforeUnlocking;
