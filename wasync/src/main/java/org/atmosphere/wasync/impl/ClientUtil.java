@@ -20,6 +20,9 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Util class for building {@link AsyncHttpClient}
  *
@@ -29,29 +32,43 @@ public class ClientUtil {
     private static final String WASYNC_USER_AGENT = "wAsync/1.0";
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
-		AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
+        AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
         int t = o.requestTimeoutInSeconds();
-		b.setFollowRedirects(true).setIdleConnectionTimeoutInMs(-1).setRequestTimeoutInMs(t == -1? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
+        b.setFollowRedirects(true).setIdleConnectionTimeoutInMs(-1).setRequestTimeoutInMs(t == -1 ? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
         AsyncHttpClientConfig config = b.build();
-		return new AsyncHttpClient(config);
-	}
+        return new AsyncHttpClient(config);
+    }
 
     public static Socket create(Options options) {
+        return create(options, DefaultSocket.class);
+    }
+
+    public static Socket create(Options options, Class<? extends Socket> socket) {
         AsyncHttpClient asyncHttpClient = options.runtime();
         if (asyncHttpClient == null || asyncHttpClient.isClosed()) {
             asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(options);
             options.runtime(asyncHttpClient);
         }
-        return getSocket(options);
+        return getSocket(options, socket);
     }
 
-    public final static Socket getSocket(Options options) {
-        return new DefaultSocket(options);
+    public final static Socket getSocket(Options options, Class<? extends Socket> socket) {
+        try {
+            return socket.getConstructor(Options.class).newInstance(options);
+        } catch (Exception e) {
+            return new DefaultSocket(options);
+        }
     }
 
-    public  static Socket create() {
+    public static Socket create(Class<? extends Socket> socket) {
         AsyncHttpClient asyncHttpClient = createDefaultAsyncHttpClient(new DefaultOptionsBuilder().reconnect(true).build());
 
-        return getSocket(new DefaultOptionsBuilder().runtime(asyncHttpClient, false).build());
+        return getSocket(new DefaultOptionsBuilder().runtime(asyncHttpClient, false).build(), socket);
+    }
+
+    public static Socket create() {
+        AsyncHttpClient asyncHttpClient = createDefaultAsyncHttpClient(new DefaultOptionsBuilder().reconnect(true).build());
+
+        return getSocket(new DefaultOptionsBuilder().runtime(asyncHttpClient, false).build(), DefaultSocket.class);
     }
 }

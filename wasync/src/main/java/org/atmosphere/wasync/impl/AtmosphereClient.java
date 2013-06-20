@@ -38,7 +38,7 @@ public class AtmosphereClient implements Client<DefaultOptions, DefaultOptionsBu
      */
     @Override
     public Socket create() {
-        return ClientUtil.create();
+        return ClientUtil.create(AtmosphereSocket.class);
     }
 
     /**
@@ -46,7 +46,7 @@ public class AtmosphereClient implements Client<DefaultOptions, DefaultOptionsBu
      */
     @Override
     public Socket create(DefaultOptions options) {
-        return ClientUtil.create(options);
+        return ClientUtil.create(options, AtmosphereSocket.class);
     }
 
     /**

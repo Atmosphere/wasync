@@ -142,7 +142,7 @@ public class DefaultSocket implements Socket {
         } else {
             throw new IOException("No suitable transport supported");
         }
-        socketRuntime = new SocketRuntime(options, new DefaultFuture(this), functions);
+        socketRuntime = createRuntime();
 
         functions.add(new FunctionWrapper("", new Function<TransportNotSupported>() {
             @Override
@@ -172,7 +172,7 @@ public class DefaultSocket implements Socket {
                         (AsyncHandler<WebSocket>) transportInUse);
 
                 fw.get(timeout, tu);
-                socketRuntime = new SocketRuntime(WebSocketTransport.class.cast(transportInUse), options, socketRuntime.future(), functions);
+                socketRuntime = createRuntime(options, functions);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 
@@ -204,13 +204,9 @@ public class DefaultSocket implements Socket {
                 logger.trace("", t);
             }
 
-            socketRuntime = createSocket();
+            socketRuntime = createRuntime();
         }
         return this;
-    }
-
-    protected SocketRuntime createSocket() {
-        return new SocketRuntime(options, new DefaultFuture(this), functions);
     }
 
     /**
@@ -227,7 +223,7 @@ public class DefaultSocket implements Socket {
         }
     }
 
-    void closeRuntime(boolean async) {
+    protected void closeRuntime(boolean async) {
         if (!options.runtimeShared() && !options.runtime().isClosed()) {
             if (async) {
                 // AHC is broken when calling closeAsynchronously.
@@ -335,5 +331,13 @@ public class DefaultSocket implements Socket {
         if (transportInUse == null) {
             throw new IllegalStateException("Invalid Socket Status : Not Connected");
         }
+    }
+
+    public SocketRuntime createRuntime() {
+        return new SocketRuntime(options, new DefaultFuture(this), functions);
+    }
+
+    public SocketRuntime createRuntime(Options options, List<FunctionWrapper> functions) {
+        return new SocketRuntime(WebSocketTransport.class.cast(transportInUse), options, socketRuntime.future(), functions);
     }
 }

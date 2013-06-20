@@ -50,7 +50,7 @@ public class SerializedSocket extends DefaultSocket {
     }
 
     @Override
-    protected SocketRuntime createSocket() {
+    public SocketRuntime createRuntime() {
         return new SerialSocketRuntime(options, new DefaultFuture(this), this, functions);
     }
 

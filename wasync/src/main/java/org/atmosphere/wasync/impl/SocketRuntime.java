@@ -137,17 +137,7 @@ public class SocketRuntime {
 
     public ListenableFuture<Response> httpWrite(Request request, Object object, Object data) throws IOException {
 
-        FluentStringsMap m = DefaultSocket.decodeQueryString(request);
-        // TODO: Make it pluggable. Only for Atmosphere
-        if (AtmosphereRequest.class.isAssignableFrom(request.getClass())) {
-            m.put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
-            m.remove("X-atmo-protocol");
-        }
-
-        AsyncHttpClient.BoundRequestBuilder b = options.runtime().preparePost(request.uri())
-                .setHeaders(request.headers())
-                .setQueryParameters(m)
-                .setMethod(Request.METHOD.POST.name());
+        AsyncHttpClient.BoundRequestBuilder b = configureAHC(request);
 
         if (InputStream.class.isAssignableFrom(object.getClass())) {
             //TODO: Allow reading the response.
@@ -162,4 +152,14 @@ public class SocketRuntime {
             throw new IllegalStateException("No Encoder for " + data);
         }
     }
+
+    protected AsyncHttpClient.BoundRequestBuilder configureAHC(Request request) {
+        FluentStringsMap m = DefaultSocket.decodeQueryString(request);
+
+        return options.runtime().preparePost(request.uri())
+                .setHeaders(request.headers())
+                .setQueryParameters(m)
+                .setMethod(Request.METHOD.POST.name());
+    }
+
 }

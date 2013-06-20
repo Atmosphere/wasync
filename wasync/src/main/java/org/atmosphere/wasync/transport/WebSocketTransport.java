@@ -208,7 +208,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             @Override
             public void onMessage(String message) {
                 message = message.trim();
-                logger.debug("{} received {}", name(), message );
+                logger.trace("{} received {}", name(), message );
                 if (message.length() > 0) {
                     TransportsUtil.invokeFunction(MESSAGE,
                             decoders,
