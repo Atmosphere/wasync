@@ -1411,7 +1411,7 @@ public abstract class BaseTest {
         }).open(request.build());
 
         socket.fire("echo");
-        latch.await();
+        latch.await(20, TimeUnit.SECONDS);
 
         assertEquals(response.get().getClass(), ConnectException.class);
         assertEquals(response2.get().getClass(), IOException.class);
@@ -1560,11 +1560,11 @@ public abstract class BaseTest {
             }
         }).open(clientRequest.build());
 
-        latch.await();
+        latch.await(10, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await();
+        elatch.await(10, TimeUnit.SECONDS);
 
         assertEquals(b.get().toString(), "OPENCLOSEREOPENEDCLOSE");
     }
@@ -1650,12 +1650,12 @@ public abstract class BaseTest {
         }).open(clientRequest.build());
 
         socket.fire("PING");
-        latch.await();
-        flatch.await();
+        latch.await(10, TimeUnit.SECONDS);
+        flatch.await(10, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await();
+        elatch.await(10, TimeUnit.SECONDS);
 
         assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDCLOSEERROR");
     }
@@ -1757,12 +1757,12 @@ public abstract class BaseTest {
         }).open(clientRequest.build());
 
         socket.fire("PING");
-        latch.await();
-        flatch.await();
+        latch.await(10, TimeUnit.SECONDS);
+        flatch.await(10, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await();
+        elatch.await(10, TimeUnit.SECONDS);
 
         assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSEERROR");
     }
