@@ -151,7 +151,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
         server.stop();
 
@@ -266,7 +266,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         server.stop();
         socket.close();
 
@@ -402,7 +402,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(status.get(), statusCode());
@@ -467,7 +467,7 @@ public abstract class BaseTest {
             }
         }).open(request.build());
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(status.get(), notFoundCode());
@@ -530,7 +530,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
 
         socket.fire("Yo");
         assertEquals(response2.get().getClass(), IOException.class);
@@ -560,7 +560,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
         assertEquals(response.get().getClass(), ConnectException.class);
     }
@@ -588,7 +588,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
         assertTrue(IOException.class.isAssignableFrom(response.get().getClass()));
     }
@@ -664,7 +664,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("echo");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), "<-echo->");
@@ -728,7 +728,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), TimeoutException.class);
@@ -796,7 +796,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("echo");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get().getClass(), POJO.class);
@@ -860,7 +860,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("yo");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get(), transport());
@@ -943,7 +943,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("echo");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), "<-echo->");
@@ -1036,7 +1036,7 @@ public abstract class BaseTest {
                 .fire("PING").get()
                 .fire("PONG").get();
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         // We can't predict the order of requests send
@@ -1116,7 +1116,7 @@ public abstract class BaseTest {
                 .fire("PING")
                 .fire("PONG");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         // We can't predict the order of requests send
@@ -1368,7 +1368,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("yoga");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get(), "yoga");
@@ -1482,11 +1482,11 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
 
         server.stop();
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(socket.status(), Socket.STATUS.CLOSE);//or ERROR?
@@ -1510,8 +1510,8 @@ public abstract class BaseTest {
                     public void onRequest(AtmosphereResource r) throws IOException {
                         r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
                             public void onSuspend(AtmosphereResourceEvent event) {
-                                 latch.countDown();
-                             }
+                                latch.countDown();
+                            }
                         }).suspend(5, TimeUnit.SECONDS);
 
                     }
@@ -1566,11 +1566,11 @@ public abstract class BaseTest {
             }
         }).open(clientRequest.build());
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await(20,  TimeUnit.SECONDS);
+        elatch.await(20, TimeUnit.SECONDS);
 
         assertEquals(b.get().toString(), "OPENCLOSEREOPENEDCLOSE");
     }
@@ -1579,7 +1579,7 @@ public abstract class BaseTest {
     public void closeWriteTest() throws IOException, InterruptedException {
         logger.info("\n\ncloseWriteTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(3);
         final CountDownLatch flatch = new CountDownLatch(1);
         final CountDownLatch elatch = new CountDownLatch(1);
 
@@ -1593,8 +1593,11 @@ public abstract class BaseTest {
                     @Override
                     public void onRequest(AtmosphereResource r) throws IOException {
                         if (r.getRequest().getMethod().equals("GET")) {
-                            r.suspend();
-                            latch.countDown();
+                            r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                                public void onSuspend(AtmosphereResourceEvent event) {
+                                    latch.countDown();
+                                }
+                            }).suspend();
                         } else {
                             r.write(r.getRequest().getReader().readLine()).close();
                         }
@@ -1641,6 +1644,7 @@ public abstract class BaseTest {
             @Override
             public void on(String t) {
                 b.get().append(t);
+                latch.countDown();
             }
         }).on(new Function<IOException>() {
             @Override
@@ -1657,12 +1661,12 @@ public abstract class BaseTest {
         }).open(clientRequest.build());
 
         socket.fire("PING");
-        latch.await(20,  TimeUnit.SECONDS);
-        flatch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
+        flatch.await(20, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await(20,  TimeUnit.SECONDS);
+        elatch.await(20, TimeUnit.SECONDS);
 
         assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDCLOSEERROR");
     }
@@ -1671,7 +1675,7 @@ public abstract class BaseTest {
     public void reconnectFireTest() throws IOException, InterruptedException {
         logger.info("\n\nreconnectFireTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(3);
         final CountDownLatch flatch = new CountDownLatch(2);
         final CountDownLatch elatch = new CountDownLatch(1);
 
@@ -1685,8 +1689,11 @@ public abstract class BaseTest {
                     @Override
                     public void onRequest(AtmosphereResource r) throws IOException {
                         if (r.getRequest().getMethod().equals("GET")) {
-                            r.suspend();
-                            latch.countDown();
+                            r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                                public void onSuspend(AtmosphereResourceEvent event) {
+                                    latch.countDown();
+                                }
+                            }).suspend();
                         } else {
                             if (!b.getAndSet(true)) {
                                 r.write(r.getRequest().getReader().readLine()).close();
@@ -1749,6 +1756,7 @@ public abstract class BaseTest {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                latch.countDown();
             }
         }).on(new Function<IOException>() {
             @Override
@@ -1765,12 +1773,12 @@ public abstract class BaseTest {
         }).open(clientRequest.build());
 
         socket.fire("PING");
-        latch.await(20,  TimeUnit.SECONDS);
-        flatch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
+        flatch.await(20, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await(20,  TimeUnit.SECONDS);
+        elatch.await(20, TimeUnit.SECONDS);
 
         assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSEERROR");
     }
@@ -1863,11 +1871,11 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("echo");
 
-        latch.await(20,  TimeUnit.SECONDS);
+        latch.await(20, TimeUnit.SECONDS);
 
         socket.close();
 
-        xlatch.await(20,  TimeUnit.SECONDS);
+        xlatch.await(20, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertNotNull(open.get());
