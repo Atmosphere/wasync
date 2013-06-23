@@ -1496,7 +1496,7 @@ public abstract class BaseTest {
     public void timeoutTest() throws IOException, InterruptedException {
         logger.info("\n\ntimeoutTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(3);
         final CountDownLatch elatch = new CountDownLatch(1);
 
         Config config = new Config.Builder()
@@ -1508,8 +1508,12 @@ public abstract class BaseTest {
 
                     @Override
                     public void onRequest(AtmosphereResource r) throws IOException {
-                        r.suspend(5, TimeUnit.SECONDS);
-                        latch.countDown();
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                 latch.countDown();
+                             }
+                        }).suspend(5, TimeUnit.SECONDS);
+
                     }
 
                     @Override
@@ -1547,6 +1551,7 @@ public abstract class BaseTest {
             @Override
             public void on(String t) {
                 b.get().append(t);
+                latch.countDown();
             }
         }).on(new Function<IOException>() {
             @Override
