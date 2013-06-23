@@ -1494,6 +1494,7 @@ public abstract class BaseTest {
 
     @Test
     public void timeoutTest() throws IOException, InterruptedException {
+        logger.info("\n\ntimeoutTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
         final CountDownLatch latch = new CountDownLatch(2);
         final CountDownLatch elatch = new CountDownLatch(1);
@@ -1571,6 +1572,7 @@ public abstract class BaseTest {
 
     @Test
     public void closeWriteTest() throws IOException, InterruptedException {
+        logger.info("\n\ncloseWriteTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
         final CountDownLatch latch = new CountDownLatch(2);
         final CountDownLatch flatch = new CountDownLatch(1);
@@ -1662,6 +1664,7 @@ public abstract class BaseTest {
 
     @Test
     public void reconnectFireTest() throws IOException, InterruptedException {
+        logger.info("\n\nreconnectFireTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
         final CountDownLatch latch = new CountDownLatch(2);
         final CountDownLatch flatch = new CountDownLatch(2);
