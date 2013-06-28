@@ -1,5 +1,18 @@
 package org.atmosphere.tests;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -12,20 +25,8 @@ import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.impl.AtmosphereClient;
+import org.atmosphere.wasync.serial.SerializedClient;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 public class LongPollingTest extends StreamingTest {
 
@@ -141,7 +142,8 @@ public class LongPollingTest extends StreamingTest {
                     @Override
                     public void onRequest(AtmosphereResource resource) throws IOException {
                         if (resource.getRequest().getMethod().equals("GET")) {
-                            resource.suspend(-1);
+                        	System.out.println("#### client uuid " + resource.uuid());
+                            //resource.suspend(-1);
                         } else {
                             String echo = resource.getRequest().getReader().readLine();
                             logger.info("echoing : {}", echo);
@@ -176,14 +178,14 @@ public class LongPollingTest extends StreamingTest {
 
         final CountDownLatch latch = new CountDownLatch(5);
         final AtomicReference<Set> response = new AtomicReference<Set>(new HashSet());
-        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
-        final Socket socket = client.create(client.newOptionsBuilder().build());
+        final Socket socket = client.create();//client.newOptionsBuilder().build());
 
         socket.on("message", new Function<String>() {
             @Override
@@ -199,13 +201,13 @@ public class LongPollingTest extends StreamingTest {
             }
         }).open(request.build());
 
-        socket.fire("ECHO1");
+ /*       socket.fire("ECHO1");
         Thread.sleep(1000);
         socket.fire("ECHO2");
         Thread.sleep(2000);
         socket.fire("ECHO3");
         socket.fire("ECHO4");
-        socket.fire("ECHO5");
+        socket.fire("ECHO5"); */
 
         latch.await(60, TimeUnit.SECONDS);
 

@@ -106,7 +106,7 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
     public static class SerializedRequestBuilder extends AtmosphereRequestBuilder {
         public SerializedRequestBuilder() {
             super();
-            enableProtocol(false);
+            enableProtocol(true);
         }
     }
 }
