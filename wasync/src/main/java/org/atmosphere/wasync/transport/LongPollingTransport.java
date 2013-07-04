@@ -15,12 +15,16 @@
  */
 package org.atmosphere.wasync.transport;
 
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 
 import java.util.List;
+
+import static org.atmosphere.wasync.Event.MESSAGE;
 
 /**
  * Long-Polling {@link org.atmosphere.wasync.Transport} implementation
@@ -31,6 +35,35 @@ public class LongPollingTransport extends StreamTransport {
 
     public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(requestBuilder, options, request, functions);
+    }
+
+    @Override
+    public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+        if (isBinary) {
+            byte[] payload = bodyPart.getBodyPartBytes();
+            if (protocolEnabled && !protocolReceived) {
+                if (!whiteSpace(payload)) {
+                    TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+                    protocolReceived = true;
+                }
+                return AsyncHandler.STATE.CONTINUE;
+            } else if (!whiteSpace(payload)) {
+                TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+            }
+        } else {
+            String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+            if (protocolEnabled && !protocolReceived) {
+                if (!m.isEmpty()) {
+                    TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
+                    protocolReceived = true;
+                }
+                return AsyncHandler.STATE.CONTINUE;
+            } else if (!m.isEmpty()) {
+                TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
+            }
+        }
+        if (connectdFuture != null) connectdFuture.done();
+        return AsyncHandler.STATE.CONTINUE;
     }
 
     /**

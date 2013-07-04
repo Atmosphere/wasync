@@ -74,10 +74,10 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected final boolean isBinary;
     protected STATUS status = Socket.STATUS.INIT;
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
-    private ListenableFuture underlyingFuture;
-    private boolean protocolReceived = false;
-    private Future connectdFuture;
-    private final boolean protocolEnabled;
+    protected ListenableFuture underlyingFuture;
+    protected boolean protocolReceived = false;
+    protected Future connectdFuture;
+    protected final boolean protocolEnabled;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -129,17 +129,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
-            if (protocolEnabled && !protocolReceived) {
-                String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-                if (!m.isEmpty()) {
-                    // need to forward this chunk, else the AtmosphereRequest decoder for the initial handshake is not successful.
-                    TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
-                    protocolReceived = true;
-                }
-                return AsyncHandler.STATE.CONTINUE;
-            } else if (whiteSpace(payload)) {
-                logger.trace("Padding data received");
-            } else {
+            if (!whiteSpace(payload)) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
             }
         } else {
@@ -282,7 +272,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         this.connectdFuture = f;
     }
 
-    private final static boolean whiteSpace(byte[] b) {
+    protected final static boolean whiteSpace(byte[] b) {
         int i = b.length;
         while (i-- > 0 && (b[i] == 10 || b[i] == 32)) {
         }
