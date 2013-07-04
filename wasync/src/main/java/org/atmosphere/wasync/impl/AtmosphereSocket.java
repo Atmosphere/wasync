@@ -45,22 +45,6 @@ public class AtmosphereSocket extends DefaultSocket {
      * {@inheritDoc}
      */
     @Override
-    public SocketRuntime createRuntime() {
-        return new AtmosphereSocketRuntime(options, new DefaultFuture(this), functions);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SocketRuntime createRuntime(Options options, List<FunctionWrapper> functions) {
-        return new AtmosphereSocketRuntime(WebSocketTransport.class.cast(transportInUse), options, socketRuntime.future(), functions);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     protected void closeRuntime(boolean async) {
         doCloseRequest();
         super.closeRuntime(async);

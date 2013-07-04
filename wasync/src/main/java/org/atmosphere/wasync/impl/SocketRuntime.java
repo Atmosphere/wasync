@@ -24,6 +24,7 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.transport.TransportsUtil;
 import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.atmosphere.wasync.util.ReaderInputStream;
@@ -36,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -51,20 +51,16 @@ public class SocketRuntime {
 
     private final static Logger logger = LoggerFactory.getLogger(SocketRuntime.class);
 
-    protected WebSocketTransport webSocketTransport;
+    protected Transport transport;
     protected final Options options;
     protected final DefaultFuture rootFuture;
     protected final List<FunctionWrapper> functions;
 
-    public SocketRuntime(WebSocketTransport webSocket, Options options, DefaultFuture rootFuture, List<FunctionWrapper> functions) {
-        this.webSocketTransport = webSocket;
+    public SocketRuntime(Transport transport, Options options, DefaultFuture rootFuture, List<FunctionWrapper> functions) {
+        this.transport = transport;
         this.options = options;
         this.rootFuture = rootFuture;
         this.functions = functions;
-    }
-
-    public SocketRuntime(Options options, DefaultFuture rootFuture, List<FunctionWrapper> functions) {
-        this(null, options, rootFuture, functions);
     }
 
     public DefaultFuture future() {
@@ -85,18 +81,18 @@ public class SocketRuntime {
     public Future write(Request request, Object data) throws IOException {
         // Execute encoder
         Object object = invokeEncoder(request.encoders(), data);
-        if (webSocketTransport != null) {
+        if (WebSocketTransport.class.isAssignableFrom(transport.getClass())) {
             webSocketWrite(request, object, data);
         } else {
             try {
-                Response r = httpWrite(request, object, data).get(rootFuture.time, rootFuture.tu);
+                Response r = httpWrite(request, object, data).get(rootFuture.time(), rootFuture.timeUnit());
                 String m = r.getResponseBody();
                 if (!m.isEmpty()) {
                     TransportsUtil.invokeFunction(request.decoders(),functions, String.class, m, MESSAGE.name(), request.functionResolver());
                 }
             } catch (TimeoutException t) {
                 logger.trace("AHC Timeout", t);
-                rootFuture.te = t;
+                rootFuture.timeoutException(t);
             } catch (Throwable t) {
                 logger.error("", t);
             }
@@ -106,6 +102,7 @@ public class SocketRuntime {
     }
 
     public void webSocketWrite(Request request, Object object, Object data) throws IOException {
+        WebSocketTransport webSocketTransport = WebSocketTransport.class.cast(transport);
         if (InputStream.class.isAssignableFrom(object.getClass())) {
             InputStream is = (InputStream) object;
             ByteArrayOutputStream bs = new ByteArrayOutputStream();

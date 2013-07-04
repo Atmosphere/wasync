@@ -35,12 +35,25 @@ public class DefaultFuture implements Future {
     private final DefaultSocket socket;
     private CountDownLatch latch = new CountDownLatch(1);
     private final AtomicBoolean done = new AtomicBoolean(false);
-    protected long time = -1;
-    protected TimeUnit tu;
-    protected TimeoutException te = null;
+    private long time = -1;
+    private TimeUnit tu;
+    private TimeoutException te = null;
 
     public DefaultFuture(DefaultSocket socket) {
         this.socket = socket;
+    }
+
+    public long time(){
+        return time;
+    }
+
+    public TimeUnit timeUnit(){
+        return tu;
+    }
+
+    public DefaultFuture timeoutException(TimeoutException te) {
+        this.te = te;
+        return this;
     }
 
     /**

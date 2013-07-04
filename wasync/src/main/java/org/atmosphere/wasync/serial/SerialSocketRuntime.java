@@ -23,6 +23,7 @@ import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.impl.DefaultFuture;
 import org.atmosphere.wasync.impl.SocketRuntime;
 import org.atmosphere.wasync.transport.WebSocketTransport;
@@ -48,18 +49,15 @@ public class SerialSocketRuntime extends SocketRuntime {
     private final static Logger logger = LoggerFactory.getLogger(SerialSocketRuntime.class);
     private final SerializedSocket serializedSocket;
 
-    public SerialSocketRuntime(WebSocketTransport webSocket, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket,  List<FunctionWrapper> functions) {
-        super(webSocket, options, rootFuture, functions);
+    public SerialSocketRuntime(Transport transport, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket,  List<FunctionWrapper> functions) {
+        super(transport, options, rootFuture, functions);
         this.serializedSocket = serializedSocket;
     }
 
-    public SerialSocketRuntime(Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket, List<FunctionWrapper> functions) {
-        this(null, options, rootFuture, serializedSocket, functions);
-    }
-
+    @Override
     public Future write(Request request, Object data) throws IOException {
 
-        if (webSocketTransport != null) {
+        if (WebSocketTransport.class.isAssignableFrom(transport.getClass())) {
             Object object = invokeEncoder(request.encoders(), data);
             webSocketWrite(request, object, data);
         } else {

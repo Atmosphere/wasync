@@ -78,7 +78,7 @@ public interface Transport {
     void future(ListenableFuture f);
 
     /**
-     * Set the {@link Future}, which will unlock the {@link Socket#fire} method once the connection has been fully established. \
+     * Set the {@link Future}, which will unlock the {@link Socket#fire} method once the connection has been fully established.
      * @param {@link Future}
      */
     void connectedFuture(Future f);

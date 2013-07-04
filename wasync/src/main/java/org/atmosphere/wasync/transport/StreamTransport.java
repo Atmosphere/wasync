@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -71,11 +72,12 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected final Request request;
     protected final AtomicBoolean closed = new AtomicBoolean(false);
     protected final boolean isBinary;
-    protected STATUS status =  Socket.STATUS.INIT;
+    protected STATUS status = Socket.STATUS.INIT;
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
     private ListenableFuture underlyingFuture;
     private boolean protocolReceived = false;
     private Future connectdFuture;
+    private final boolean protocolEnabled;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -94,6 +96,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         this.requestBuilder = requestBuilder;
         this.request = request;
 
+        protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
         isBinary = request.headers().get("Content-Type") != null ?
                 request.headers().get("Content-Type").contains("application/octet-stream") : false;
     }
@@ -126,24 +129,26 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
-			if (payload[0] == 0x20) {
-				if (!protocolReceived) {
-					String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-		            if (!m.isEmpty()) {
-		            	// need to forward this chunk, else the AtmosphereRequest decoder for the initial handshake is not successful.
-		            	TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
-		            	protocolReceived = true;
-		            }
-				}
-			} else {
-				TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
-			}
+            if (protocolEnabled && !protocolReceived) {
+                String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+                if (!m.isEmpty()) {
+                    // need to forward this chunk, else the AtmosphereRequest decoder for the initial handshake is not successful.
+                    TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+                    protocolReceived = true;
+                }
+                return AsyncHandler.STATE.CONTINUE;
+            } else if (whiteSpace(payload)) {
+                logger.trace("Padding data received");
+            } else {
+                TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+            }
         } else {
             String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
             if (!m.isEmpty()) {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
         }
+        if (connectdFuture != null) connectdFuture.done();
         return AsyncHandler.STATE.CONTINUE;
     }
 
@@ -163,8 +168,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        if (connectdFuture != null) connectdFuture.done();
-
         TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
 
         errorHandled.set(false);
@@ -277,6 +280,13 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void connectedFuture(Future f) {
         this.connectdFuture = f;
+    }
+
+    private final static boolean whiteSpace(byte[] b) {
+        int i = b.length;
+        while (i-- > 0 && (b[i] == 10 || b[i] == 32)) {
+        }
+        return i == -1;
     }
 }
 

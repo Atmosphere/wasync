@@ -481,8 +481,6 @@ public abstract class BaseTest {
                 .host("127.0.0.1")
                 .resource("/suspend", new AtmosphereHandler() {
 
-                    private final AtomicBoolean b = new AtomicBoolean(false);
-
                     @Override
                     public void onRequest(AtmosphereResource r) throws IOException {
                     }
@@ -502,6 +500,8 @@ public abstract class BaseTest {
         server.start();
 
         final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch ioLatch = new CountDownLatch(1);
+
         final AtomicInteger status = new AtomicInteger();
         final AtomicReference response2 = new AtomicReference();
 
@@ -525,7 +525,7 @@ public abstract class BaseTest {
             @Override
             public void on(IOException t) {
                 response2.set(t);
-                latch.countDown();
+                ioLatch.countDown();
             }
 
         }).open(request.build());
@@ -533,6 +533,9 @@ public abstract class BaseTest {
         latch.await(20, TimeUnit.SECONDS);
 
         socket.fire("Yo");
+
+        ioLatch.await(20, TimeUnit.SECONDS);
+
         assertEquals(response2.get().getClass(), IOException.class);
 
     }
@@ -1276,9 +1279,6 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        // Jenkins => Make sure the server is fully started before running the test
-        Thread.sleep(2000);
-
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
         SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
@@ -1420,6 +1420,7 @@ public abstract class BaseTest {
 
     @Test
     public void shutdownServerTest() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -1439,6 +1440,8 @@ public abstract class BaseTest {
                     @Override
                     public void onStateChange(AtmosphereResourceEvent r) throws IOException {
                         if (!r.isResuming() || !r.isCancelled()) {
+                            latch.countDown();
+
                             r.getResource().getResponse().getWriter().print(r.getMessage());
                             r.getResource().resume();
                         }
@@ -1454,7 +1457,6 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference response = new AtomicReference();
         Client client = ClientFactory.getDefault().newClient();
 
@@ -1470,7 +1472,6 @@ public abstract class BaseTest {
                 //Can I receive close message when server is stopped?
                 logger.info("Function invoked {}", t);
                 response.set(t);
-                latch.countDown();
             }
         }).on(new Function<Throwable>() {
 
@@ -1485,8 +1486,6 @@ public abstract class BaseTest {
         latch.await(20, TimeUnit.SECONDS);
 
         server.stop();
-
-        latch.await(20, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(socket.status(), Socket.STATUS.CLOSE);//or ERROR?

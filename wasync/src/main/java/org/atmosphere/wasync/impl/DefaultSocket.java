@@ -142,7 +142,9 @@ public class DefaultSocket implements Socket {
         } else {
             throw new IOException("No suitable transport supported");
         }
-        socketRuntime = createRuntime();
+        DefaultFuture f = new DefaultFuture(this);
+        socketRuntime = createRuntime(f, options, functions);
+        transportInUse.connectedFuture(f);
 
         addFunction(timeout, tu);
 
@@ -153,7 +155,6 @@ public class DefaultSocket implements Socket {
                         (AsyncHandler<WebSocket>) transportInUse);
 
                 fw.get(timeout, tu);
-                socketRuntime = createRuntime(options, functions);
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 
@@ -182,14 +183,17 @@ public class DefaultSocket implements Socket {
                 if (options.waitBeforeUnlocking() > 0) {
                     logger.info("Waiting {}, allowing the http connection to get handled by the server.", options.waitBeforeUnlocking());
                 }
-                socketRuntime.future().get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
-                socketRuntime.future().done();
+                if (request.queryString().containsKey("X-atmo-protocol")) {
+                    f.get();
+                } else {
+                    f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
+                }
             } catch (Throwable t) {
                 // Swallow  LOG ME
                 logger.trace("", t);
+            } finally {
+                f.done();
             }
-
-            socketRuntime = createRuntime();
         }
         return this;
     }
@@ -336,11 +340,7 @@ public class DefaultSocket implements Socket {
         }
     }
 
-    public SocketRuntime createRuntime() {
-        return new SocketRuntime(options, new DefaultFuture(this), functions);
-    }
-
-    public SocketRuntime createRuntime(Options options, List<FunctionWrapper> functions) {
-        return new SocketRuntime(WebSocketTransport.class.cast(transportInUse), options, socketRuntime.future(), functions);
+    public SocketRuntime createRuntime(DefaultFuture future, Options options, List<FunctionWrapper> functions) {
+        return new SocketRuntime(transportInUse, options, future, functions);
     }
 }
