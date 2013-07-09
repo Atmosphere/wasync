@@ -101,7 +101,7 @@ or if you want to serialize the fire() method call so events are asynchronously 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
-                .transport(transport());
+                .transport(Request.TRANSPORT.WEBSOCKET);
 
         Socket socket = client.create(b.build());
 ```
