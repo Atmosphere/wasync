@@ -75,7 +75,7 @@ Life cycle of the underlying Socket can easily be implemented as well
                @Override
                public void on(String t) {
                }
-           }).open(clientRequest.build());
+           }).open(request.build());
 ```
 
 You can also use the specialized clients. For example, to transparently enable Atmosphere's Protocol
