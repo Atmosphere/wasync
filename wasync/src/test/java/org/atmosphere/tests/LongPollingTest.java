@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -145,7 +146,13 @@ public class LongPollingTest extends StreamingTest {
                         } else {
                             String echo = resource.getRequest().getReader().readLine();
                             logger.info("echoing : {}", echo);
-                            resource.getBroadcaster().broadcast(echo);
+                            try {
+                                resource.getBroadcaster().broadcast(echo).get();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
@@ -159,6 +166,12 @@ public class LongPollingTest extends StreamingTest {
                             }
                         } else {
                             event.getResource().getResponse().write((String) event.getMessage());
+                        }
+                        // Netty may still write the bytes, so give a chance to those bytes to get written
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                         event.getResource().resume();
                     }
@@ -200,9 +213,7 @@ public class LongPollingTest extends StreamingTest {
         }).open(request.build());
 
         socket.fire("ECHO1");
-        Thread.sleep(1000);
         socket.fire("ECHO2");
-        Thread.sleep(2000);
         socket.fire("ECHO3");
         socket.fire("ECHO4");
         socket.fire("ECHO5");

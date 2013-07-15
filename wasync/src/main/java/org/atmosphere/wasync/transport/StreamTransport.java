@@ -137,6 +137,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
         }
+        if (connectdFuture != null) connectdFuture.done();
+
         return AsyncHandler.STATE.CONTINUE;
     }
 
@@ -147,7 +149,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
         TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headers.getHeaders(), HEADERS.name(), resolver);
 
-        if (connectdFuture != null) connectdFuture.done();
         // TODO: Parse charset
         return AsyncHandler.STATE.CONTINUE;
     }
