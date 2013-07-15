@@ -17,12 +17,11 @@ package org.atmosphere.wasync.decoder;
 
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.ReplayDecoder;
-import org.atmosphere.wasync.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,11 +35,11 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
     private final List<String> empty = Collections.<String>emptyList();
 
     public TrackMessageSizeDecoder() {
-        this.delimiter = "|";
+        this.delimiter = "\\|";
     }
 
     public TrackMessageSizeDecoder(boolean protocolEnabled) {
-        this.delimiter = "|";
+        this.delimiter = "\\|";
         skipFirstMessage.set(protocolEnabled);
     }
 
@@ -54,50 +53,38 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
         if (type.equals(Event.MESSAGE)) {
 
             if (skipFirstMessage.getAndSet(false)) return empty;
+            LinkedList<String> messages = new LinkedList<String>();
 
-            ArrayList<String> messages = new ArrayList<String>();
+            message = messagesBuffer.append(message).toString().replace(delimiter, "__");
+            messagesBuffer.setLength(0);
 
-            int messageLength = -1;
-            int messageStartIndex = 0;
-            int delimiterIndex = -1;
-            String singleMessage = null;
-            while ((delimiterIndex = message.indexOf(delimiter, messageStartIndex)) >= 0) {
-                if (delimiterIndex == messageStartIndex) {
-                    messageStartIndex = delimiterIndex + 1;
-                    continue;
-                }
-                try {
-                    messageLength = Integer.valueOf(message.substring(messageStartIndex, delimiterIndex));
-                    if (messageLength <= 0) {
-                        throw new Exception();
+            if (message.indexOf("__") != -1) {
+                String[] tokens = message.split("__");
+
+                // Skip first.
+                int pos = 1;
+                int length = Integer.valueOf(tokens[0]);
+                String m;
+                while (pos < tokens.length) {
+                    m = tokens[pos];
+                    if (m.length() >= length) {
+                        messages.addLast(m.substring(0, length));
+                        String t = m.substring(length);
+                        if (!t.isEmpty()) {
+                            length = Integer.valueOf(t);
+                        }
+                    } else {
+                        if (pos != 1) {
+                            messagesBuffer.append(length).append(delimiter).append(m);
+                        } else {
+                            messagesBuffer.append(message);
+                        }
+                        break;
                     }
-                } catch (Exception e) {
-                    logger.error("", e);
-                    //discard whole message
-                    messagesBuffer.setLength(0);
-                    throw new Error("Message format is not as expected for tracking message size " +  message); //this error causes invocation of onThrowable of AsyncHandler if not caught in between
-                }
-
-                messageStartIndex = delimiterIndex < (message.length() - 1) ? delimiterIndex + 1 : message.length();
-                int lenghtOfRemainingMessage = (message.length() - messageStartIndex);
-                singleMessage = message.substring(messageStartIndex, messageLength <= lenghtOfRemainingMessage
-                        ? messageStartIndex + messageLength : messageStartIndex + lenghtOfRemainingMessage);
-
-                delimiterIndex = message.indexOf(delimiter, messageStartIndex + messageLength);
-                if (delimiterIndex >= 0) {
-                    messageStartIndex = delimiterIndex < (message.length() - 1) ? delimiterIndex + 1 : (message.length() - 1);
-                }
-
-                if (singleMessage.length() == messageLength) {
-                    messages.add(singleMessage);
-                    if (delimiterIndex < 0) {
-                        messagesBuffer.setLength(0);
-                    }
-                } else {
-                    messagesBuffer.setLength(0);
-                    messagesBuffer.append(messageLength).append(delimiter).append(singleMessage);
+                    pos++;
                 }
             }
+
             return messages;
         } else {
             return empty;
