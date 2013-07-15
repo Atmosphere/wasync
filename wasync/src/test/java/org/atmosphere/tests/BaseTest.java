@@ -1137,8 +1137,6 @@ public abstract class BaseTest {
                 .host("127.0.0.1")
                 .resource("/", new AtmosphereHandler() {
 
-                    private final AtomicBoolean b = new AtomicBoolean(false);
-
                     @Override
                     public void onRequest(final AtmosphereResource r) throws IOException {
                         if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
@@ -1693,20 +1691,25 @@ public abstract class BaseTest {
                 .resource("/", new AtmosphereHandler() {
 
                     private final AtomicBoolean b = new AtomicBoolean(false);
+                    private final AtomicReference<AtmosphereResource> resource = new AtomicReference<AtmosphereResource>();
 
                     @Override
-                    public void onRequest(AtmosphereResource r) throws IOException {
+                    public void onRequest(final AtmosphereResource r) throws IOException {
                         if (r.getRequest().getMethod().equals("GET")) {
                             r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
                                 public void onSuspend(AtmosphereResourceEvent event) {
                                     latch.countDown();
+                                    resource.set(r);
+                                    for (int i=0; i < 8192; i++) {
+                                        resource.get().write(" ");
+                                    }
                                 }
                             }).suspend();
                         } else {
                             if (!b.getAndSet(true)) {
-                                r.write(r.getRequest().getReader().readLine()).close();
+                                resource.get().write(r.getRequest().getReader().readLine()).close();
                             } else {
-                                r.write(r.getRequest().getReader().readLine());
+                                resource.get().write(r.getRequest().getReader().readLine());
                             }
                         }
                     }
@@ -1780,8 +1783,8 @@ public abstract class BaseTest {
         }).open(clientRequest.build());
 
         socket.fire("PING");
-        latch.await(20, TimeUnit.SECONDS);
-        flatch.await(20, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
+        flatch.await(10, TimeUnit.SECONDS);
 
         server.stop();
 
