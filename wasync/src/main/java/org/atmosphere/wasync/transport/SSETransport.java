@@ -24,7 +24,6 @@ import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.atmosphere.wasync.Event.MESSAGE;
 
@@ -59,10 +58,7 @@ public class SSETransport extends StreamTransport {
             throw new TransportNotSupported(500, "Invalid Content-Type" + ct);
         }
 
-        TransportsUtil.invokeFunction(decoders, functions, Map.class, headers.getHeaders(), MESSAGE.name(), resolver);
-
-        // TODO: Parse charset
-        return STATE.CONTINUE;
+        return super.onHeadersReceived(headers);
     }
 
     /**

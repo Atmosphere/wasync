@@ -207,10 +207,11 @@ public class LongPollingTest extends StreamingTest {
         socket.fire("ECHO4");
         socket.fire("ECHO5");
 
-        latch.await(60, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
 
         assertEquals(response.get().size(), 5);
         socket.close();
+        server.stop();
 
     }
 }

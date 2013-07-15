@@ -22,7 +22,6 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.transport.TransportNotSupported;
-import org.atmosphere.wasync.transport.WebSocketTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +94,13 @@ public class AtmosphereSocket extends DefaultSocket {
                 }
             }
         }));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public SocketRuntime createRuntime(DefaultFuture future, Options options, List<FunctionWrapper> functions) {
+        return new AtmosphereSocketRuntime(transportInUse, options, future, functions);
     }
 
     /**

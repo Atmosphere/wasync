@@ -1537,8 +1537,7 @@ public abstract class BaseTest {
                         // Fool the decoder mapping
                         return new StringReader(s);
                     }
-                }).transport(Request.TRANSPORT.WEBSOCKET)
-                .transport(Request.TRANSPORT.LONG_POLLING);
+                }).transport(transport());
 
         Socket socket = client.create();
         socket.on(Event.CLOSE, new Function<String>() {
@@ -1587,18 +1586,24 @@ public abstract class BaseTest {
                 .host("127.0.0.1")
                 .resource("/", new AtmosphereHandler() {
 
-                    private final AtomicBoolean b = new AtomicBoolean(false);
+                    private final AtomicReference<AtmosphereResource> resource = new AtomicReference<AtmosphereResource>();
 
                     @Override
-                    public void onRequest(AtmosphereResource r) throws IOException {
+                    public void onRequest(final AtmosphereResource r) throws IOException {
                         if (r.getRequest().getMethod().equals("GET")) {
                             r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
                                 public void onSuspend(AtmosphereResourceEvent event) {
                                     latch.countDown();
+                                    resource.set(r);
+                                    for (int i=0; i < 8192; i++) {
+                                        resource.get().write(" ");
+                                    }
                                 }
                             }).suspend();
                         } else {
-                            r.write(r.getRequest().getReader().readLine()).close();
+                            String line =  r.getRequest().getReader().readLine();
+
+                            resource.get().write(line).close();
                         }
                     }
 
@@ -1624,8 +1629,7 @@ public abstract class BaseTest {
                         // Fool the decoder mapping
                         return s;
                     }
-                }).transport(Request.TRANSPORT.WEBSOCKET)
-                .transport(Request.TRANSPORT.LONG_POLLING);
+                }).transport(transport());
 
         Socket socket = client.create();
         socket.on("message", new Function<String>() {
@@ -1736,8 +1740,7 @@ public abstract class BaseTest {
                         // Fool the decoder mapping
                         return s;
                     }
-                }).transport(Request.TRANSPORT.WEBSOCKET)
-                .transport(Request.TRANSPORT.LONG_POLLING);
+                }).transport(transport());
 
         final Socket socket = client.create();
         socket.on("message", new Function<String>() {

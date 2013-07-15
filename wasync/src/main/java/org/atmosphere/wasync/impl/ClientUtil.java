@@ -20,9 +20,6 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * Util class for building {@link AsyncHttpClient}
  *

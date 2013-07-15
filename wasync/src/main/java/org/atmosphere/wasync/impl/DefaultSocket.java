@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -178,10 +177,8 @@ public class DefaultSocket implements Socket {
             transportInUse.future(options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse));
 
             try {
-                // TODO: Give a chance to connect and then unlock. With Atmosphere we will received junk at the
-                // beginning for streaming and sse, but nothing for long-polling
                 if (options.waitBeforeUnlocking() > 0) {
-                    logger.info("Waiting {}, allowing the http connection to get handled by the server.", options.waitBeforeUnlocking());
+                    logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay, make sure some bytes get written when the connection is suspendeded on the server", options.waitBeforeUnlocking());
                 }
                 if (request.queryString().containsKey("X-atmo-protocol")) {
                     f.get();

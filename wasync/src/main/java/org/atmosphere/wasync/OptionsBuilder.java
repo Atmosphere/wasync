@@ -28,7 +28,7 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
     private Transport transport;
     private boolean reconnect = true;
     private int reconnectInSecond = 0;
-    private long waitBeforeUnlocking = 2000;
+    private long waitBeforeUnlocking = 5000;
     private AsyncHttpClient client;
     private boolean runtimeShared = false;
     private int requestTimeout = -1;
