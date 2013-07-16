@@ -98,4 +98,19 @@ public class TrackMessageSizeDecoderTest {
         result.addAll(decoder.decode(Event.MESSAGE, "\"message\":\"ab\",\"time\":1373900488831}"));
         assertEquals(result, expected);
     }
+
+    @Test
+    public void testCustomDelimiter() {
+        decoder = new TrackMessageSizeDecoder("^", false);
+        String messages = "37^{\"message\":\"ab\",\"time\":1373900488807}37^{\"message\":\"ab\",\"time\":1373900488808}37^{\"message\":\"ab\",\"time\":1373900488810}";
+        List<String> expected = new ArrayList<String>() {
+            {
+                add("{\"message\":\"ab\",\"time\":1373900488807}");
+                add("{\"message\":\"ab\",\"time\":1373900488808}");
+                add("{\"message\":\"ab\",\"time\":1373900488810}");
+            }
+        };
+        List<String> result = decoder.decode(Event.MESSAGE, messages);
+        assertEquals(result, expected);
+    }
 }
