@@ -198,7 +198,14 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
             _addDecoder(0, bDecoder);
 
             if (trackMessageLength) {
-                _addDecoder(0, new TrackMessageSizeDecoder(enableProtocol));
+                TrackMessageSizeDecoder trackMessageSizeDecoder;
+                if (trackMessageLengthDelimiter.length() > 0) {
+                    trackMessageSizeDecoder = new TrackMessageSizeDecoder(trackMessageLengthDelimiter, enableProtocol);
+                }
+                else {
+                    trackMessageSizeDecoder = new TrackMessageSizeDecoder(enableProtocol);
+                }
+                _addDecoder(0, trackMessageSizeDecoder);
             }
 
             return new AtmosphereRequest(this);
