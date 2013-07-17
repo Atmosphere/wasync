@@ -35,11 +35,11 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
     private final List<String> empty = Collections.<String>emptyList();
 
     public TrackMessageSizeDecoder() {
-        this.delimiter = "\\|";
+        this.delimiter = "|";
     }
 
     public TrackMessageSizeDecoder(boolean protocolEnabled) {
-        this.delimiter = "\\|";
+        this.delimiter = "|";
         skipFirstMessage.set(protocolEnabled);
     }
 
