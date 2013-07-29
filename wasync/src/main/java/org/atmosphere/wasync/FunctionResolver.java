@@ -77,7 +77,7 @@ public interface FunctionResolver {
          */
         @Override
         public boolean resolve(String message, Object functionName, FunctionWrapper fn) {
-            return (fn.functionName().isEmpty() && !find(message)) || functionName.toString().equalsIgnoreCase(fn.functionName());
+            return (fn.functionName().length() == 0 && !find(message)) || functionName.toString().equalsIgnoreCase(fn.functionName());
         }
 
         /**
