@@ -67,10 +67,10 @@ public class SSETransport extends StreamTransport {
     @Override
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-        if (!m.isEmpty()) {
+        if (m.length() > 0) {
             String[] data = m.split("data:");
             for (String d: data) {
-                if (!d.isEmpty())
+                if (d.length() > 0)
                     TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
             }
         }

@@ -70,7 +70,7 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
                     if (m.length() >= length) {
                         messages.addLast(m.substring(0, length));
                         String t = m.substring(length);
-                        if (!t.isEmpty()) {
+                        if (t.length() > 0) {
                             length = Integer.valueOf(t);
                         }
                     } else {

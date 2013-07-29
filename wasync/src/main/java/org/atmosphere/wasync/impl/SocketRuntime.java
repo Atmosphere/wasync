@@ -87,7 +87,7 @@ public class SocketRuntime {
             try {
                 Response r = httpWrite(request, object, data).get(rootFuture.time(), rootFuture.timeUnit());
                 String m = r.getResponseBody();
-                if (!m.isEmpty()) {
+                if (m.length() > 0) {
                     TransportsUtil.invokeFunction(request.decoders(),functions, String.class, m, MESSAGE.name(), request.functionResolver());
                 }
             } catch (TimeoutException t) {

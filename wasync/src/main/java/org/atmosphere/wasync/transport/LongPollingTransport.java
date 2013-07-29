@@ -53,12 +53,12 @@ public class LongPollingTransport extends StreamTransport {
         } else {
             String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
             if (protocolEnabled && !protocolReceived) {
-                if (!m.isEmpty()) {
+                if (m.length() > 0) {
                     TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
                     protocolReceived = true;
                 }
                 return AsyncHandler.STATE.CONTINUE;
-            } else if (!m.isEmpty()) {
+            } else if (m.length() > 0) {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
         }

@@ -133,7 +133,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             }
         } else {
             String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-            if (!m.isEmpty()) {
+            if (m.length() > 0) {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
         }
