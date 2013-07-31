@@ -1546,6 +1546,7 @@ public abstract class BaseTest {
         }).on(Event.REOPENED, new Function<String>() {
             @Override
             public void on(String t) {
+                if (latch.getCount() == 0) return;
                 b.get().append(t);
                 latch.countDown();
             }
