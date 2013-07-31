@@ -115,7 +115,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         if (webSocket != null && webSocket.isOpen())
             webSocket.close();
 
-        if (underlyingFuture != null) underlyingFuture.done(null);
+        if (underlyingFuture != null) underlyingFuture.done();
     }
 
     /**
