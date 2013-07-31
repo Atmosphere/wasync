@@ -10,7 +10,7 @@ You can [download the jar](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22was
           <dependency>
               <groupId>org.atmosphere</groupId>
               <artifactId>wasync</artifactId>
-              <version>1.0.0.RC4</version>
+              <version>1.0.0.RC5</version>
           </dependency>
 
 ```
