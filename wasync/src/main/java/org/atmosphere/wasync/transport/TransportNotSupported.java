@@ -40,4 +40,8 @@ public class TransportNotSupported extends Exception {
     public String toString(){
         return "Connection Error " + statusCode + " : " + reasonPhrase;
     }
+
+    public int getStatusCode(){
+        return statusCode;
+    }
 }
