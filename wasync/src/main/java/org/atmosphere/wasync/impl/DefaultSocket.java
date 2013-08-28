@@ -157,7 +157,7 @@ public class DefaultSocket implements Socket {
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 
-                logger.error("Unable to connect", t);
+                logger.error("Unable to open url {}", request.uri(), t);
 
                 if (TransportNotSupported.class.isAssignableFrom(e.getClass())) {
                     return this;
@@ -171,6 +171,8 @@ public class DefaultSocket implements Socket {
 
                 return new VoidSocket();
             } catch (Throwable t) {
+                logger.error("Unable to open url {}", request.uri(), t);
+
                 transportInUse.onThrowable(t);
                 return new VoidSocket();
             }
