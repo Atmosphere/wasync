@@ -157,6 +157,8 @@ public class DefaultSocket implements Socket {
             } catch (ExecutionException t) {
                 Throwable e = t.getCause();
 
+                logger.error("Unable to connect", t);
+
                 if (TransportNotSupported.class.isAssignableFrom(e.getClass())) {
                     return this;
                 }
