@@ -124,7 +124,13 @@ public class TransportsUtil {
                 boolean replay = ReplayDecoder.class.isAssignableFrom(d.getClass());
 
                 logger.trace("{} is trying to decode {}", d, instanceType);
-                Object decoded = d.decode(e, instanceType);
+                Object decoded = null;
+
+                try {
+                    decoded = d.decode(e, instanceType);
+                } catch (Exception ex) {
+                    logger.warn("Decoder exception", ex);
+                }
 
                 if (decoded != null && Decoder.Decoded.class.isAssignableFrom(decoded.getClass())) {
                     Decoder.Decoded<?> o = Decoder.Decoded.class.cast(decoded);
@@ -139,7 +145,7 @@ public class TransportsUtil {
                 }
 
                 // The decoded message is a list, so we re-inject.
-                if (replay && List.class.isAssignableFrom(decoded.getClass())) {
+                if (replay && decoded != null && List.class.isAssignableFrom(decoded.getClass())) {
                     List<Object> l = List.class.cast(decoded);
                     if (l.isEmpty()) {
                         continue;
