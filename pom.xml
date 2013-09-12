@@ -225,6 +225,14 @@
             </plugin>
         </plugins>
     </reporting>
+    <profile>
+        <id>buildhives</id>
+        <modules>
+            <module>wasync</module>
+            <module>samples/chat</module>
+            <module>samples/node.js</module>
+        </modules>
+    </profile>
     <repositories>
         <repository>
             <id>oss.sonatype.org</id>
