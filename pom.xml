@@ -187,7 +187,6 @@
     <modules>
         <module>wasync</module>
         <module>samples/chat</module>
-        <module>samples/android-chat</module>
         <module>samples/node.js</module>
     </modules>
     <reporting>
@@ -228,10 +227,11 @@
     </reporting>
     <profiles>
         <profile>
-            <id>buildhives</id>
+            <id>all</id>
             <modules>
                 <module>wasync</module>
                 <module>samples/chat</module>
+                <module>samples/android-chat</module>
                 <module>samples/node.js</module>
             </modules>
         </profile>
