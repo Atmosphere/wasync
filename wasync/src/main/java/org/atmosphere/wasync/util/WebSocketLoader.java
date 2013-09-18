@@ -22,6 +22,8 @@ import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -35,10 +37,12 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class WebSocketLoader {
 
+    private final static Logger logger = LoggerFactory.getLogger(WebSocketLoader.class);
+
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"500","1000","http://127.0.0.1:8080/chat"};
+            s = new String[]{"500","10000","http://127.0.0.1:8080/simple/test"};
         }
 
         final int clientNum = Integer.valueOf(s[0]);
@@ -65,7 +69,7 @@ public class WebSocketLoader {
         Socket[] sockets = new Socket[clientNum];
         for (int i = 0; i < clientCount; i++) {
             final AtomicLong start = new AtomicLong(0);
-            sockets[i] = client.create(client.newOptionsBuilder().runtime(c).build())
+            sockets[i] = client.create(client.newOptionsBuilder().runtime(c).reconnect(false).build())
                     .on(new Function<Integer>() {
                         @Override
                         public void on(Integer statusCode) {
@@ -82,6 +86,7 @@ public class WebSocketLoader {
                                 String[] m = s.split("\n\r");
                                 mCount += m.length;
                                 messages.countDown();
+                                System.out.println("Message left receive " + messages.getCount() + " message " + s);
                                 if (mCount == messageNum) {
                                    // System.out.println("All messages received " + mCount);
                                     total.addAndGet(System.currentTimeMillis() - start.get());
