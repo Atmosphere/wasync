@@ -142,6 +142,7 @@ public class LongPollingTest extends StreamingTest {
                     @Override
                     public void onRequest(AtmosphereResource resource) throws IOException {
                         if (resource.getRequest().getMethod().equals("GET")) {
+                            logger.info("Suspending : {}", resource.uuid());
                             resource.suspend(-1);
                         } else {
                             String echo = resource.getRequest().getReader().readLine();
@@ -158,9 +159,10 @@ public class LongPollingTest extends StreamingTest {
 
                     @Override
                     public void onStateChange(AtmosphereResourceEvent event) throws IOException {
+                        logger.info("cached : {}", event.getMessage());
+
                         if (List.class.isAssignableFrom(event.getMessage().getClass())) {
                             List<String> cached = (List<String>) List.class.cast(event.getMessage());
-                            logger.info("cached : {}", cached);
                             for (String m : cached) {
                                 event.getResource().getResponse().write(m);
                             }
@@ -198,7 +200,16 @@ public class LongPollingTest extends StreamingTest {
 
         final Socket socket = client.create(client.newOptionsBuilder().build());
 
-        socket.on("message", new Function<String>() {
+        // We must make sure we received the status code before starting.
+        // First will be the handshake, second that we are suspended.
+        final CountDownLatch suspendedLatch = new CountDownLatch(2);
+
+        socket.on(new Function<Integer>() {
+            @Override
+            public void on(Integer statusCode) {
+                suspendedLatch.countDown();
+            }
+        }).on("message", new Function<String>() {
             @Override
             public void on(String message) {
                 logger.info("received : {}", message);
@@ -211,6 +222,8 @@ public class LongPollingTest extends StreamingTest {
                 t.printStackTrace();
             }
         }).open(request.build());
+
+        suspendedLatch.await(5, TimeUnit.SECONDS);
 
         socket.fire("ECHO1");
         socket.fire("ECHO2");

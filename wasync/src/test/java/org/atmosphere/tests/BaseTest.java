@@ -18,6 +18,7 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.atmosphere.wasync.serial.DefaultSerializedFireStage;
 import org.atmosphere.wasync.serial.SerializedClient;
 import org.atmosphere.wasync.serial.SerializedOptionsBuilder;
@@ -1595,7 +1596,12 @@ public abstract class BaseTest {
                                     latch.countDown();
                                     resource.set(r);
                                     for (int i=0; i < 8192; i++) {
-                                        resource.get().write(" ");
+                                        try {
+                                            resource.get().getResponse().getOutputStream().write(" ".getBytes());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                            break;
+                                        }
                                     }
                                 }
                             }).suspend();
@@ -1906,6 +1912,36 @@ public abstract class BaseTest {
         assertEquals(close.get().message, Event.CLOSE.name());
 
     }
+
+    @Test
+    public void testTimeoutAtmosphereClient() throws IOException, InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl)
+                .trackMessageLength(true)
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on(new Function<ConnectException>() {
+
+            @Override
+            public void on(ConnectException t) {
+                latch.countDown();
+            }
+
+        }).on(Event.CLOSE.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Connection closed");
+            }
+        }).open(request.build());
+
+        assertTrue(latch.await(10, TimeUnit.SECONDS));
+
+    }
+
 
     public final static class EventPOJO {
 

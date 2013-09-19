@@ -185,7 +185,7 @@ public class DefaultSocket implements Socket {
                     logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay, make sure some bytes get written when the connection is suspendeded on the server", options.waitBeforeUnlocking());
                 }
                 if (request.queryString().containsKey("X-atmo-protocol")) {
-                    f.get();
+                    f.get(timeout, tu);
                 } else {
                     f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
                 }
