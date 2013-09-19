@@ -107,7 +107,14 @@ public class LongPollingTest extends StreamingTest {
 
         final Socket socket = client.create(client.newOptionsBuilder().build());
 
-        socket.on("message", new Function<byte[]>() {
+        final CountDownLatch suspendedLatch = new CountDownLatch(1);
+
+        socket.on(new Function<Integer>() {
+            @Override
+            public void on(Integer statusCode) {
+                suspendedLatch.countDown();
+            }
+        }).on("message", new Function<byte[]>() {
             @Override
             public void on(byte[] message) {
                 logger.info("===Received : {}", message);
@@ -123,6 +130,8 @@ public class LongPollingTest extends StreamingTest {
                 t.printStackTrace();
             }
         }).open(request.build());
+
+        suspendedLatch.await(5, TimeUnit.SECONDS);
 
         socket.fire(binaryEcho).get();
 
@@ -200,8 +209,6 @@ public class LongPollingTest extends StreamingTest {
 
         final Socket socket = client.create(client.newOptionsBuilder().build());
 
-        // We must make sure we received the status code before starting.
-        // First will be the handshake, second that we are suspended.
         final CountDownLatch suspendedLatch = new CountDownLatch(1);
 
         socket.on(new Function<Integer>() {
