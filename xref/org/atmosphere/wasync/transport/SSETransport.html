@@ -77,10 +77,10 @@
 <a class="jxr_linenumber" name="67" href="#67">67</a>      @Override
 <a class="jxr_linenumber" name="68" href="#68">68</a>      <strong class="jxr_keyword">public</strong> STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) <strong class="jxr_keyword">throws</strong> Exception {
 <a class="jxr_linenumber" name="69" href="#69">69</a>          String m = <strong class="jxr_keyword">new</strong> String(bodyPart.getBodyPartBytes(), charSet).trim();
-<a class="jxr_linenumber" name="70" href="#70">70</a>          <strong class="jxr_keyword">if</strong> (!m.isEmpty()) {
+<a class="jxr_linenumber" name="70" href="#70">70</a>          <strong class="jxr_keyword">if</strong> (m.length() &gt; 0) {
 <a class="jxr_linenumber" name="71" href="#71">71</a>              String[] data = m.split(<span class="jxr_string">"data:"</span>);
 <a class="jxr_linenumber" name="72" href="#72">72</a>              <strong class="jxr_keyword">for</strong> (String d: data) {
-<a class="jxr_linenumber" name="73" href="#73">73</a>                  <strong class="jxr_keyword">if</strong> (!d.isEmpty())
+<a class="jxr_linenumber" name="73" href="#73">73</a>                  <strong class="jxr_keyword">if</strong> (d.length() &gt; 0)
 <a class="jxr_linenumber" name="74" href="#74">74</a>                      TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
 <a class="jxr_linenumber" name="75" href="#75">75</a>              }
 <a class="jxr_linenumber" name="76" href="#76">76</a>          }

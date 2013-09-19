@@ -97,7 +97,7 @@
 <a class="jxr_linenumber" name="87" href="#87">87</a>              <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="88" href="#88">88</a>                  Response r = httpWrite(request, object, data).get(rootFuture.time(), rootFuture.timeUnit());
 <a class="jxr_linenumber" name="89" href="#89">89</a>                  String m = r.getResponseBody();
-<a class="jxr_linenumber" name="90" href="#90">90</a>                  <strong class="jxr_keyword">if</strong> (!m.isEmpty()) {
+<a class="jxr_linenumber" name="90" href="#90">90</a>                  <strong class="jxr_keyword">if</strong> (m.length() &gt; 0) {
 <a class="jxr_linenumber" name="91" href="#91">91</a>                      TransportsUtil.invokeFunction(request.decoders(),functions, String.<strong class="jxr_keyword">class</strong>, m, MESSAGE.name(), request.functionResolver());
 <a class="jxr_linenumber" name="92" href="#92">92</a>                  }
 <a class="jxr_linenumber" name="93" href="#93">93</a>              } <strong class="jxr_keyword">catch</strong> (TimeoutException t) {

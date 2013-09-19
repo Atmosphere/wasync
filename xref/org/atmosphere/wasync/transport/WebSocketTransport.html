@@ -125,7 +125,7 @@
 <a class="jxr_linenumber" name="115" href="#115">115</a>         <strong class="jxr_keyword">if</strong> (webSocket != <strong class="jxr_keyword">null</strong> &amp;&amp; webSocket.isOpen())
 <a class="jxr_linenumber" name="116" href="#116">116</a>             webSocket.close();
 <a class="jxr_linenumber" name="117" href="#117">117</a> 
-<a class="jxr_linenumber" name="118" href="#118">118</a>         <strong class="jxr_keyword">if</strong> (underlyingFuture != <strong class="jxr_keyword">null</strong>) underlyingFuture.done(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="118" href="#118">118</a>         <strong class="jxr_keyword">if</strong> (underlyingFuture != <strong class="jxr_keyword">null</strong>) underlyingFuture.done();
 <a class="jxr_linenumber" name="119" href="#119">119</a>     }
 <a class="jxr_linenumber" name="120" href="#120">120</a> 
 <a class="jxr_linenumber" name="121" href="#121">121</a>     <em class="jxr_javadoccomment">/**</em>
@@ -249,8 +249,8 @@
 <a class="jxr_linenumber" name="239" href="#239">239</a>                 <strong class="jxr_keyword">if</strong> (status.equals(Socket.STATUS.CLOSE)) <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="240" href="#240">240</a> 
 <a class="jxr_linenumber" name="241" href="#241">241</a>                 closed.set(false);
-<a class="jxr_linenumber" name="242" href="#242">242</a> 
-<a class="jxr_linenumber" name="243" href="#243">243</a>                 <a href="../../../../org/atmosphere/wasync/Event.html">Event</a> newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+<a class="jxr_linenumber" name="242" href="#242">242</a>                 <a href="../../../../org/atmosphere/wasync/Event.html">Event</a> newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+<a class="jxr_linenumber" name="243" href="#243">243</a>                 status = Socket.STATUS.OPEN;
 <a class="jxr_linenumber" name="244" href="#244">244</a>                 TransportsUtil.invokeFunction(newStatus,
 <a class="jxr_linenumber" name="245" href="#245">245</a>                         decoders, functions, String.<strong class="jxr_keyword">class</strong>, newStatus.name(), newStatus.name(), resolver);
 <a class="jxr_linenumber" name="246" href="#246">246</a>             }

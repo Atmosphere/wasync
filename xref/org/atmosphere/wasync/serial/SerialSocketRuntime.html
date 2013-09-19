@@ -93,7 +93,7 @@
 <a class="jxr_linenumber" name="83" href="#83">83</a>  
 <a class="jxr_linenumber" name="84" href="#84">84</a>                      @Override
 <a class="jxr_linenumber" name="85" href="#85">85</a>                      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Future.html">Future</a> done() {
-<a class="jxr_linenumber" name="86" href="#86">86</a>                          ListenableFuture.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(future).done(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="86" href="#86">86</a>                          ListenableFuture.<strong class="jxr_keyword">class</strong>.<strong class="jxr_keyword">cast</strong>(future).done();
 <a class="jxr_linenumber" name="87" href="#87">87</a>                          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
 <a class="jxr_linenumber" name="88" href="#88">88</a>                      }
 <a class="jxr_linenumber" name="89" href="#89">89</a>  
@@ -134,7 +134,7 @@
 <a class="jxr_linenumber" name="124" href="#124">124</a> 
 <a class="jxr_linenumber" name="125" href="#125">125</a>                     @Override
 <a class="jxr_linenumber" name="126" href="#126">126</a>                     <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Future.html">Future</a> done() {
-<a class="jxr_linenumber" name="127" href="#127">127</a>                         future.done(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="127" href="#127">127</a>                         future.done();
 <a class="jxr_linenumber" name="128" href="#128">128</a>                         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
 <a class="jxr_linenumber" name="129" href="#129">129</a>                     }
 <a class="jxr_linenumber" name="130" href="#130">130</a> 
