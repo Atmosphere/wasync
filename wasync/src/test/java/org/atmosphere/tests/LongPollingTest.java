@@ -202,7 +202,7 @@ public class LongPollingTest extends StreamingTest {
 
         // We must make sure we received the status code before starting.
         // First will be the handshake, second that we are suspended.
-        final CountDownLatch suspendedLatch = new CountDownLatch(2);
+        final CountDownLatch suspendedLatch = new CountDownLatch(1);
 
         socket.on(new Function<Integer>() {
             @Override

@@ -239,8 +239,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                 if (status.equals(Socket.STATUS.CLOSE)) return;
 
                 closed.set(false);
-                status = Socket.STATUS.OPEN;
                 Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+                status = Socket.STATUS.OPEN;
                 TransportsUtil.invokeFunction(newStatus,
                         decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
             }

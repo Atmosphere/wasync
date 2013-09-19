@@ -17,12 +17,15 @@ package org.atmosphere.wasync.transport;
 
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
+import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.atmosphere.wasync.Event.MESSAGE;
 
@@ -33,12 +36,47 @@ import static org.atmosphere.wasync.Event.MESSAGE;
  */
 public class LongPollingTransport extends StreamTransport {
 
+    /**
+     * When Atmosphere Protocol is used, we must not invoke any Function until the protocol has been processed.
+     */
+    private final AtomicBoolean handshakeOccured = new AtomicBoolean(true);
+
     public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(requestBuilder, options, request, functions);
+        List<String> protocol = request.queryString().get("X-atmo-protocol");
+        List<String> transport = request.queryString().get("X-Atmosphere-Transport");
+        if (protocol != null && transport != null
+                && protocol.get(0).equals("true")
+                && transport.get(0).equals("long-polling")) {
+            handshakeOccured.set(false);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+        if (handshakeOccured.get()) {
+            return super.onHeadersReceived(headers);
+        }
+        return STATE.CONTINUE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        if (handshakeOccured.get()) {
+            return super.onStatusReceived(responseStatus);
+        }
+        return STATE.CONTINUE;
     }
 
     @Override
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+        handshakeOccured.set(true);
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
             if (protocolEnabled && !protocolReceived) {
