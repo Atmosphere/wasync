@@ -163,6 +163,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         errorHandled.set(false);
         closed.set(false);
 
+        status = Socket.STATUS.OPEN;
         Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
         TransportsUtil.invokeFunction(newStatus,
                 decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);

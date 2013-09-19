@@ -1942,6 +1942,77 @@ public abstract class BaseTest {
 
     }
 
+    @Test
+    public void basicHelloTest() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.getResponse().getWriter().print("HELLO");
+                        // at this point, I think Socket should have a STATUS other than INIT when it reads the response in the socket.on(...)
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<String> response = new AtomicReference<String>();
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create();
+
+        socket.on(new Function<String>() {
+            @Override
+            public void on(String t) {
+// the status should have been updated to something else than INIT
+                response.set(t);
+                latch.countDown();
+            }
+        }).on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+        }).open(request.build());
+
+        latch.await();
+
+
+        logger.error("SOCKET STATUS [{}]", socket.status());
+
+        assertEquals(response.get(), "HELLO");
+        assertEquals(socket.status(), Socket.STATUS.OPEN);
+
+        socket.close();
+
+        assertEquals(socket.status(), Socket.STATUS.CLOSE);
+    }
 
     public final static class EventPOJO {
 
