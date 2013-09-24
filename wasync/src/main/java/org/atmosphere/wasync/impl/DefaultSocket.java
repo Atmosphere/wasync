@@ -184,13 +184,10 @@ public class DefaultSocket implements Socket {
                 if (options.waitBeforeUnlocking() > 0) {
                     logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay, make sure some bytes get written when the connection is suspendeded on the server", options.waitBeforeUnlocking());
                 }
-                if (request.queryString().containsKey("X-atmo-protocol")) {
-                    f.get(timeout, tu);
-                } else {
-                    f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
-                }
+
+                f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
-                // Swallow  LOG ME
+                // Swallow the exception as this could be expected.
                 logger.trace("", t);
             } finally {
                 f.done();
