@@ -2008,7 +2008,7 @@ public abstract class BaseTest {
 
         Socket socket = client.create();
 
-        socket.on(new Function<String>() {
+        socket.on("message" , new Function<String>() {
             @Override
             public void on(String t) {
 // the status should have been updated to something else than INIT
