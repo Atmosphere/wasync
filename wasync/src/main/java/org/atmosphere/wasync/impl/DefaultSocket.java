@@ -148,10 +148,10 @@ public class DefaultSocket implements Socket {
             if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
                 r.setUrl(request.uri().replace("http", "ws"));
                 try {
-                    java.util.concurrent.Future<WebSocket> fw = options.runtime().prepareRequest(r.build()).execute(
+                    options.runtime().prepareRequest(r.build()).execute(
                             (AsyncHandler<WebSocket>) transportInUse);
 
-                    fw.get(timeout, tu);
+                    f.get(timeout, tu);
                 } catch (ExecutionException t) {
                     Throwable e = t.getCause();
 

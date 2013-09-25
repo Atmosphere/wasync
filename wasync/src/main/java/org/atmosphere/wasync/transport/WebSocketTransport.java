@@ -72,6 +72,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final AtomicBoolean errorHandled = new AtomicBoolean();
     private ListenableFuture underlyingFuture;
     private Future connectOperationFuture;
+    protected final boolean protocolEnabled;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -89,6 +90,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.resolver = request.functionResolver();
         this.options = options;
         this.requestBuilder = requestBuilder;
+        protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
+
     }
 
     /**
@@ -170,8 +173,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
-
         TransportsUtil.invokeFunction(STATUS, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
@@ -206,12 +207,24 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         return webSocket;
     }
 
+    void unlockFuture() {
+        try {
+            connectOperationFuture.finishOrThrowException();
+        } catch (IOException e) {
+            logger.warn("", e);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void onSuccess(WebSocket webSocket) {
         this.webSocket = webSocket;
+
+        if (connectOperationFuture != null && !protocolEnabled) {
+            unlockFuture();
+        }
 
         ok.set(true);
         WebSocketTextListener l = new WebSocketTextListener() {
@@ -227,6 +240,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                             message,
                             MESSAGE.name(),
                             resolver);
+
+                    // Since the protocol is enabled, handshake occurred, now ready so go asynchronous
+                    if (connectOperationFuture != null && protocolEnabled) {
+                        unlockFuture();
+                    }
                 }
             }
 

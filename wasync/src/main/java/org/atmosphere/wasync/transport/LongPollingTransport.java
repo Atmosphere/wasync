@@ -40,6 +40,7 @@ public class LongPollingTransport extends StreamTransport {
      * When Atmosphere Protocol is used, we must not invoke any Function until the protocol has been processed.
      */
     private final AtomicBoolean handshakeOccured = new AtomicBoolean(true);
+    protected boolean protocolReceived = false;
 
     public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(requestBuilder, options, request, functions);
@@ -88,6 +89,7 @@ public class LongPollingTransport extends StreamTransport {
             } else if (!whiteSpace(payload)) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
             }
+            unlockFuture();
         } else {
             String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
             if (protocolEnabled && !protocolReceived) {
@@ -99,8 +101,8 @@ public class LongPollingTransport extends StreamTransport {
             } else if (m.length() > 0) {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
+            unlockFuture();
         }
-        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
         return AsyncHandler.STATE.CONTINUE;
     }
 

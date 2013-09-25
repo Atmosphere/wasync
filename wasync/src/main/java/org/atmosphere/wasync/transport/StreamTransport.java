@@ -74,7 +74,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected STATUS status = Socket.STATUS.INIT;
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
     protected ListenableFuture underlyingFuture;
-    protected boolean protocolReceived = false;
     protected Future connectOperationFuture;
     protected final boolean protocolEnabled;
 
@@ -132,16 +131,29 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             byte[] payload = bodyPart.getBodyPartBytes();
             if (!whiteSpace(payload)) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+                unlockFuture();
             }
         } else {
             String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
             if (m.length() > 0) {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
+                unlockFuture();
             }
         }
-        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
 
         return AsyncHandler.STATE.CONTINUE;
+    }
+
+    void unlockFuture() {
+        // Since the protocol is enabled, handshake occurred, now ready so go asynchronous
+        if (connectOperationFuture != null && protocolEnabled) {
+            triggerOpen();
+            try {
+                connectOperationFuture.finishOrThrowException();
+            } catch (IOException e) {
+                logger.warn("", e);
+            }
+        }
     }
 
     /**
@@ -160,19 +172,29 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        if (connectOperationFuture != null && !protocolEnabled) {
+            connectOperationFuture.finishOrThrowException();
+        }
+
         TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(), resolver);
 
         errorHandled.set(false);
         closed.set(false);
 
-        Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
-        status = Socket.STATUS.OPEN;
-        TransportsUtil.invokeFunction(newStatus,
-                decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
+        if (!protocolEnabled) {
+            triggerOpen();
+        }
 
         TransportsUtil.invokeFunction(MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
 
         return AsyncHandler.STATE.CONTINUE;
+    }
+
+    void triggerOpen() {
+        Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+        status = Socket.STATUS.OPEN;
+        TransportsUtil.invokeFunction(newStatus,
+                decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
     }
 
     /**
