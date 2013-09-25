@@ -38,6 +38,7 @@ public class DefaultFuture implements Future {
     private long time = -1;
     private TimeUnit tu;
     private TimeoutException te = null;
+    private IOException ioException;
 
     public DefaultFuture(DefaultSocket socket) {
         this.socket = socket;
@@ -83,14 +84,31 @@ public class DefaultFuture implements Future {
         return done.get();
     }
 
+    public void done(){
+        done.set(true);
+        latch.countDown();
+    }
+
     // TODO: Not public
     /**
      * {@inheritDoc}
      */
     @Override
-    public Future done(){
-        done.set(true);
-        latch.countDown();
+    public Future finishOrThrowException() throws IOException {
+        done();
+        if (ioException != null) {
+            throw ioException;
+        }
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Future ioException(IOException t) {
+        ioException = t;
+        done();
         return this;
     }
 

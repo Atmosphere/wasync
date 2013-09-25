@@ -130,11 +130,7 @@ public class DefaultSocket implements Socket {
         return f;
     }
 
-    protected Socket connect(final RequestBuilder r, final List<Transport> transports) throws IOException {
-        return connect(r, transports, -1, TimeUnit.MILLISECONDS);
-    }
-
-    protected Socket connect(final RequestBuilder r, final List<Transport> transports, final long timeout, final TimeUnit tu) throws IOException {
+    protected Socket connect(final RequestBuilder r, final List<Transport> transports,long timeout, final TimeUnit tu) throws IOException {
 
         if (transports.size() > 0) {
             transportInUse = transports.get(0);
@@ -144,54 +140,57 @@ public class DefaultSocket implements Socket {
         DefaultFuture f = new DefaultFuture(this);
         socketRuntime = createRuntime(f, options, functions);
         transportInUse.connectedFuture(f);
+        timeout = timeout == -1 ? Long.MAX_VALUE : timeout;
 
         addFunction(timeout, tu);
 
-        if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
-            r.setUrl(request.uri().replace("http", "ws"));
-            try {
-                java.util.concurrent.Future<WebSocket> fw = options.runtime().prepareRequest(r.build()).execute(
-                        (AsyncHandler<WebSocket>) transportInUse);
+        try {
+            if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
+                r.setUrl(request.uri().replace("http", "ws"));
+                try {
+                    java.util.concurrent.Future<WebSocket> fw = options.runtime().prepareRequest(r.build()).execute(
+                            (AsyncHandler<WebSocket>) transportInUse);
 
-                fw.get(timeout, tu);
-            } catch (ExecutionException t) {
-                Throwable e = t.getCause();
+                    fw.get(timeout, tu);
+                } catch (ExecutionException t) {
+                    Throwable e = t.getCause();
 
-                logger.error("Unable to open url {}", request.uri(), t);
+                    logger.error("Unable to open url {}", request.uri(), t);
 
-                if (TransportNotSupported.class.isAssignableFrom(e.getClass())) {
-                    return this;
+                    if (TransportNotSupported.class.isAssignableFrom(e.getClass())) {
+                        return this;
+                    }
+
+                    transportInUse.close();
+                    closeRuntime(true);
+                    if (!transportInUse.errorHandled() && TimeoutException.class.isAssignableFrom(e.getClass())) {
+                        transportInUse.error(new IOException("Invalid state: " + e.getMessage()));
+                    }
+
+                    return new VoidSocket();
+                } catch (Throwable t) {
+                    logger.error("Unable to open url {}", request.uri(), t);
+                    transportInUse.onThrowable(t);
+                    return new VoidSocket();
                 }
+            } else {
+                r.setUrl(request.uri().replace("ws", "http"));
+                transportInUse.future(options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse));
 
-                transportInUse.close();
-                closeRuntime(true);
-                if (!transportInUse.errorHandled() && TimeoutException.class.isAssignableFrom(e.getClass())) {
-                    transportInUse.error(new IOException("Invalid state: " + e.getMessage()));
+                try {
+                    if (options.waitBeforeUnlocking() > 0) {
+                        logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay," +
+                                " make sure some bytes get written when the connection is suspendeded on the server", options.waitBeforeUnlocking());
+                    }
+
+                    f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
+                } catch (Throwable t) {
+                    // Swallow the exception as this could be expected.
+                    logger.trace("", t);
                 }
-
-                return new VoidSocket();
-            } catch (Throwable t) {
-                logger.error("Unable to open url {}", request.uri(), t);
-
-                transportInUse.onThrowable(t);
-                return new VoidSocket();
             }
-        } else {
-            r.setUrl(request.uri().replace("ws", "http"));
-            transportInUse.future(options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse));
-
-            try {
-                if (options.waitBeforeUnlocking() > 0) {
-                    logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay, make sure some bytes get written when the connection is suspendeded on the server", options.waitBeforeUnlocking());
-                }
-
-                f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
-            } catch (Throwable t) {
-                // Swallow the exception as this could be expected.
-                logger.trace("", t);
-            } finally {
-                f.done();
-            }
+        } finally {
+            f.finishOrThrowException();
         }
         return this;
     }

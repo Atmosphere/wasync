@@ -100,7 +100,7 @@ public class LongPollingTransport extends StreamTransport {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
         }
-        if (connectdFuture != null) connectdFuture.done();
+        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
         return AsyncHandler.STATE.CONTINUE;
     }
 

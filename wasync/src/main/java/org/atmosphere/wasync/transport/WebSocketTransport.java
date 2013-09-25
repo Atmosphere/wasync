@@ -71,7 +71,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private STATUS status = Socket.STATUS.INIT;
     private final AtomicBoolean errorHandled = new AtomicBoolean();
     private ListenableFuture underlyingFuture;
-    private Future connectdFuture;
+    private Future connectOperationFuture;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -98,7 +98,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     public void onThrowable(Throwable t) {
         logger.debug("", t);
         status = Socket.STATUS.ERROR;
-        errorHandled.set(TransportsUtil.invokeFunction(Event.ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+        onFailure(t);
     }
 
     /**
@@ -140,6 +140,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public void error(Throwable t) {
         logger.warn("", t);
+        connectFutureException(t);
         TransportsUtil.invokeFunction(Event.ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
     }
 
@@ -153,7 +154,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
     @Override
     public void connectedFuture(Future f) {
-        this.connectdFuture = f;
+        this.connectOperationFuture = f;
     }
 
     /**
@@ -169,7 +170,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        if (connectdFuture != null) connectdFuture.done();
+        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
 
         TransportsUtil.invokeFunction(STATUS, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
         if (responseStatus.getStatusCode() == 101) {
@@ -269,11 +270,16 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             public void onError(Throwable t) {
                 status = Socket.STATUS.ERROR;
                 logger.debug("", t);
-                errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+                onFailure(t);
             }
         };
         webSocket.addWebSocketListener(l);
         l.onOpen(webSocket);
+    }
+
+    void connectFutureException(Throwable t) {
+        IOException e = IOException.class.isAssignableFrom(t.getClass()) ? IOException.class.cast(t) : new IOException(t);
+        connectOperationFuture.ioException(e);
     }
 
     void reconnect() {
@@ -306,6 +312,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public final void onFailure(Throwable t) {
+        connectFutureException(t);
         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
 

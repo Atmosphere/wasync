@@ -553,20 +553,27 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create();
-        ;
-        socket.on(new Function<ConnectException>() {
 
-            @Override
-            public void on(ConnectException t) {
-                response.set(t);
-                latch.countDown();
-            }
+        IOException ioException = null;
+        try {
 
-        }).open(request.build());
+            socket.on(new Function<ConnectException>() {
+
+                @Override
+                public void on(ConnectException t) {
+                    response.set(t);
+                    latch.countDown();
+                }
+
+            }).open(request.build());
+        } catch (IOException ex) {
+            ioException = ex;
+        }
 
         latch.await(20, TimeUnit.SECONDS);
         socket.close();
         assertEquals(response.get().getClass(), ConnectException.class);
+        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
     }
 
     @Test
@@ -582,19 +589,25 @@ public abstract class BaseTest {
 
         Socket socket = client.create();
 
-        socket.on(new Function<IOException>() {
+        IOException ioException = null;
+        try {
+            socket.on(new Function<IOException>() {
 
-            @Override
-            public void on(IOException t) {
-                response.set(t);
-                latch.countDown();
-            }
+                @Override
+                public void on(IOException t) {
+                    response.set(t);
+                    latch.countDown();
+                }
 
-        }).open(request.build());
+            }).open(request.build());
+        } catch (IOException ex) {
+            ioException = ex;
+        }
 
         latch.await(20, TimeUnit.SECONDS);
         socket.close();
         assertTrue(IOException.class.isAssignableFrom(response.get().getClass()));
+        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
     }
 
     @Test
@@ -1389,6 +1402,8 @@ public abstract class BaseTest {
                 .transport(transport());
 
         final Socket socket = client.create();
+        IOException ioException = null;
+        try {
 
         socket.on(new Function<ConnectException>() {
 
@@ -1408,12 +1423,15 @@ public abstract class BaseTest {
             }
 
         }).open(request.build());
-
+        } catch (IOException ex) {
+            ioException = ex;
+        }
         socket.fire("echo");
         latch.await(20, TimeUnit.SECONDS);
 
         assertEquals(response.get().getClass(), ConnectException.class);
         assertEquals(response2.get().getClass(), IOException.class);
+        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
 
     }
 
@@ -1924,21 +1942,27 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create();
-        socket.on(new Function<ConnectException>() {
+        IOException ioException = null;
+        try {
+            socket.on(new Function<ConnectException>() {
 
-            @Override
-            public void on(ConnectException t) {
-                latch.countDown();
-            }
+                @Override
+                public void on(ConnectException t) {
+                    latch.countDown();
+                }
 
-        }).on(Event.CLOSE.name(), new Function<String>() {
-            @Override
-            public void on(String t) {
-                logger.info("Connection closed");
-            }
-        }).open(request.build());
+            }).on(Event.CLOSE.name(), new Function<String>() {
+                @Override
+                public void on(String t) {
+                    logger.info("Connection closed");
+                }
+            }).open(request.build());
+        } catch (IOException ex) {
+            ioException = ex;
+        }
 
         assertTrue(latch.await(10, TimeUnit.SECONDS));
+        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
 
     }
 

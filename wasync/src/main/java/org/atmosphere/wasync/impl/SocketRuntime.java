@@ -98,7 +98,7 @@ public class SocketRuntime {
             }
         }
 
-        return rootFuture.done();
+        return rootFuture.finishOrThrowException();
     }
 
     public void webSocketWrite(Request request, Object object, Object data) throws IOException {

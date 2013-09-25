@@ -16,13 +16,11 @@
 package org.atmosphere.wasync.serial;
 
 import com.google.common.util.concurrent.SettableFuture;
-import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
-import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.impl.DefaultFuture;
 import org.atmosphere.wasync.impl.SocketRuntime;
@@ -34,9 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Serial extension for the {@link SocketRuntime}
@@ -74,87 +69,9 @@ public class SerialSocketRuntime extends SocketRuntime {
             if (serializedSocket.getSerializedFireStage() != null) {
                 final SettableFuture<Response> future = SettableFuture.create();
                 serializedSocket.getSerializedFireStage().enqueue(encodedPayload, future);
-                return new Future() {
-
-                    @Override
-                    public Future fire(Object data) throws IOException {
-                        return serializedSocket.fire(data);
-                    }
-
-                    @Override
-                    public Future done() {
-                        ListenableFuture.class.cast(future).done();
-                        return this;
-                    }
-
-                    @Override
-                    public boolean cancel(boolean mayInterruptIfRunning) {
-                        return future.cancel(mayInterruptIfRunning);
-                    }
-
-                    @Override
-                    public boolean isCancelled() {
-                        return future.isCancelled();
-                    }
-
-                    @Override
-                    public boolean isDone() {
-                        return future.isDone();
-                    }
-
-                    @Override
-                    public Socket get() throws InterruptedException, ExecutionException {
-                        future.get();
-                        return serializedSocket;
-                    }
-
-                    @Override
-                    public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                        future.get(timeout, unit);
-                        return serializedSocket;
-                    }
-                };
+                return new FutureProxy(serializedSocket, future());
             } else {
-                final ListenableFuture<Response> future = serializedSocket.directWrite(encodedPayload);
-                return new Future() {
-                    @Override
-                    public Future fire(Object data) throws IOException {
-                        return serializedSocket.fire(data);
-                    }
-
-                    @Override
-                    public Future done() {
-                        future.done();
-                        return this;
-                    }
-
-                    @Override
-                    public boolean cancel(boolean mayInterruptIfRunning) {
-                        return future.cancel(mayInterruptIfRunning);
-                    }
-
-                    @Override
-                    public boolean isCancelled() {
-                        return future.isCancelled();
-                    }
-
-                    @Override
-                    public boolean isDone() {
-                        return future.isDone();
-                    }
-
-                    @Override
-                    public Socket get() throws InterruptedException, ExecutionException {
-                        future.get();
-                        return serializedSocket;
-                    }
-
-                    @Override
-                    public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                        future.get(timeout, unit);
-                        return serializedSocket;
-                    }
-                };
+                return new FutureProxy(serializedSocket, serializedSocket.directWrite(encodedPayload));
             }
         }
         return rootFuture;

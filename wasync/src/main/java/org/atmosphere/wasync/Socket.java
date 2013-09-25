@@ -136,18 +136,18 @@ public interface Socket {
      * Connect to the remote Server using the {@link Request}'s information.
      * @param request a {@link Request}
      * @return this
-     * @throws IOException
+     * @throws IOException in case the connect fails or a network failure occurs.
      */
     Socket open(Request request) throws IOException;
     
     /**
      * Connect to the remote Server using the {@link Request}'s information, will timeout if the connection failed to open 
-     * within a certain time
+     * within a certain time.
      * @param request a {@link Request}
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
      * @return this
-     * @throws IOException
+     * @throws IOException in case the connect fails or a network failure occurs.
      */
     Socket open(Request request, long timeout, TimeUnit unit) throws IOException;
 

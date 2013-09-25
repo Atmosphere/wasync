@@ -75,7 +75,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
     protected ListenableFuture underlyingFuture;
     protected boolean protocolReceived = false;
-    protected Future connectdFuture;
+    protected Future connectOperationFuture;
     protected final boolean protocolEnabled;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
@@ -118,6 +118,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
 
         logger.warn("", t);
         status = Socket.STATUS.ERROR;
+        connectFutureException(t);
+
         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
 
@@ -137,7 +139,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
         }
-        if (connectdFuture != null) connectdFuture.done();
+        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
 
         return AsyncHandler.STATE.CONTINUE;
     }
@@ -251,12 +253,18 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         return errorHandled.get();
     }
 
+    void connectFutureException(Throwable t) {
+        IOException e = IOException.class.isAssignableFrom(t.getClass()) ? IOException.class.cast(t) : new IOException(t);
+        connectOperationFuture.ioException(e);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void error(Throwable t) {
         logger.warn("", t);
+        connectFutureException(t);
         TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
     }
 
@@ -270,7 +278,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
 
     @Override
     public void connectedFuture(Future f) {
-        this.connectdFuture = f;
+        this.connectOperationFuture = f;
     }
 
     protected final static boolean whiteSpace(byte[] b) {

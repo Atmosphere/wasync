@@ -74,7 +74,7 @@ public class SSETransport extends StreamTransport {
                     TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
             }
         }
-        if (connectdFuture != null) connectdFuture.done();
+        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
         return STATE.CONTINUE;
     }
 }

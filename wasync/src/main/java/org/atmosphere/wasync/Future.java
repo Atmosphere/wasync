@@ -32,8 +32,23 @@ public interface Future extends java.util.concurrent.Future<Socket> {
      */
     Future fire(Object message) throws IOException;
     /**
-     * Mark the future done.
+     * Mark the future done. If an exception occurred, this method will throw it.
      * @return a {@link Future}
      */
-    Future done();
+    Future finishOrThrowException() throws IOException;
+
+    /**
+     * If an exception occurs, the {@link Transport} will set it using this method. An application can also
+     * use that method to interrupt a blocking {@link Socket#open(Request)} operation. This operation
+     * must unlock the current blocked thread.
+     * @param t a {@link IOException}
+     * @return a {@link Future}
+     */
+    Future ioException(IOException t);
+
+    /**
+     * Mark this instance as done.
+     * @return  this
+     */
+    void done();
 }
