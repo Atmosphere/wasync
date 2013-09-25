@@ -1405,24 +1405,24 @@ public abstract class BaseTest {
         IOException ioException = null;
         try {
 
-        socket.on(new Function<ConnectException>() {
+            socket.on(new Function<ConnectException>() {
 
-            @Override
-            public void on(ConnectException t) {
-                socket.close(); // I close it here, remove this close, issue will not happen
-                response.set(t);
-                latch.countDown();
-            }
+                @Override
+                public void on(ConnectException t) {
+                    socket.close(); // I close it here, remove this close, issue will not happen
+                    response.set(t);
+                    latch.countDown();
+                }
 
-        }).on(new Function<IOException>() {
+            }).on(new Function<IOException>() {
 
-            @Override
-            public void on(IOException t) {
-                response2.set(t);
-                latch.countDown();
-            }
+                @Override
+                public void on(IOException t) {
+                    response2.set(t);
+                    latch.countDown();
+                }
 
-        }).open(request.build());
+            }).open(request.build());
         } catch (IOException ex) {
             ioException = ex;
         }
@@ -1613,7 +1613,7 @@ public abstract class BaseTest {
                                 public void onSuspend(AtmosphereResourceEvent event) {
                                     latch.countDown();
                                     resource.set(r);
-                                    for (int i=0; i < 8192; i++) {
+                                    for (int i = 0; i < 8192; i++) {
                                         try {
                                             resource.get().getResponse().getOutputStream().write(" ".getBytes());
                                         } catch (IOException e) {
@@ -1624,7 +1624,7 @@ public abstract class BaseTest {
                                 }
                             }).suspend();
                         } else {
-                            String line =  r.getRequest().getReader().readLine();
+                            String line = r.getRequest().getReader().readLine();
 
                             resource.get().write(line).close();
                         }
@@ -1725,7 +1725,7 @@ public abstract class BaseTest {
                                 public void onSuspend(AtmosphereResourceEvent event) {
                                     latch.countDown();
                                     resource.set(r);
-                                    for (int i=0; i < 8192; i++) {
+                                    for (int i = 0; i < 8192; i++) {
                                         resource.get().write(" ");
                                     }
                                 }
@@ -2036,6 +2036,65 @@ public abstract class BaseTest {
         socket.close();
 
         assertEquals(socket.status(), Socket.STATUS.CLOSE);
+    }
+
+    @Test
+    public void customHeaderTest() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+
+        final AtomicReference<String> ref = new AtomicReference<String>();
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        ref.set(r.getRequest().getHeader("X-Test"));
+                        l.countDown();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        Client client = ClientFactory.getDefault().newClient();
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .header("X-Test", "foo")
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create();
+        ;
+        socket.on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                t.printStackTrace();
+                latch.countDown();
+            }
+
+        }).open(request.build()).fire("PING");
+
+        latch.await(20, TimeUnit.SECONDS);
+        server.stop();
+        socket.close();
+
+        assertEquals(ref.get(), "foo");
     }
 
     public final static class EventPOJO {
