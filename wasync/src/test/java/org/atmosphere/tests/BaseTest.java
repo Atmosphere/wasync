@@ -2097,6 +2097,63 @@ public abstract class BaseTest {
         assertEquals(ref.get(), "foo");
     }
 
+    @Test
+    public void testHeadersOnClose() throws IOException, InterruptedException {
+
+        final CountDownLatch l = new CountDownLatch(1);
+        final CountDownLatch closedByClient = new CountDownLatch(1);
+
+        final AtomicReference<String> ref = new AtomicReference<String>();
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            @Override
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                l.countDown();
+                            }
+                        }).suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (r.isClosedByClient()) {
+                            ref.set(r.getResource().getRequest().getHeader("X-Test"));
+                            closedByClient.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .enableProtocol(true)
+                .header("X-Test", "foo")
+                .transport(transport());
+
+        Socket socket = client.create();
+
+        socket.open(request.build()).close();
+
+        closedByClient.await(10, TimeUnit.SECONDS);
+        assertEquals(ref.get(), "foo");
+
+    }
+
     public final static class EventPOJO {
 
         public final String message;
