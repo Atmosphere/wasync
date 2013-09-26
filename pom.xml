@@ -243,17 +243,6 @@
             </plugin>
         </plugins>
     </reporting>
-    <profiles>
-        <profile>
-            <id>all</id>
-            <modules>
-                <module>wasync</module>
-                <module>samples/chat</module>
-                <module>samples/android-chat</module>
-                <module>samples/node.js</module>
-            </modules>
-        </profile>
-    </profiles>
     <repositories>
         <repository>
             <id>oss.sonatype.org</id>
@@ -281,9 +270,9 @@
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.6</source.property>
         <target.property>1.6</target.property>
-        <atmosphere.version>2.0.0-SNAPSHOT</atmosphere.version>
-        <nettosphere.version>2.0.0-SNAPSHOT</nettosphere.version>
-        <ahc.version>1.7.19</ahc.version>
+        <atmosphere.version>2.0.0</atmosphere.version>
+        <nettosphere.version>2.0.0</nettosphere.version>
+        <ahc.version>1.7.20</ahc.version>
     </properties>
 </project>
 
