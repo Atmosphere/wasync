@@ -42,7 +42,7 @@ public class WebSocketLoader {
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"500","10000","http://127.0.0.1:8080/simple/test"};
+            s = new String[]{"500","100000","http://127.0.0.1:8080/simple/test"};
         }
 
         final int clientNum = Integer.valueOf(s[0]);

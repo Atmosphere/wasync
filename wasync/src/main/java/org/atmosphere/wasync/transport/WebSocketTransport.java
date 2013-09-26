@@ -18,7 +18,6 @@ package org.atmosphere.wasync.transport;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
-import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
 import com.ning.http.client.websocket.WebSocketTextListener;
@@ -70,7 +69,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private STATUS status = Socket.STATUS.INIT;
     private final AtomicBoolean errorHandled = new AtomicBoolean();
-    private ListenableFuture underlyingFuture;
+    private Future underlyingFuture;
     private Future connectOperationFuture;
     protected final boolean protocolEnabled;
 
@@ -109,16 +108,15 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public void close() {
-        if (closed.getAndSet(true)) return;
-
         status = Socket.STATUS.CLOSE;
+        if (closed.getAndSet(true)) return;
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
 
         if (webSocket != null && webSocket.isOpen())
             webSocket.close();
 
-        if (underlyingFuture != null) underlyingFuture.done();
+        futureDone();
     }
 
     /**
@@ -127,6 +125,10 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public STATUS status() {
         return status;
+    }
+
+    void futureDone() {
+        if (underlyingFuture != null) underlyingFuture.done();
     }
 
     /**
@@ -151,7 +153,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      * {@inheritDoc}
      */
     @Override
-    public void future(ListenableFuture f) {
+    public void future(Future f) {
         this.underlyingFuture = f;
     }
 
@@ -255,7 +257,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             @Override
             public void onOpen(WebSocket websocket) {
                 // Could have been closed during the handshake.
-                if (status.equals(Socket.STATUS.CLOSE)) return;
+                if (status.equals(Socket.STATUS.CLOSE) || status.equals(Socket.STATUS.ERROR)) return;
 
                 closed.set(false);
                 Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
@@ -334,7 +336,21 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
 
-    public WebSocket webSocket() {
-        return webSocket;
+    public WebSocketTransport sendMessage(String message) {
+        if (webSocket != null
+                && !status.equals(Socket.STATUS.ERROR)
+                && !status.equals(Socket.STATUS.CLOSE)) {
+            webSocket.sendTextMessage(message);
+        }
+        return this;
+    }
+
+    public WebSocketTransport sendMessage(byte[] message) {
+        if (webSocket != null
+                && !status.equals(Socket.STATUS.ERROR)
+                && !status.equals(Socket.STATUS.CLOSE)) {
+            webSocket.sendMessage(message);
+        }
+        return this;
     }
 }

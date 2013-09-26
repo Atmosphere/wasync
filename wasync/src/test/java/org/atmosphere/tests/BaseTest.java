@@ -152,7 +152,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
         server.stop();
 
@@ -267,7 +267,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         server.stop();
         socket.close();
 
@@ -332,7 +332,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("PING");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         assertEquals(builder.toString(), RESUME);
     }
@@ -403,7 +403,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(status.get(), statusCode());
@@ -468,7 +468,7 @@ public abstract class BaseTest {
             }
         }).open(request.build());
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(status.get(), notFoundCode());
@@ -510,7 +510,7 @@ public abstract class BaseTest {
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
-                .uri(targetUrl + "/ratata")
+                .uri(targetUrl + "/suspend")
                 .transport(transport());
 
         final Socket socket = client.create();
@@ -531,12 +531,13 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         socket.fire("Yo");
 
-        ioLatch.await(20, TimeUnit.SECONDS);
+        ioLatch.await(5, TimeUnit.SECONDS);
 
+        assertNotNull(response2.get());
         assertEquals(response2.get().getClass(), IOException.class);
 
     }
@@ -570,7 +571,7 @@ public abstract class BaseTest {
             ioException = ex;
         }
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
         assertEquals(response.get().getClass(), ConnectException.class);
         assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
@@ -604,7 +605,7 @@ public abstract class BaseTest {
             ioException = ex;
         }
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
         assertTrue(IOException.class.isAssignableFrom(response.get().getClass()));
         assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
@@ -681,7 +682,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("echo");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), "<-echo->");
@@ -745,7 +746,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), TimeoutException.class);
@@ -813,7 +814,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("echo");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get().getClass(), POJO.class);
@@ -877,7 +878,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("yo");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get(), transport());
@@ -960,7 +961,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("echo");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get(), "<-echo->");
@@ -1053,7 +1054,7 @@ public abstract class BaseTest {
                 .fire("PING").get()
                 .fire("PONG").get();
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         // We can't predict the order of requests send
@@ -1133,7 +1134,7 @@ public abstract class BaseTest {
                 .fire("PING")
                 .fire("PONG");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         // We can't predict the order of requests send
@@ -1322,9 +1323,9 @@ public abstract class BaseTest {
 
         }).open(request.build())
                 .fire("PING")
-                .fire("PONG");
+                .fire("PONG").get();
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get().toString(), "PINGPONG");
@@ -1380,7 +1381,7 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("yoga");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertEquals(response.get(), "yoga");
@@ -1395,7 +1396,7 @@ public abstract class BaseTest {
 
         Client client = ClientFactory.getDefault().newClient();
 
-        String unreachableUrl = "http://localhost:8120";
+        String unreachableUrl = "http://localhost:815";
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(unreachableUrl + "/suspend")
@@ -1427,7 +1428,7 @@ public abstract class BaseTest {
             ioException = ex;
         }
         socket.fire("echo");
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         assertEquals(response.get().getClass(), ConnectException.class);
         assertEquals(response2.get().getClass(), IOException.class);
@@ -1500,7 +1501,7 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         server.stop();
         socket.close();
@@ -1528,7 +1529,7 @@ public abstract class BaseTest {
                             public void onSuspend(AtmosphereResourceEvent event) {
                                 latch.countDown();
                             }
-                        }).suspend(5, TimeUnit.SECONDS);
+                        }).suspend(2, TimeUnit.SECONDS);
 
                     }
 
@@ -1582,11 +1583,11 @@ public abstract class BaseTest {
             }
         }).open(clientRequest.build());
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await(20, TimeUnit.SECONDS);
+        elatch.await(5, TimeUnit.SECONDS);
 
         assertEquals(b.get().toString(), "OPENCLOSEREOPENEDCLOSE");
     }
@@ -1611,7 +1612,6 @@ public abstract class BaseTest {
                         if (r.getRequest().getMethod().equals("GET")) {
                             r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
                                 public void onSuspend(AtmosphereResourceEvent event) {
-                                    latch.countDown();
                                     resource.set(r);
                                     for (int i = 0; i < 8192; i++) {
                                         try {
@@ -1687,19 +1687,14 @@ public abstract class BaseTest {
         }).open(clientRequest.build());
 
         socket.fire("PING");
-        latch.await(20, TimeUnit.SECONDS);
-        flatch.await(20, TimeUnit.SECONDS);
+        flatch.await(5, TimeUnit.SECONDS);
 
         server.stop();
 
-        elatch.await(20, TimeUnit.SECONDS);
+        elatch.await(5, TimeUnit.SECONDS);
 
-        // TODO: Hacky, bu calling close is asynchronous, network related, etc.
-        try {
-            assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDCLOSEERROR");
-        } catch (Exception ex) {
-            assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDCLOSE");
-        }
+
+        assertEquals(b.get().toString(), "OPENPINGCLOSEERROR");
     }
 
     @Test
@@ -1813,7 +1808,7 @@ public abstract class BaseTest {
 
         server.stop();
 
-        elatch.await(20, TimeUnit.SECONDS);
+        elatch.await(5, TimeUnit.SECONDS);
 
         // TODO: Hacky, but on slow machime the stop operation won't finish on time. The ERRROR will never comes in that case.
         try {
@@ -1911,11 +1906,11 @@ public abstract class BaseTest {
             }
         }).open(request.build()).fire("echo");
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
 
         socket.close();
 
-        xlatch.await(20, TimeUnit.SECONDS);
+        xlatch.await(5, TimeUnit.SECONDS);
 
         assertNotNull(response.get());
         assertNotNull(open.get());
@@ -2008,7 +2003,7 @@ public abstract class BaseTest {
 
         Socket socket = client.create();
 
-        socket.on("message" , new Function<String>() {
+        socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
 // the status should have been updated to something else than INIT
@@ -2078,21 +2073,19 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create();
-        ;
-        socket.on(new Function<Throwable>() {
+        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build() );
+        socket.on(Event.CLOSE.name(), new Function<String>() {
 
             @Override
-            public void on(Throwable t) {
-                t.printStackTrace();
+            public void on(String t) {
                 latch.countDown();
             }
 
         }).open(request.build()).fire("PING");
 
-        latch.await(20, TimeUnit.SECONDS);
+        l.await(5, TimeUnit.SECONDS);
         server.stop();
-        socket.close();
+        latch.await(5, TimeUnit.SECONDS);
 
         assertEquals(ref.get(), "foo");
     }
@@ -2220,12 +2213,88 @@ public abstract class BaseTest {
 
         }).open(request.build()).fire("PING").get();
 
-        latch.await(20, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         server.stop();
         socket.close();
 
         assertEquals(response.get(), RESUME);
     }
+
+    @Test(enabled = true)
+    public void serializeFutureGetTest() throws Exception {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicInteger count = new AtomicInteger(1);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
+                            r.suspend(-1);
+                        } else {
+                            try {
+                                r.getBroadcaster().broadcast(r.getRequest().getReader().readLine()).get();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (r.getMessage() != null) {
+                            r.getResource().getResponse().write(r.getMessage().toString());
+                            if (r.getResource().transport().equals(AtmosphereResource.TRANSPORT.LONG_POLLING)) {
+                                r.getResource().resume();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(2);
+        final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        SerializedOptionsBuilder b = client.newOptionsBuilder();
+        b.serializedFireStage(new DefaultSerializedFireStage());
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(b.build());
+
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Serialized Function invoked {}", t);
+                response.get().append(t);
+                latch.countDown();
+            }
+        }).open(request.build())
+                .fire("PING")
+                .fire("PONG").get();
+
+        latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
+        assertEquals(response.get().toString(), "PINGPONG");
+    }
+
 
     public final static class EventPOJO {
 

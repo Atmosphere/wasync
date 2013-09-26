@@ -51,4 +51,9 @@ public interface Future extends java.util.concurrent.Future<Socket> {
      * @return  this
      */
     void done();
+
+    /**
+     * Close the underlying {@link Socket}
+     */
+    void close();
 }

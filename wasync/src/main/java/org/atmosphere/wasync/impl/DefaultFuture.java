@@ -89,6 +89,13 @@ public class DefaultFuture implements Future {
         latch.countDown();
     }
 
+    @Override
+    public void close() {
+        if (socket != null) {
+            socket.close();
+        }
+    }
+
     // TODO: Not public
     /**
      * {@inheritDoc}

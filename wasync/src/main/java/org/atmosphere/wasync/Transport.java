@@ -15,8 +15,6 @@
  */
 package org.atmosphere.wasync;
 
-import com.ning.http.client.ListenableFuture;
-
 /**
  * Define a supported {@link Transport}. Default are websocket, streaming, server-side events and long-polling.
  * Use this interface only if you want to define another transport. New transport can be registered using the {@link Options}
@@ -71,11 +69,11 @@ public interface Transport {
     void error(Throwable e);
 
     /**
-     * Set the {@link ListenableFuture}, which can be used to clone the connection.
+     * Set the {@link Future}, which can be used to clone the connection.
      *
-     * @param f {@link ListenableFuture}
+     * @param f {@link Future}
      */
-    void future(ListenableFuture f);
+    void future(Future f);
 
     /**
      * Set the {@link Future}, which will unlock the {@link Socket#fire} method once the connection has been fully established.

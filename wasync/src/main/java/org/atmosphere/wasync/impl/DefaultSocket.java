@@ -17,6 +17,7 @@ package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.FluentStringsMap;
+import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
 import org.atmosphere.wasync.Event;
@@ -32,6 +33,7 @@ import org.atmosphere.wasync.transport.SSETransport;
 import org.atmosphere.wasync.transport.StreamTransport;
 import org.atmosphere.wasync.transport.TransportNotSupported;
 import org.atmosphere.wasync.transport.WebSocketTransport;
+import org.atmosphere.wasync.util.FutureProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +132,7 @@ public class DefaultSocket implements Socket {
         return f;
     }
 
-    protected Socket connect(final RequestBuilder r, final List<Transport> transports,long timeout, final TimeUnit tu) throws IOException {
+    protected Socket connect(final RequestBuilder r, final List<Transport> transports, long timeout, final TimeUnit tu) throws IOException {
 
         if (transports.size() > 0) {
             transportInUse = transports.get(0);
@@ -148,8 +150,8 @@ public class DefaultSocket implements Socket {
             if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
                 r.setUrl(request.uri().replace("http", "ws"));
                 try {
-                    options.runtime().prepareRequest(r.build()).execute(
-                            (AsyncHandler<WebSocket>) transportInUse);
+                    transportInUse.future(new FutureProxy<ListenableFuture>(this,
+                            options.runtime().prepareRequest(r.build()).execute((AsyncHandler<WebSocket>) transportInUse)));
 
                     f.get(timeout, tu);
                 } catch (ExecutionException t) {
@@ -175,7 +177,8 @@ public class DefaultSocket implements Socket {
                 }
             } else {
                 r.setUrl(request.uri().replace("ws", "http"));
-                transportInUse.future(options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse));
+                transportInUse.future(new FutureProxy<ListenableFuture>(this,
+                        options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse)));
 
                 try {
                     if (options.waitBeforeUnlocking() > 0) {
@@ -232,7 +235,7 @@ public class DefaultSocket implements Socket {
             if (async) {
                 // AHC is broken when calling closeAsynchronously.
                 // https://github.com/AsyncHttpClient/async-http-client/issues/290
-                final ExecutorService e= Executors.newSingleThreadExecutor();
+                final ExecutorService e = Executors.newSingleThreadExecutor();
                 e.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -240,8 +243,7 @@ public class DefaultSocket implements Socket {
                         e.shutdown();
                     }
                 });
-            }
-            else
+            } else
                 options.runtime().close();
         } else if (options.runtimeShared()) {
             logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");

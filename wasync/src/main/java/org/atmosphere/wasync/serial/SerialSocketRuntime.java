@@ -25,6 +25,7 @@ import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.impl.DefaultFuture;
 import org.atmosphere.wasync.impl.SocketRuntime;
 import org.atmosphere.wasync.transport.WebSocketTransport;
+import org.atmosphere.wasync.util.FutureProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +38,13 @@ import java.util.List;
  * Serial extension for the {@link SocketRuntime}
  *
  * @author Jeanfrancois Arcand
- *
  */
 public class SerialSocketRuntime extends SocketRuntime {
 
     private final static Logger logger = LoggerFactory.getLogger(SerialSocketRuntime.class);
     private final SerializedSocket serializedSocket;
 
-    public SerialSocketRuntime(Transport transport, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket,  List<FunctionWrapper> functions) {
+    public SerialSocketRuntime(Transport transport, Options options, DefaultFuture rootFuture, SerializedSocket serializedSocket, List<FunctionWrapper> functions) {
         super(transport, options, rootFuture, functions);
         this.serializedSocket = serializedSocket;
     }
@@ -54,26 +54,30 @@ public class SerialSocketRuntime extends SocketRuntime {
 
         if (WebSocketTransport.class.isAssignableFrom(transport.getClass())) {
             Object object = invokeEncoder(request.encoders(), data);
+            rootFuture.done();
             webSocketWrite(request, object, data);
         } else {
             // Execute encoder
             Object encodedPayload = invokeEncoder(request.encoders(), data);
             if (!(InputStream.class.isAssignableFrom(encodedPayload.getClass())
-                            || Reader.class.isAssignableFrom(encodedPayload.getClass())
-                            || String.class.isAssignableFrom(encodedPayload.getClass())
-                            || byte[].class.isAssignableFrom(encodedPayload.getClass())
-                    )) {
+                    || Reader.class.isAssignableFrom(encodedPayload.getClass())
+                    || String.class.isAssignableFrom(encodedPayload.getClass())
+                    || byte[].class.isAssignableFrom(encodedPayload.getClass())
+            )) {
                 throw new IllegalStateException("No Encoder for " + data);
             }
 
+            FutureProxy<?> f;
             if (serializedSocket.getSerializedFireStage() != null) {
                 final SettableFuture<Response> future = SettableFuture.create();
                 serializedSocket.getSerializedFireStage().enqueue(encodedPayload, future);
-                return new FutureProxy(serializedSocket, future());
+                f = new FutureProxy(serializedSocket, future);
             } else {
-                return new FutureProxy(serializedSocket, serializedSocket.directWrite(encodedPayload));
+                f = new FutureProxy(serializedSocket, serializedSocket.directWrite(encodedPayload));
             }
+            transport.future(f);
+            return f;
         }
-        return rootFuture;
+        return rootFuture.finishOrThrowException();
     }
 }

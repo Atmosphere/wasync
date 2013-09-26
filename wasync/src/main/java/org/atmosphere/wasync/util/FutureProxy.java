@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.atmosphere.wasync.serial;
+package org.atmosphere.wasync.util;
 
 import com.ning.http.client.ListenableFuture;
 import org.atmosphere.wasync.Future;
@@ -24,20 +24,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-class FutureProxy<T extends java.util.concurrent.Future> implements Future {
+public class FutureProxy<T extends java.util.concurrent.Future> implements Future {
 
-    private final Socket serializedSocket;
+    private final Socket socket;
     private final T proxyiedFuture;
     private IOException ioException;
 
-    public FutureProxy(Socket serializedSocket, T proxyiedFuture) {
-        this.serializedSocket = serializedSocket;
+    public FutureProxy(Socket socket, T proxyiedFuture) {
+        this.socket = socket;
         this.proxyiedFuture = proxyiedFuture;
     }
 
     @Override
     public Future fire(Object data) throws IOException {
-        return serializedSocket.fire(data);
+        return socket.fire(data);
     }
 
     @Override
@@ -59,14 +59,19 @@ class FutureProxy<T extends java.util.concurrent.Future> implements Future {
     public void done() {
         if (ListenableFuture.class.isAssignableFrom(proxyiedFuture.getClass())) {
             ListenableFuture.class.cast(proxyiedFuture).done();
-        } else {
+        } else if (Future.class.isAssignableFrom(proxyiedFuture.getClass())) {
             Future.class.cast(proxyiedFuture).done();
         }
     }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return proxyiedFuture.cancel(mayInterruptIfRunning);
+        if (ListenableFuture.class.isAssignableFrom(proxyiedFuture.getClass())) {
+            return ListenableFuture.class.cast(proxyiedFuture).cancel(mayInterruptIfRunning);
+        } else if (Future.class.isAssignableFrom(proxyiedFuture.getClass())) {
+            return Future.class.cast(proxyiedFuture).cancel(mayInterruptIfRunning);
+        }
+        return false;
     }
 
     @Override
@@ -82,12 +87,19 @@ class FutureProxy<T extends java.util.concurrent.Future> implements Future {
     @Override
     public Socket get() throws InterruptedException, ExecutionException {
         proxyiedFuture.get();
-        return serializedSocket;
+        return socket;
     }
 
     @Override
     public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         proxyiedFuture.get(timeout, unit);
-        return serializedSocket;
+        return socket;
     }
+
+    @Override
+     public void close() {
+         if (socket != null) {
+             socket.close();
+         }
+     }
 }

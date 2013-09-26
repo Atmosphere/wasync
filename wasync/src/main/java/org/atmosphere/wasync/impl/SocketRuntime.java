@@ -24,6 +24,7 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
 import org.atmosphere.wasync.transport.TransportsUtil;
 import org.atmosphere.wasync.transport.WebSocketTransport;
@@ -81,20 +82,26 @@ public class SocketRuntime {
     public Future write(Request request, Object data) throws IOException {
         // Execute encoder
         Object object = invokeEncoder(request.encoders(), data);
-        if (WebSocketTransport.class.isAssignableFrom(transport.getClass())) {
-            webSocketWrite(request, object, data);
+
+        if (transport.status().equals(Socket.STATUS.CLOSE)
+                ||transport.status().equals(Socket.STATUS.ERROR)) {
+            transport.error(new IOException("Invalid Socket Status " + transport.status().name()));
         } else {
-            try {
-                Response r = httpWrite(request, object, data).get(rootFuture.time(), rootFuture.timeUnit());
-                String m = r.getResponseBody();
-                if (m.length() > 0) {
-                    TransportsUtil.invokeFunction(request.decoders(),functions, String.class, m, MESSAGE.name(), request.functionResolver());
+            if (WebSocketTransport.class.isAssignableFrom(transport.getClass())) {
+                webSocketWrite(request, object, data);
+            } else {
+                try {
+                    Response r = httpWrite(request, object, data).get(rootFuture.time(), rootFuture.timeUnit());
+                    String m = r.getResponseBody();
+                    if (m.length() > 0) {
+                        TransportsUtil.invokeFunction(request.decoders(),functions, String.class, m, MESSAGE.name(), request.functionResolver());
+                    }
+                } catch (TimeoutException t) {
+                    logger.trace("AHC Timeout", t);
+                    rootFuture.timeoutException(t);
+                } catch (Throwable t) {
+                    logger.error("", t);
                 }
-            } catch (TimeoutException t) {
-                logger.trace("AHC Timeout", t);
-                rootFuture.timeoutException(t);
-            } catch (Throwable t) {
-                logger.error("", t);
             }
         }
 
@@ -112,7 +119,7 @@ public class SocketRuntime {
             while (-1 != (n = is.read(buffer))) {
                 bs.write(buffer, 0, n);
             }
-            webSocketTransport.webSocket().sendMessage(bs.toByteArray());
+            webSocketTransport.sendMessage(bs.toByteArray());
         } else if (Reader.class.isAssignableFrom(object.getClass())) {
             Reader is = (Reader) object;
             StringWriter bs = new StringWriter();
@@ -122,11 +129,11 @@ public class SocketRuntime {
             while (-1 != (n = is.read(chars))) {
                 bs.write(chars, 0, n);
             }
-            webSocketTransport.webSocket().sendTextMessage(bs.getBuffer().toString());
+            webSocketTransport.sendMessage(bs.getBuffer().toString());
         } else if (String.class.isAssignableFrom(object.getClass())) {
-            webSocketTransport.webSocket().sendTextMessage(object.toString());
+            webSocketTransport.sendMessage(object.toString());
         } else if (byte[].class.isAssignableFrom(object.getClass())) {
-            webSocketTransport.webSocket().sendMessage((byte[]) object);
+            webSocketTransport.sendMessage((byte[]) object);
         } else {
             throw new IllegalStateException("No Encoder for " + data);
         }

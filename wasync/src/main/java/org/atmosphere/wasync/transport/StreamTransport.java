@@ -20,7 +20,6 @@ import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
-import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
@@ -73,7 +72,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected final boolean isBinary;
     protected STATUS status = Socket.STATUS.INIT;
     protected final AtomicBoolean errorHandled = new AtomicBoolean();
-    protected ListenableFuture underlyingFuture;
+    protected Future underlyingFuture;
     protected Future connectOperationFuture;
     protected final boolean protocolEnabled;
 
@@ -167,6 +166,10 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         return AsyncHandler.STATE.CONTINUE;
     }
 
+    void futureDone() {
+        if (underlyingFuture != null) underlyingFuture.done();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -202,6 +205,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public String onCompleted() throws Exception {
+        futureDone();
+
         if (closed.get()) return "";
 
         if (status == Socket.STATUS.ERROR) {
@@ -294,7 +299,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      * {@inheritDoc}
      */
     @Override
-    public void future(ListenableFuture f) {
+    public void future(Future f) {
         this.underlyingFuture = f;
     }
 
