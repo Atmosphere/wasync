@@ -103,8 +103,12 @@ public class DefaultFuture implements Future {
     @Override
     public Future finishOrThrowException() throws IOException {
         done();
-        if (ioException != null) {
-            throw ioException;
+        try {
+            if (ioException != null) {
+                throw ioException;
+            }
+        } finally {
+            ioException = null;
         }
         return this;
     }
@@ -140,8 +144,12 @@ public class DefaultFuture implements Future {
     public Socket get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         time = timeout;
         tu = unit;
-        if (!latch.await(timeout, unit) || te != null) {
-            throw te == null ? new TimeoutException() : te;
+        try {
+            if (!latch.await(timeout, unit) || te != null) {
+                throw te == null ? new TimeoutException() : te;
+            }
+        } finally {
+            te = null;
         }
         return socket;
     }
