@@ -299,7 +299,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
     void connectFutureException(Throwable t) {
         IOException e = IOException.class.isAssignableFrom(t.getClass()) ? IOException.class.cast(t) : new IOException(t);
-        connectOperationFuture.ioException(e);
+        connectOperationFuture.ioException(e).done();
     }
 
     void reconnect() {
