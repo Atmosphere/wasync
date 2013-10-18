@@ -72,7 +72,8 @@ public class DefaultSocket implements Socket {
     @Override
     public Future fire(Object data) throws IOException {
         checkState();
-        if (transportInUse.status().equals(STATUS.CLOSE) ||
+        if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)
+            && transportInUse.status().equals(STATUS.CLOSE) ||
                 transportInUse.status().equals(STATUS.ERROR)) {
             transportInUse.error(new IOException("Invalid Socket Status " + transportInUse.status().name()));
             return socketRuntime.rootFuture;

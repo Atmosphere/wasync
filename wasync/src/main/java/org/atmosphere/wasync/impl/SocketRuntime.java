@@ -83,18 +83,20 @@ public class SocketRuntime {
         // Execute encoder
         Object object = invokeEncoder(request.encoders(), data);
 
-        if (transport.status().equals(Socket.STATUS.CLOSE)
-                ||transport.status().equals(Socket.STATUS.ERROR)) {
+        boolean webSocket = transport.name().equals(Request.TRANSPORT.WEBSOCKET);
+        if (webSocket
+                && (transport.status().equals(Socket.STATUS.CLOSE)
+                || transport.status().equals(Socket.STATUS.ERROR))) {
             transport.error(new IOException("Invalid Socket Status " + transport.status().name()));
         } else {
-            if (WebSocketTransport.class.isAssignableFrom(transport.getClass())) {
+            if (webSocket) {
                 webSocketWrite(request, object, data);
             } else {
                 try {
                     Response r = httpWrite(request, object, data).get(rootFuture.time(), rootFuture.timeUnit());
                     String m = r.getResponseBody();
                     if (m.length() > 0) {
-                        TransportsUtil.invokeFunction(request.decoders(),functions, String.class, m, MESSAGE.name(), request.functionResolver());
+                        TransportsUtil.invokeFunction(request.decoders(), functions, String.class, m, MESSAGE.name(), request.functionResolver());
                     }
                 } catch (TimeoutException t) {
                     logger.trace("AHC Timeout", t);
@@ -149,7 +151,7 @@ public class SocketRuntime {
         } else if (Reader.class.isAssignableFrom(object.getClass())) {
             return b.setBody(new ReaderInputStream((Reader) object)).execute();
         } else if (String.class.isAssignableFrom(object.getClass())) {
-            return b.setBody((String) object) .execute();
+            return b.setBody((String) object).execute();
         } else if (byte[].class.isAssignableFrom(object.getClass())) {
             return b.setBody((byte[]) object).execute();
         } else {
