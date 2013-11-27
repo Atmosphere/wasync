@@ -184,7 +184,7 @@ public class DefaultSocket implements Socket {
                 try {
                     if (options.waitBeforeUnlocking() > 0) {
                         logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay," +
-                                " make sure some bytes get written when the connection is suspendeded on the server", options.waitBeforeUnlocking());
+                                " make sure some bytes get written when the connection is suspended on the server", options.waitBeforeUnlocking());
                     }
 
                     f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
