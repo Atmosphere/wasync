@@ -50,7 +50,7 @@ public class DefaultSerializedFireStage implements SerializedFireStage {
     private final Runnable fireTask;
 
     public DefaultSerializedFireStage() {
-        this(4);
+        this(100);
     }
 
     public DefaultSerializedFireStage(int maxBinaryPayloadAggregationSize) {
@@ -78,25 +78,27 @@ public class DefaultSerializedFireStage implements SerializedFireStage {
                 try {
                     while (!Thread.currentThread().isInterrupted()) {
                         FirePayloadEntry payloadEntry = firePayloadsQueue.take();
-                        int aggregationCount = 0;
+                        int aggregationCount = 1;
 
-                        for (; aggregationCount < maxBinaryMessagesAggregationSize; aggregationCount++) {
-                            if (byte[].class.isAssignableFrom(payloadEntry.getFirePayload().getClass())) {
-                                aggregatedByteArrayPayloads.add(payloadEntry);
-                                payloadEntry = firePayloadsQueue.poll();
-                                if (payloadEntry == null) {
-                                    aggregationCount = 0;
-                                    break;
-                                }
-                            } else {
-                                if (!aggregatedByteArrayPayloads.isEmpty()) {
-                                    fireSynchronously(aggregatedByteArrayPayloads);
-                                    aggregatedByteArrayPayloads.clear();
-                                }
-                                fireSynchronously(payloadEntry);
-                                aggregationCount = 0;
-                                break;
-                            }
+                        if (byte[].class.isAssignableFrom(payloadEntry.getFirePayload().getClass())) {
+                        	aggregatedByteArrayPayloads.add(payloadEntry);	
+		                    do {
+		                    	payloadEntry = firePayloadsQueue.poll();
+		                    	if (payloadEntry == null) { break; }
+		                        if (byte[].class.isAssignableFrom(payloadEntry.getFirePayload().getClass())) {
+		                            aggregatedByteArrayPayloads.add(payloadEntry);
+		                            aggregationCount++;
+		                        } else {
+		                            if (!aggregatedByteArrayPayloads.isEmpty()) {
+		                                fireSynchronously(aggregatedByteArrayPayloads);
+		                                aggregatedByteArrayPayloads.clear();
+		                            }
+		                            fireSynchronously(payloadEntry);
+		                            break;
+		                        }
+		                    } while (aggregationCount < maxBinaryMessagesAggregationSize);
+                        } else {
+                        	fireSynchronously(payloadEntry);
                         }
 
                         if (!aggregatedByteArrayPayloads.isEmpty()) {
