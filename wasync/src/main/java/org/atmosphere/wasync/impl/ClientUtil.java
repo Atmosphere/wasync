@@ -17,6 +17,7 @@ package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 
@@ -32,7 +33,13 @@ public class ClientUtil {
         AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
         int t = o.requestTimeoutInSeconds();
         b.setFollowRedirects(true).setIdleConnectionTimeoutInMs(-1).setRequestTimeoutInMs(t == -1 ? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
-        AsyncHttpClientConfig config = b.build();
+
+        NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
+
+        nettyConfig.addProperty("child.tcpNoDelay", "true");
+        nettyConfig.addProperty("child.keepAlive", "true");
+
+        AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(nettyConfig).build();
         return new AsyncHttpClient(config);
     }
 
