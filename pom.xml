@@ -271,7 +271,7 @@
         <target.property>1.6</target.property>
         <atmosphere.version>2.0.0</atmosphere.version>
         <nettosphere.version>2.0.0</nettosphere.version>
-        <ahc.version>1.7.20</ahc.version>
+        <ahc.version>1.7.22</ahc.version>
     </properties>
 </project>
 
