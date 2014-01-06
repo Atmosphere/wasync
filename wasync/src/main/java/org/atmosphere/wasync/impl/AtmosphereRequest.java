@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -192,6 +193,13 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 l = new ArrayList<String>();
                 l.add("true");
                 queryString.put("X-atmo-protocol", l);
+
+                Collection ct = headers().get("Content-Type");
+                if (ct != null && ct.size() > 0) {
+                    l = new ArrayList<String>();
+                    l.addAll(ct);
+                    queryString.put("Content-Type", l);
+                }
             }
 
             _addDecoder(0, sDecoder);
