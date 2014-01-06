@@ -23,6 +23,7 @@ import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,6 +42,7 @@ public class LongPollingTransport extends StreamTransport {
      */
     private final AtomicBoolean handshakeOccured = new AtomicBoolean(true);
     protected boolean protocolReceived = false;
+    private int count = 0;
 
     public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(requestBuilder, options, request, functions);
@@ -70,6 +72,10 @@ public class LongPollingTransport extends StreamTransport {
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         if (handshakeOccured.get()) {
+            // onOpen only called once
+            if (protocolEnabled && ++count == 1) {
+                status = Socket.STATUS.INIT;
+            }
             return super.onStatusReceived(responseStatus);
         }
         return STATE.CONTINUE;
