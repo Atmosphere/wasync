@@ -140,4 +140,7 @@ where myEvent could be read from the response's body.
 Want to write an Android Client? [See](http://jfarcand.wordpress.com/2013/04/04/wasync-websockets-with-fallbacks-transports-for-android-node-js-and-atmosphere/)
 
 
+#### Build Status
+[![Build Status](https://buildhive.cloudbees.com/job/Atmosphere/job/wasync/badge/icon)](https://buildhive.cloudbees.com/job/Atmosphere/job/wasync/)
+
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/6565d992c41200f6a5617e646f291569 "githalytics.com")](http://githalytics.com/Atmosphere/wasync)
