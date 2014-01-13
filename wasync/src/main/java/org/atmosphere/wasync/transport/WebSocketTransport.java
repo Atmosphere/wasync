@@ -20,6 +20,8 @@ import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
+import com.ning.http.client.websocket.WebSocketByteListener;
+import com.ning.http.client.websocket.WebSocketListener;
 import com.ning.http.client.websocket.WebSocketTextListener;
 import com.ning.http.client.websocket.WebSocketUpgradeHandler;
 import org.atmosphere.wasync.Decoder;
@@ -31,6 +33,7 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +75,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private Future underlyingFuture;
     private Future connectOperationFuture;
     protected final boolean protocolEnabled;
+    protected boolean supportBinary = false;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -89,6 +93,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.resolver = request.functionResolver();
         this.options = options;
         this.requestBuilder = requestBuilder;
+        this.supportBinary = options.binary();
+
         protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
 
     }
@@ -229,70 +235,10 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         }
 
         ok.set(true);
-        WebSocketTextListener l = new WebSocketTextListener() {
-            @Override
-            public void onMessage(String message) {
-                message = message.trim();
-                logger.trace("{} received {}", name(), message);
-                if (message.length() > 0) {
-                    TransportsUtil.invokeFunction(MESSAGE,
-                            decoders,
-                            functions,
-                            message.getClass(),
-                            message,
-                            MESSAGE.name(),
-                            resolver);
-
-                    // Since the protocol is enabled, handshake occurred, now ready so go asynchronous
-                    if (connectOperationFuture != null && protocolEnabled) {
-                        unlockFuture();
-                    }
-                }
-            }
-
-            @Override
-            public void onFragment(String fragment, boolean last) {
-            }
-
-            @Override
-            public void onOpen(WebSocket websocket) {
-                // Could have been closed during the handshake.
-                if (status.equals(Socket.STATUS.CLOSE) || status.equals(Socket.STATUS.ERROR)) return;
-
-                closed.set(false);
-                Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
-                status = Socket.STATUS.OPEN;
-                TransportsUtil.invokeFunction(newStatus,
-                        decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
-            }
-
-            @Override
-            public void onClose(WebSocket websocket) {
-                if (closed.get()) return;
-
-                close();
-                if (options.reconnect()) {
-                    status = Socket.STATUS.REOPENED;
-                    if (options.reconnectInSeconds() > 0) {
-                        ScheduledExecutorService e = options.runtime().getConfig().reaper();
-                        e.schedule(new Runnable() {
-                            public void run() {
-                                reconnect();
-                            }
-                        }, options.reconnectInSeconds(), TimeUnit.SECONDS);
-                    } else {
-                        reconnect();
-                    }
-                }
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                status = Socket.STATUS.ERROR;
-                logger.debug("", t);
-                onFailure(t);
-            }
-        };
+        WebSocketListener l = new TextListener();
+        if (supportBinary) {
+            l = new BinaryListener(l);
+        }
         webSocket.addWebSocketListener(l);
         l.onOpen(webSocket);
     }
@@ -352,5 +298,117 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             webSocket.sendMessage(message);
         }
         return this;
+    }
+
+    private final class TextListener implements WebSocketTextListener {
+        @Override
+        public void onMessage(String message) {
+            message = message.trim();
+            logger.trace("{} received {}", name(), message);
+            if (message.length() > 0) {
+                TransportsUtil.invokeFunction(MESSAGE,
+                        decoders,
+                        functions,
+                        message.getClass(),
+                        message,
+                        MESSAGE.name(),
+                        resolver);
+
+                // Since the protocol is enabled, handshake occurred, now ready so go asynchronous
+                if (connectOperationFuture != null && protocolEnabled) {
+                    unlockFuture();
+                }
+            }
+        }
+
+        @Override
+        public void onFragment(String fragment, boolean last) {
+        }
+
+        @Override
+        public void onOpen(WebSocket websocket) {
+            // Could have been closed during the handshake.
+            if (status.equals(Socket.STATUS.CLOSE) || status.equals(Socket.STATUS.ERROR)) return;
+
+            closed.set(false);
+            Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+            status = Socket.STATUS.OPEN;
+            TransportsUtil.invokeFunction(newStatus,
+                    decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
+        }
+
+        @Override
+        public void onClose(WebSocket websocket) {
+            if (closed.get()) return;
+
+            close();
+            if (options.reconnect()) {
+                status = Socket.STATUS.REOPENED;
+                if (options.reconnectInSeconds() > 0) {
+                    ScheduledExecutorService e = options.runtime().getConfig().reaper();
+                    e.schedule(new Runnable() {
+                        public void run() {
+                            reconnect();
+                        }
+                    }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                } else {
+                    reconnect();
+                }
+            }
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            status = Socket.STATUS.ERROR;
+            logger.debug("", t);
+            onFailure(t);
+        }
+    }
+
+    private final class BinaryListener implements WebSocketByteListener {
+
+        private final WebSocketListener l;
+
+        private BinaryListener(WebSocketListener l) {
+            this.l = l;
+        }
+
+        @Override
+        public void onMessage(byte[] message) {
+            logger.trace("{} received {}", name(), message);
+            if (message.length > 0 && !Utils.whiteSpace(message)) {
+                TransportsUtil.invokeFunction(MESSAGE,
+                        decoders,
+                        functions,
+                        message.getClass(),
+                        message,
+                        MESSAGE.name(),
+                        resolver);
+
+                // Since the protocol is enabled, handshake occurred, now ready so go asynchronous
+                if (connectOperationFuture != null && protocolEnabled) {
+                    unlockFuture();
+                }
+            }
+        }
+
+        @Override
+        public void onFragment(byte[] fragment, boolean last) {
+        }
+
+        @Override
+        public void onOpen(WebSocket websocket) {
+            l.onOpen(websocket);
+        }
+
+        @Override
+        public void onClose(WebSocket websocket) {
+            l.onClose(websocket);
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            l.onError(t);
+        }
     }
 }

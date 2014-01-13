@@ -33,6 +33,7 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
     private boolean runtimeShared = false;
     private int requestTimeout = -1;
     protected final Class<T> derived;
+    private boolean binary;
 
     protected OptionsBuilder(Class<T> derived) {
         this.derived = derived;
@@ -192,6 +193,24 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
      */
     public int requestTimeoutInSeconds() {
         return requestTimeout;
+    }
+
+    /**
+     * Set to true in order to received byte data from the server. By default, binary aren't supported and response's server are considered as String.
+     * @param binary true to enabled
+     * @return this;
+     */
+    public T binary(boolean binary) {
+        this.binary = binary;
+        return derived.cast(this);
+    }
+
+    /**
+     * Return true is server's response binary is supported. Default is false
+     * @return true is server's response binary is supported. Default is false
+     */
+    public boolean binary() {
+        return binary;
     }
 
 }

@@ -30,6 +30,7 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,8 +95,10 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         this.request = request;
 
         protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
-        isBinary = request.headers().get("Content-Type") != null ?
-                request.headers().get("Content-Type").contains("application/octet-stream") : false;
+        isBinary = options.binary() ||
+                // Backward compatibility.
+                (request.headers().get("Content-Type") != null ?
+                request.headers().get("Content-Type").contains("application/octet-stream") : false);
     }
 
     /**
@@ -128,7 +131,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
-            if (!whiteSpace(payload)) {
+            if (!Utils.whiteSpace(payload)) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
                 unlockFuture();
             }
@@ -306,13 +309,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void connectedFuture(Future f) {
         this.connectOperationFuture = f;
-    }
-
-    protected final static boolean whiteSpace(byte[] b) {
-        int i = b.length;
-        while (i-- > 0 && (b[i] == 10 || b[i] == 32)) {
-        }
-        return i == -1;
     }
 }
 

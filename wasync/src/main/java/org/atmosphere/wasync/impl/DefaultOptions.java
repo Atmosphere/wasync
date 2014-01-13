@@ -88,4 +88,12 @@ public class DefaultOptions implements Options {
     public int requestTimeoutInSeconds() {
         return b.requestTimeoutInSeconds();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean binary() {
+        return b.binary();
+    }
 }

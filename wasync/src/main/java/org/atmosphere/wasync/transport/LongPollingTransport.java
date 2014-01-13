@@ -24,6 +24,7 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.util.Utils;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,12 +88,12 @@ public class LongPollingTransport extends StreamTransport {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
             if (protocolEnabled && !protocolReceived) {
-                if (!whiteSpace(payload)) {
+                if (!Utils.whiteSpace(payload)) {
                     TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
                     protocolReceived = true;
                 }
                 return AsyncHandler.STATE.CONTINUE;
-            } else if (!whiteSpace(payload)) {
+            } else if (!Utils.whiteSpace(payload)) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
             }
             unlockFuture();

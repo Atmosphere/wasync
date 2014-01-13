@@ -1813,7 +1813,7 @@ public abstract class BaseTest {
         // TODO: Hacky, but on slow machime the stop operation won't finish on time. The ERRROR will never comes in that case.
         try {
             assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSEERROR");
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSE");
         }
     }
