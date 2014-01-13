@@ -16,6 +16,8 @@
 package org.atmosphere.wasync.util;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Function;
@@ -58,7 +60,18 @@ public class WebSocketLoader {
 
         for (int r = 0; r < run; r++) {
 
+            AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
+            b.setFollowRedirects(true).setIdleConnectionTimeoutInMs(-1).setRequestTimeoutInMs(-1).setUserAgent("loader/1.1");
+
+            NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
+
+            nettyConfig.addProperty("child.tcpNoDelay", "true");
+            nettyConfig.addProperty("child.keepAlive", "true");
+
             final AsyncHttpClient c = new AsyncHttpClient();
+
+
+            AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(nettyConfig).build();
 
             Client client = ClientFactory.getDefault().newClient();
             RequestBuilder request = client.newRequestBuilder();
