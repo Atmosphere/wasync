@@ -4,7 +4,7 @@ wAsync is a Java based library allowing asynchronous communication with any WebS
 wAsync can be used with Node.js, Android, Atmosphere or any WebSocket Framework. To get started, read this super simple [Tutorial](https://github.com/Atmosphere/wasync/wiki/Getting-Started-with-wAsync)
 or read the [FAQ](https://github.com/Atmosphere/wasync/wiki/FAQ)
 
-You can browse the [javadoc](http://atmosphere.github.com/wasync/apidocs/) or browse our [samples](https://github.com/Atmosphere/wasync/tree/master/samples).
+You can browse the [javadoc](http://atmosphere.github.com/wasync/apidocs/) or browse our [samples](https://github.com/Atmosphere/atmosphere-samples/tree/master/wasync-samples).
 
 You can [download the jar](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22wasync%22) or use Maven
 ```xml
