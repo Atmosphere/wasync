@@ -68,11 +68,7 @@ public class WebSocketLoader {
             nettyConfig.addProperty("child.tcpNoDelay", "true");
             nettyConfig.addProperty("child.keepAlive", "true");
 
-            final AsyncHttpClient c = new AsyncHttpClient();
-
-
-            AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(nettyConfig).build();
-
+            final AsyncHttpClient c = new AsyncHttpClient(b.setAsyncHttpClientProviderConfig(nettyConfig).build());
             Client client = ClientFactory.getDefault().newClient();
             RequestBuilder request = client.newRequestBuilder();
             request.method(Request.METHOD.GET).uri(url);
