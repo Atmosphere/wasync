@@ -60,7 +60,7 @@ public abstract class BaseTest {
         try {
             socket = new ServerSocket(0);
 
-            return socket.getLocalPort();
+            return findFreePort();
         } finally {
             if (socket != null) {
                 socket.close();
@@ -1773,6 +1773,8 @@ public abstract class BaseTest {
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
+                //System.out.println("=>" + t);
+
                 b.get().append(t);
                 flatch.countDown();
             }

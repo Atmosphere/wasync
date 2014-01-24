@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,6 +77,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private Future connectOperationFuture;
     protected final boolean protocolEnabled;
     protected boolean supportBinary = false;
+    protected final ScheduledExecutorService timer;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(new Builder());
@@ -96,7 +98,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.supportBinary = options.binary();
 
         protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
-
+        timer = Executors.newSingleThreadScheduledExecutor();
     }
 
     /**
@@ -116,6 +118,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     public void close() {
         status = Socket.STATUS.CLOSE;
         if (closed.getAndSet(true)) return;
+
+        timer.shutdown();
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
 
@@ -323,6 +327,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         @Override
         public void onFragment(String fragment, boolean last) {
+            // TODO: Add support for Streaming
         }
 
         @Override
@@ -345,8 +350,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             if (options.reconnect()) {
                 status = Socket.STATUS.REOPENED;
                 if (options.reconnectInSeconds() > 0) {
-                    ScheduledExecutorService e = options.runtime().getConfig().reaper();
-                    e.schedule(new Runnable() {
+                    timer.schedule(new Runnable() {
                         public void run() {
                             reconnect();
                         }

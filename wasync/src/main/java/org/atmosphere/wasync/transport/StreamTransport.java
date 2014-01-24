@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,6 +77,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected Future underlyingFuture;
     protected Future connectOperationFuture;
     protected final boolean protocolEnabled;
+    protected final ScheduledExecutorService timer;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -98,7 +100,9 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         isBinary = options.binary() ||
                 // Backward compatibility.
                 (request.headers().get("Content-Type") != null ?
-                request.headers().get("Content-Type").contains("application/octet-stream") : false);
+                        request.headers().get("Content-Type").contains("application/octet-stream") : false);
+
+        timer = Executors.newSingleThreadScheduledExecutor();
     }
 
     /**
@@ -222,8 +226,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             // We can't let the STATUS to close as fire() method won't work.
             status = Socket.STATUS.REOPENED;
             if (options.reconnectInSeconds() > 0) {
-                ScheduledExecutorService e = options.runtime().getConfig().reaper();
-                e.schedule(new Runnable() {
+                timer.schedule(new Runnable() {
                     public void run() {
                         reconnect();
                     }
@@ -261,6 +264,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public void close() {
         if (closed.getAndSet(true)) return;
         status = Socket.STATUS.CLOSE;
+
+        timer.shutdown();
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
 
