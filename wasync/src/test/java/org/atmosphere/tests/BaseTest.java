@@ -60,7 +60,7 @@ public abstract class BaseTest {
         try {
             socket = new ServerSocket(0);
 
-            return socket.getLocalPort();
+            socket.getLocalPort();
         } finally {
             if (socket != null) {
                 socket.close();
@@ -81,10 +81,12 @@ public abstract class BaseTest {
 
     abstract int notFoundCode();
 
+
     abstract int getCount();
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
+        if (server != null) server.stop();
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
     }
