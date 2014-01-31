@@ -60,7 +60,7 @@ public abstract class BaseTest {
         try {
             socket = new ServerSocket(0);
 
-            socket.getLocalPort();
+            return socket.getLocalPort();
         } finally {
             if (socket != null) {
                 socket.close();
