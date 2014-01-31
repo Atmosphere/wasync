@@ -1591,7 +1591,7 @@ public abstract class BaseTest {
 
         elatch.await(5, TimeUnit.SECONDS);
 
-        assertEquals(b.get().toString(), "OPENCLOSEREOPENEDCLOSE");
+        assertTrue(b.get().toString().startsWith("OPENCLOSEREOPENED"));
     }
 
     @Test
@@ -1695,12 +1695,9 @@ public abstract class BaseTest {
 
         elatch.await(5, TimeUnit.SECONDS);
 
-                // TODO: Hacky, but on slow machime the stop operation won't finish on time. The ERRROR will never comes in that case.
-        try {
-            assertEquals(b.get().toString(), "OPENPINGCLOSEERROR");
-        } catch (Throwable ex) {
-            assertEquals(b.get().toString(), "OPENPINGCLOSE");
-        }
+        // TODO: Hacky, but on slow machime the stop operation won't finish on time.
+        // The ERRROR will never comes in that case and the client may reconnect.
+        assertTrue(b.get().toString().startsWith("OPENPINGCLOSE"));
     }
 
     @Test
@@ -2081,7 +2078,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build() );
+        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build());
         socket.on(Event.CLOSE.name(), new Function<String>() {
 
             @Override
