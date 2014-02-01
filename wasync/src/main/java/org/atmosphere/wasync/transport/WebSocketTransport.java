@@ -177,6 +177,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+        logger.trace("Body received {}", new String(bodyPart.getBodyPartBytes()));
         return STATE.CONTINUE;
     }
 
@@ -185,6 +186,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+        logger.trace("Status received {}", responseStatus);
         TransportsUtil.invokeFunction(STATUS, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
         if (responseStatus.getStatusCode() == 101) {
             return STATE.UPGRADE;
@@ -200,6 +202,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+        logger.trace("Headers received {}", headers);
         TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headers.getHeaders(), HEADERS.name(), resolver);
 
         return STATE.CONTINUE;
@@ -210,6 +213,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public WebSocket onCompleted() throws Exception {
+        logger.trace("onCompleted {}", webSocket);
         if (webSocket == null) {
             logger.error("WebSocket Handshake Failed");
             status = Socket.STATUS.ERROR;
@@ -232,6 +236,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public void onSuccess(WebSocket webSocket) {
+        logger.trace("onSuccess {}", webSocket);
+
         this.webSocket = webSocket;
 
         if (connectOperationFuture != null && !protocolEnabled) {
@@ -282,6 +288,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public final void onFailure(Throwable t) {
+        logger.trace("onFailure {}", t);
         connectFutureException(t);
         errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
     }
@@ -307,6 +314,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     private final class TextListener implements WebSocketTextListener {
         @Override
         public void onMessage(String message) {
+            logger.trace("onMessage {} for {}", message, webSocket);
             message = message.trim();
             logger.trace("{} received {}", name(), message);
             if (message.length() > 0) {
@@ -332,6 +340,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         @Override
         public void onOpen(WebSocket websocket) {
+            logger.trace("onOpen for {}", webSocket);
+
             // Could have been closed during the handshake.
             if (status.equals(Socket.STATUS.CLOSE) || status.equals(Socket.STATUS.ERROR)) return;
 
@@ -344,6 +354,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         @Override
         public void onClose(WebSocket websocket) {
+            logger.trace("onClose for {}", webSocket);
             if (closed.get()) return;
 
             close();
@@ -363,6 +374,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         @Override
         public void onError(Throwable t) {
+            logger.trace("onError for {}", t);
             status = Socket.STATUS.ERROR;
             logger.debug("", t);
             onFailure(t);

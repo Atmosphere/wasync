@@ -154,6 +154,7 @@ public class DefaultSocket implements Socket {
                     transportInUse.future(new FutureProxy<ListenableFuture>(this,
                             options.runtime().prepareRequest(r.build()).execute((AsyncHandler<WebSocket>) transportInUse)));
 
+                    logger.trace("WebSocket Connect Timeout {}", timeout);
                     f.get(timeout, tu);
                 } catch (ExecutionException t) {
                     Throwable e = t.getCause();
@@ -181,6 +182,7 @@ public class DefaultSocket implements Socket {
                 transportInUse.future(new FutureProxy<ListenableFuture>(this,
                         options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse)));
 
+                logger.debug("Http Connect Timeout {}", timeout);
                 try {
                     if (options.waitBeforeUnlocking() > 0) {
                         logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay," +
