@@ -269,8 +269,8 @@
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.6</source.property>
         <target.property>1.6</target.property>
-        <atmosphere.version>2.1.0-SNAPSHOT</atmosphere.version>
-        <nettosphere.version>2.1.0-SNAPSHOT</nettosphere.version>
+        <atmosphere.version>2.1.0</atmosphere.version>
+        <nettosphere.version>2.1.0</nettosphere.version>
         <ahc.version>1.8.1</ahc.version>
     </properties>
 </project>
