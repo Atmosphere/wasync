@@ -9,7 +9,7 @@
 <div id="overview"><a href="../../../../apidocs/org/atmosphere/wasync/Socket.html">View Javadoc</a></div><pre>
 
 <a class="jxr_linenumber" name="1" href="#1">1</a>   <em class="jxr_comment">/*</em>
-<a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_comment"> * Copyright 2013 Jeanfrancois Arcand</em>
+<a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_comment"> * Copyright 2014 Jeanfrancois Arcand</em>
 <a class="jxr_linenumber" name="3" href="#3">3</a>   <em class="jxr_comment"> *</em>
 <a class="jxr_linenumber" name="4" href="#4">4</a>   <em class="jxr_comment"> * Licensed under the Apache License, Version 2.0 (the "License"); you may not</em>
 <a class="jxr_linenumber" name="5" href="#5">5</a>   <em class="jxr_comment"> * use this file except in compliance with the License. You may obtain a copy of</em>
@@ -146,18 +146,18 @@
 <a class="jxr_linenumber" name="136" href="#136">136</a> <em class="jxr_javadoccomment">     * Connect to the remote Server using the {@link Request}'s information.</em>
 <a class="jxr_linenumber" name="137" href="#137">137</a> <em class="jxr_javadoccomment">     * @param request a {@link Request}</em>
 <a class="jxr_linenumber" name="138" href="#138">138</a> <em class="jxr_javadoccomment">     * @return this</em>
-<a class="jxr_linenumber" name="139" href="#139">139</a> <em class="jxr_javadoccomment">     * @throws IOException</em>
+<a class="jxr_linenumber" name="139" href="#139">139</a> <em class="jxr_javadoccomment">     * @throws IOException in case the connect fails or a network failure occurs.</em>
 <a class="jxr_linenumber" name="140" href="#140">140</a> <em class="jxr_javadoccomment">     */</em>
 <a class="jxr_linenumber" name="141" href="#141">141</a>     <a href="../../../org/atmosphere/wasync/Socket.html">Socket</a> open(<a href="../../../org/atmosphere/wasync/Request.html">Request</a> request) <strong class="jxr_keyword">throws</strong> IOException;
 <a class="jxr_linenumber" name="142" href="#142">142</a>     
 <a class="jxr_linenumber" name="143" href="#143">143</a>     <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="144" href="#144">144</a> <em class="jxr_javadoccomment">     * Connect to the remote Server using the {@link Request}'s information, will timeout if the connection failed to open </em>
-<a class="jxr_linenumber" name="145" href="#145">145</a> <em class="jxr_javadoccomment">     * within a certain time</em>
+<a class="jxr_linenumber" name="145" href="#145">145</a> <em class="jxr_javadoccomment">     * within a certain time.</em>
 <a class="jxr_linenumber" name="146" href="#146">146</a> <em class="jxr_javadoccomment">     * @param request a {@link Request}</em>
 <a class="jxr_linenumber" name="147" href="#147">147</a> <em class="jxr_javadoccomment">     * @param timeout the maximum time to wait</em>
 <a class="jxr_linenumber" name="148" href="#148">148</a> <em class="jxr_javadoccomment">     * @param unit the time unit of the timeout argument</em>
 <a class="jxr_linenumber" name="149" href="#149">149</a> <em class="jxr_javadoccomment">     * @return this</em>
-<a class="jxr_linenumber" name="150" href="#150">150</a> <em class="jxr_javadoccomment">     * @throws IOException</em>
+<a class="jxr_linenumber" name="150" href="#150">150</a> <em class="jxr_javadoccomment">     * @throws IOException in case the connect fails or a network failure occurs.</em>
 <a class="jxr_linenumber" name="151" href="#151">151</a> <em class="jxr_javadoccomment">     */</em>
 <a class="jxr_linenumber" name="152" href="#152">152</a>     <a href="../../../org/atmosphere/wasync/Socket.html">Socket</a> open(<a href="../../../org/atmosphere/wasync/Request.html">Request</a> request, <strong class="jxr_keyword">long</strong> timeout, TimeUnit unit) <strong class="jxr_keyword">throws</strong> IOException;
 <a class="jxr_linenumber" name="153" href="#153">153</a> 
