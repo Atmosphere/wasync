@@ -203,10 +203,10 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                     l.addAll(ct);
                     queryString.put("Content-Type", l);
                 }
-            }
 
-            _addDecoder(0, sDecoder);
-            _addDecoder(0, bDecoder);
+                _addDecoder(0, sDecoder);
+                _addDecoder(0, bDecoder);
+            }
 
             if (trackMessageLength) {
                 TrackMessageSizeDecoder trackMessageSizeDecoder;
