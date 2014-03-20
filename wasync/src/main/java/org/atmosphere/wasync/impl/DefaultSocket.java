@@ -149,7 +149,7 @@ public class DefaultSocket implements Socket {
 
         try {
             if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
-                r.setUrl(request.uri().replace("http://", "ws://"));
+                r.setUrl(request.uri().replaceFirst ("^http(s)?://", "ws$1://"));
                 try {
                     transportInUse.future(new FutureProxy<ListenableFuture>(this,
                             options.runtime().prepareRequest(r.build()).execute((AsyncHandler<WebSocket>) transportInUse)));
@@ -178,7 +178,7 @@ public class DefaultSocket implements Socket {
                     return new VoidSocket();
                 }
             } else {
-                r.setUrl(request.uri().replace("ws://", "http://"));
+	            r.setUrl(request.uri().replaceFirst ("^ws(s)?://", "http$1://"));
                 transportInUse.future(new FutureProxy<ListenableFuture>(this,
                         options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse)));
 
