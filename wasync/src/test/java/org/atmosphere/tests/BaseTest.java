@@ -2300,6 +2300,46 @@ public abstract class BaseTest {
         assertEquals(response.get().toString(), "PINGPONG");
     }
 
+    @Test
+    public void ahcCloseTest() throws IOException {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.WEBSOCKET);
+
+        Socket socket = client.create();
+        socket.open(request.build());
+        socket.close();
+    }
+
 
     public final static class EventPOJO {
 

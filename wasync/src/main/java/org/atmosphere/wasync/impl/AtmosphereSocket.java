@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,7 +35,6 @@ public class AtmosphereSocket extends DefaultSocket {
 
     private final static Logger logger = LoggerFactory.getLogger(AtmosphereSocket.class);
     private AtomicBoolean closedByProtocol = new AtomicBoolean();
-    private final Semaphore semaphore = new Semaphore(1);
 
     public AtmosphereSocket(Options options) {
         super(options);
@@ -65,12 +63,9 @@ public class AtmosphereSocket extends DefaultSocket {
                     .setHeaders(request.headers())
                     .setQueryParameters(f);
             try {
-                semaphore.acquire();
                 options.runtime().prepareRequest(r.build()).execute().get();
             } catch (Exception e) {
                 logger.trace("", e);
-            } finally {
-                semaphore.release();
             }
         }
     }
@@ -114,21 +109,14 @@ public class AtmosphereSocket extends DefaultSocket {
      */
     @Override
     public void close() {
-        try {
-            doCloseRequest();
+        doCloseRequest();
 
-            semaphore.acquire();
-            // Not connected, but close the underlying AHC.
-            if (transportInUse == null) {
-                super.closeRuntime(false);
-            } else if (socketRuntime != null && (closedByProtocol.get() || !transportInUse.status().equals(STATUS.CLOSE))) {
-                transportInUse.close();
-                super.closeRuntime(true);
-            }
-        } catch (InterruptedException e) {
-            logger.trace("", e);
-        } finally {
-            semaphore.release();
+        // Not connected, but close the underlying AHC.
+        if (transportInUse == null) {
+            super.closeRuntime(false);
+        } else if (socketRuntime != null && (closedByProtocol.get() || !transportInUse.status().equals(STATUS.CLOSE))) {
+            transportInUse.close();
+            super.closeRuntime(true);
         }
     }
 }
