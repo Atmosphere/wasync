@@ -28,13 +28,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AtmosphereSocket extends DefaultSocket {
 
     private final static Logger logger = LoggerFactory.getLogger(AtmosphereSocket.class);
-    private AtomicBoolean closed = new AtomicBoolean();
+    private AtomicBoolean closedByProtocol = new AtomicBoolean();
+    private final Semaphore semaphore = new Semaphore(1);
 
     public AtmosphereSocket(Options options) {
         super(options);
@@ -51,9 +53,9 @@ public class AtmosphereSocket extends DefaultSocket {
 
     protected void doCloseRequest() {
 
-        ((DefaultOptions)options).b.reconnect(false);
+        ((DefaultOptions) options).b.reconnect(false);
 
-        if (!closed.getAndSet(true)) {
+        if (!closedByProtocol.getAndSet(true)) {
             RequestBuilder r = new RequestBuilder();
             FluentStringsMap f = new FluentStringsMap();
             f.add("X-Atmosphere-Transport", "close").add("X-Atmosphere-tracking-id", decodeQueryString(request).get("X-Atmosphere-tracking-id"));
@@ -63,9 +65,12 @@ public class AtmosphereSocket extends DefaultSocket {
                     .setHeaders(request.headers())
                     .setQueryParameters(f);
             try {
+                semaphore.acquire();
                 options.runtime().prepareRequest(r.build()).execute().get();
             } catch (Exception e) {
                 logger.trace("", e);
+            } finally {
+                semaphore.release();
             }
         }
     }
@@ -109,7 +114,21 @@ public class AtmosphereSocket extends DefaultSocket {
      */
     @Override
     public void close() {
-        doCloseRequest();
-        super.close();
+        try {
+            doCloseRequest();
+
+            semaphore.acquire();
+            // Not connected, but close the underlying AHC.
+            if (transportInUse == null) {
+                super.closeRuntime(false);
+            } else if (socketRuntime != null && (closedByProtocol.get() || !transportInUse.status().equals(STATUS.CLOSE))) {
+                transportInUse.close();
+                super.closeRuntime(true);
+            }
+        } catch (InterruptedException e) {
+            logger.trace("", e);
+        } finally {
+            semaphore.release();
+        }
     }
 }
