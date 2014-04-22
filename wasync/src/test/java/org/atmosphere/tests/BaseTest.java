@@ -2301,7 +2301,7 @@ public abstract class BaseTest {
     }
 
     @Test
-    public void ahcCloseTest() throws IOException {
+    public void ahcCloseTest() throws IOException, InterruptedException {
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -2328,6 +2328,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
+        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
         RequestBuilder request = client.newRequestBuilder()
@@ -2335,9 +2336,14 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(Request.TRANSPORT.WEBSOCKET);
 
-        Socket socket = client.create();
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.open(request.build());
         socket.close();
+
+        // AHC is async closed
+        Thread.sleep(1000);
+
+        assertTrue(ahc.isClosed());
     }
 
 
