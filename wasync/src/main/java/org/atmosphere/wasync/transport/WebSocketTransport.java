@@ -95,7 +95,10 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         this.resolver = request.functionResolver();
         this.options = options;
         this.requestBuilder = requestBuilder;
-        this.supportBinary = options.binary();
+        this.supportBinary = options.binary() ||
+                // Backward compatibility.
+                (request.headers().get("Content-Type") != null ?
+                        request.headers().get("Content-Type").contains("application/octet-stream") : false);
 
         protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
         timer = Executors.newSingleThreadScheduledExecutor();
