@@ -182,7 +182,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         public AtmosphereRequest build() {
             if (enableProtocol) {
                 List<String> l = new ArrayList<String>();
-                l.add("2.0");
+                l.add("2.2.1");
                 queryString.put("X-Atmosphere-Framework", l);
 
                 l = new ArrayList<String>();
@@ -231,7 +231,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         private final void handleProtocol(String s) {
             String[] proto = s.trim().split("\\|");
             // Track message size may have been appended
-            int pos = proto.length > 2 ? pos = 1 : 0;
+            int pos = trackMessageLength ? 1 : 0;
 
             List<String> l = new ArrayList<String>();
             l.add(proto[pos]);

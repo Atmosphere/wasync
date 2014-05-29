@@ -44,7 +44,7 @@ public class WebSocketLoader {
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"5", "100", "10000", "http://127.0.0.1:8080/simple/test"};
+            s = new String[]{"5", "1", "1", "http://127.0.0.1:8080/simple/test"};
         }
 
         int run = Integer.valueOf(s[0]);
@@ -73,6 +73,7 @@ public class WebSocketLoader {
             RequestBuilder request = client.newRequestBuilder();
             request.method(Request.METHOD.GET).uri(url);
             request.transport(Request.TRANSPORT.WEBSOCKET);
+            request.header("X-wakeUpNIO", "true");
 
             final CountDownLatch l = new CountDownLatch(clientNum);
             final CountDownLatch messages = new CountDownLatch(messageNum * clientNum);
@@ -99,7 +100,7 @@ public class WebSocketLoader {
                                     String[] m = s.split("\n\r");
                                     mCount += m.length;
                                     messages.countDown();
-                                    //System.out.println("Message left receive " + messages.getCount() + " message " + s);
+                                    System.out.println("Message left receive " + messages.getCount() + " message " + s);
                                     if (mCount == messageNum) {
                                         // System.out.println("All messages received " + mCount);
                                         total.addAndGet(System.currentTimeMillis() - start.get());
@@ -121,7 +122,7 @@ public class WebSocketLoader {
 
             l.await(30, TimeUnit.SECONDS);
 
-            // System.out.println("OK, all Connected: " + clientNum);
+            System.out.println("OK, all Connected: " + clientNum);
 
             Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
             socket.open(request.build());
