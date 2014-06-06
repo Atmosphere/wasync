@@ -2406,6 +2406,65 @@ public abstract class BaseTest {
         assertTrue(closedLatch.await(5, TimeUnit.SECONDS));
     }
 
+    @Test
+    public void testOpenWithAtmosphereClientAndProtocol() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+        final CountDownLatch openedLatch = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            @Override
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                l.countDown();
+                            }
+                        }).suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .enableProtocol(true)
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on(Event.OPEN.name(), new Function<Object>() {
+            @Override
+            public void on(Object o) {
+                openedLatch.countDown();
+            }
+        });
+
+        socket.open(request.build());
+
+        // Wait until the connection is suspended
+        assertTrue(l.await(5, TimeUnit.SECONDS));
+
+        // Check if Event.OPEN was called
+        assertTrue(openedLatch.await(5, TimeUnit.SECONDS));
+
+        // Cleanup and close the connection
+        socket.close();
+    }
 
     public final static class EventPOJO {
 
