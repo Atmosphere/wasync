@@ -149,7 +149,8 @@ public class DefaultSocket implements Socket {
 
         try {
             if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
-                r.setUrl(request.uri().replaceFirst ("^http(s)?://", "ws$1://"));
+				// Android uses the 'ICU’s RegEx engine' and hence will replace a regex captured group with null if not found instead of an empty string. Below code fixes that
+                r.setUrl(request.uri().replaceFirst ("^http(s)?://", "ws$1://").replaceFirst("null", ""));
                 try {
                     transportInUse.future(new FutureProxy<ListenableFuture>(this,
                             options.runtime().prepareRequest(r.build()).execute((AsyncHandler<WebSocket>) transportInUse)));
