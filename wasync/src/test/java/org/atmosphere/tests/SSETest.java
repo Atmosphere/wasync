@@ -151,7 +151,7 @@ public class SSETest {
         assertEquals(socket.status(), Socket.STATUS.CLOSE);
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void testOpenWithAtmosphereClientAndProtocol() throws Exception {
         final CountDownLatch l = new CountDownLatch(1);
         final CountDownLatch openedLatch = new CountDownLatch(1);
