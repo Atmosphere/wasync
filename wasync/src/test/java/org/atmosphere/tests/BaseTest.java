@@ -2507,7 +2507,7 @@ public abstract class BaseTest {
         socket.close();
 
         // AHC is async closed
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         assertTrue(ahc.isClosed());
     }
