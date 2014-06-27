@@ -272,7 +272,7 @@
         <target.property>1.6</target.property>
         <atmosphere.version>2.2.0-SNAPSHOT</atmosphere.version>
         <nettosphere.version>2.2.0-SNAPSHOT</nettosphere.version>
-        <ahc.version>1.8.9</ahc.version>
+        <ahc.version>1.8.11</ahc.version>
     </properties>
 </project>
 
