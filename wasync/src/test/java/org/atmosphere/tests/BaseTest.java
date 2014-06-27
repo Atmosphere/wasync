@@ -2466,6 +2466,52 @@ public abstract class BaseTest {
         socket.close();
     }
 
+    @Test
+    public void ahcCloseTest2() throws IOException, InterruptedException {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.WEBSOCKET);
+
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).runtimeShared(false).serializedFireStage(new DefaultSerializedFireStage()).build());
+        socket.open(request.build());
+        socket.close();
+
+        // AHC is async closed
+        Thread.sleep(2000);
+
+        assertTrue(ahc.isClosed());
+    }
+
     public final static class EventPOJO {
 
         public final String message;
