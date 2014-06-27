@@ -121,15 +121,5 @@ public class LongPollingTransport extends StreamTransport {
         return Request.TRANSPORT.LONG_POLLING;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void close() {
-        if (!protocolEnabled) {
-            super.close();
-        }
-    }
-
 }
 

@@ -2346,7 +2346,7 @@ public abstract class BaseTest {
         assertTrue(ahc.isClosed());
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void testCloseWithAtmosphereClient() throws IOException, InterruptedException {
         final CountDownLatch l = new CountDownLatch(1);
         final CountDownLatch closedLatch = new CountDownLatch(1);
