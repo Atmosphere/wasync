@@ -149,8 +149,7 @@ public class DefaultSocket implements Socket {
 
         try {
             if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
-				// Android uses the 'ICU’s RegEx engine' and hence will replace a regex captured group with null if not found instead of an empty string. Below code fixes that
-                r.setUrl(request.uri().replaceFirst ("^http(s)?://", "ws$1://").replaceFirst("null", ""));
+                r.setUrl(webSocketUrl(request.uri()));
                 try {
                     transportInUse.future(new FutureProxy<ListenableFuture>(this,
                             options.runtime().prepareRequest(r.build()).execute((AsyncHandler<WebSocket>) transportInUse)));
@@ -179,7 +178,7 @@ public class DefaultSocket implements Socket {
                     return new VoidSocket();
                 }
             } else {
-	            r.setUrl(request.uri().replaceFirst ("^ws(s)?://", "http$1://"));
+	            r.setUrl(httpUrl(request.uri()));
                 transportInUse.future(new FutureProxy<ListenableFuture>(this,
                         options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse)));
 
@@ -200,6 +199,14 @@ public class DefaultSocket implements Socket {
             f.finishOrThrowException();
         }
         return this;
+    }
+
+    private String webSocketUrl(String url) {
+        return url.startsWith("http://") || url.startsWith("https://") ? "ws" + url.substring(4) : url;
+    }
+
+    private String httpUrl(String url) {
+        return url.startsWith("ws://") || url.startsWith("wss://") ? "http" + url.substring(2) : url;
     }
 
     protected void addFunction(final long timeout, final TimeUnit tu) {
