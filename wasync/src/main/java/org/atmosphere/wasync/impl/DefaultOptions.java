@@ -54,6 +54,12 @@ public class DefaultOptions implements Options {
     public int reconnectInSeconds(){
         return b.reconnectInSeconds();
     }
+
+    @Override
+    public int reconnectAttempts(){
+        return b.reconnectAttempts();
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -18,6 +18,7 @@ package org.atmosphere.wasync.transport;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.websocket.WebSocket;
 import com.ning.http.client.websocket.WebSocketByteListener;
@@ -40,10 +41,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.atmosphere.wasync.Event.CLOSE;
 import static org.atmosphere.wasync.Event.ERROR;
@@ -64,7 +67,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
     private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);
     private WebSocket webSocket;
+
     private final AtomicBoolean ok = new AtomicBoolean(false);
+    private final AtomicInteger reconnectAttempt = new AtomicInteger();
+    private final AtomicBoolean reconnecting = new AtomicBoolean(false);
+
     private final List<FunctionWrapper> functions;
     private final List<Decoder<?, ?>> decoders;
     private final FunctionResolver resolver;
@@ -122,7 +129,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         status = Socket.STATUS.CLOSE;
         if (closed.getAndSet(true)) return;
 
-        timer.shutdown();
+        if (options.reconnectInSeconds() <= 0 && !options.reconnect()  ) {
+            timer.shutdown();
+        }
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
 
@@ -261,11 +270,55 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         connectOperationFuture.ioException(e).done();
     }
 
+
+    void tryReconnect() {
+
+        reconnectAttempt.incrementAndGet();
+
+        if (options.reconnectInSeconds() > 0) {
+            timer.schedule(new Runnable() {
+                public void run() {
+                    reconnect();
+                }
+            }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+        } else {
+            reconnect();
+        }
+
+    }
+
     void reconnect() {
         try {
-            options.runtime().executeRequest(requestBuilder.build(), WebSocketTransport.this);
+            reconnecting.set(true);
+            status = Socket.STATUS.REOPENED;
+
+            ListenableFuture<WebSocket> webSocketListenableFuture = options.runtime().executeRequest(requestBuilder.build(), WebSocketTransport.this);
+
+            logger.info("try reconnect : attempt [{}/{}]", reconnectAttempt.get(), options.reconnectAttempts());
+
+            webSocketListenableFuture.get();
+
+            logger.info("reconnect successful ! in attempt [{}/{}]", reconnectAttempt.get(), options.reconnectAttempts());
+
+            reconnectAttempt.set(0);
+            reconnecting.set(false);
+
         } catch (IOException e) {
+            reconnecting.set(false);
             logger.error("", e);
+        } catch (InterruptedException e) {
+            reconnecting.set(false);
+            logger.error("", e);
+        } catch (ExecutionException e) {
+
+            if(reconnectAttempt.get() < options.reconnectAttempts()){
+                tryReconnect();
+            }else{
+                reconnecting.set(false);
+                reconnectAttempt.set(0);
+                onFailure(e);
+            }
+
         }
     }
 
@@ -291,9 +344,12 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
      */
     @Override
     public final void onFailure(Throwable t) {
-        logger.trace("onFailure {}", t);
-        connectFutureException(t);
-        errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+
+        if(!reconnecting.get()){
+            logger.trace("onFailure {}", t);
+            connectFutureException(t);
+            errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+        }
     }
 
     public WebSocketTransport sendMessage(String message) {
@@ -362,16 +418,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             close();
             if (options.reconnect()) {
-                status = Socket.STATUS.REOPENED;
-                if (options.reconnectInSeconds() > 0) {
-                    timer.schedule(new Runnable() {
-                        public void run() {
-                            reconnect();
-                        }
-                    }, options.reconnectInSeconds(), TimeUnit.SECONDS);
-                } else {
-                    reconnect();
-                }
+                tryReconnect();
             }
         }
 

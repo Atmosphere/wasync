@@ -45,6 +45,13 @@ public interface Options {
     public int reconnectInSeconds();
 
     /**
+     * Maximum reconnection attempts that will run in the interval defined by {@link #reconnectInSeconds}
+     *
+     * @return the number of maximum reconnection attempts
+     */
+    public int reconnectAttempts();
+
+    /**
      * When using long-polling and the {@link Request}, the delay before considering the long-polling connection has been fully processed by the server. If you use
      * the {@link org.atmosphere.wasync.impl.AtmosphereClient}, the server will send some handshake so this value is not needed.
      *
