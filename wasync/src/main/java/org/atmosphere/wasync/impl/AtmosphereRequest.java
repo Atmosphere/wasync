@@ -190,10 +190,6 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 queryString.put("X-Atmosphere-tracking-id", l);
 
                 l = new ArrayList<String>();
-                l.add("0");
-                queryString.put("X-Cache-Date", l);
-
-                l = new ArrayList<String>();
                 l.add("true");
                 queryString.put("X-atmo-protocol", l);
 
@@ -236,9 +232,6 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
             List<String> l = new ArrayList<String>();
             l.add(proto[pos]);
             queryString.put("X-Atmosphere-tracking-id", l);
-            l = new ArrayList<String>();
-            l.add(proto[pos + 1]);
-            queryString.put("X-Cache-Date", l);
         }
 
         private final class SDecoder implements Decoder<String, Decoder.Decoded<String>> {
