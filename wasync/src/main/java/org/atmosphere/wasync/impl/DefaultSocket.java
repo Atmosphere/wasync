@@ -119,7 +119,7 @@ public class DefaultSocket implements Socket {
         r.setUrl(request.uri())
                 .setMethod(request.method().name())
                 .setHeaders(request.headers())
-                .setQueryParameters(decodeQueryString(request));
+                .setQueryParams(decodeQueryString(request));
 
         List<Transport> transports = getTransport(r, request);
 

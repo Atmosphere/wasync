@@ -87,7 +87,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     protected final ScheduledExecutorService timer;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
-        super(new Builder());
+        super();
         this.decoders = request.decoders();
 
         if (decoders.size() == 0) {
@@ -129,7 +129,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         status = Socket.STATUS.CLOSE;
         if (closed.getAndSet(true)) return;
 
-        if (options.reconnectInSeconds() <= 0 && !options.reconnect()  ) {
+        if (options.reconnectInSeconds() <= 0 && !options.reconnect()) {
             timer.shutdown();
         }
 
@@ -311,14 +311,13 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             logger.error("", e);
         } catch (ExecutionException e) {
 
-            if(reconnectAttempt.get() < options.reconnectAttempts()){
+            if (reconnectAttempt.get() < options.reconnectAttempts()) {
                 tryReconnect();
-            }else{
+            } else {
                 reconnecting.set(false);
                 reconnectAttempt.set(0);
-                onFailure(e);
+                onFailure(e.getCause() != null ? e.getCause() : e);
             }
-
         }
     }
 
@@ -345,7 +344,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     @Override
     public final void onFailure(Throwable t) {
 
-        if(!reconnecting.get()){
+        if (!reconnecting.get()) {
             logger.trace("onFailure {}", t);
             connectFutureException(t);
             errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
@@ -356,7 +355,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         if (webSocket != null
                 && !status.equals(Socket.STATUS.ERROR)
                 && !status.equals(Socket.STATUS.CLOSE)) {
-            webSocket.sendTextMessage(message);
+            webSocket.sendMessage(message);
         }
         return this;
     }
@@ -390,11 +389,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                     unlockFuture();
                 }
             }
-        }
-
-        @Override
-        public void onFragment(String fragment, boolean last) {
-            // TODO: Add support for Streaming
         }
 
         @Override
@@ -456,10 +450,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                     unlockFuture();
                 }
             }
-        }
-
-        @Override
-        public void onFragment(byte[] fragment, boolean last) {
         }
 
         @Override

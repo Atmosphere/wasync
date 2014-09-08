@@ -243,7 +243,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         FluentStringsMap f = new FluentStringsMap();
         f.putAll(c);
         try {
-            options.runtime().executeRequest(requestBuilder.setQueryParameters(f).build(), StreamTransport.this);
+            options.runtime().executeRequest(requestBuilder.setQueryParams(f).build(), StreamTransport.this);
         } catch (IOException e) {
             logger.error("", e);
         }

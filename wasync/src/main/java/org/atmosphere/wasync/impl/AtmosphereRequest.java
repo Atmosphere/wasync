@@ -182,7 +182,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         public AtmosphereRequest build() {
             if (enableProtocol) {
                 List<String> l = new ArrayList<String>();
-                l.add("2.2.1");
+                l.add("2.2.4");
                 queryString.put("X-Atmosphere-Framework", l);
 
                 l = new ArrayList<String>();

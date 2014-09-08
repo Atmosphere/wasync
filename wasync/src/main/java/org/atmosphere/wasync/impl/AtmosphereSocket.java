@@ -61,7 +61,7 @@ public class AtmosphereSocket extends DefaultSocket {
             r.setUrl(request.uri())
                     .setMethod("GET")
                     .setHeaders(request.headers())
-                    .setQueryParameters(f);
+                    .setQueryParams(f);
             try {
                 options.runtime().prepareRequest(r.build()).execute().get();
             } catch (Exception e) {

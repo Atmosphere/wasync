@@ -61,7 +61,7 @@ public class WebSocketLoader {
         for (int r = 0; r < run; r++) {
 
             AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
-            b.setFollowRedirects(true).setIdleConnectionTimeoutInMs(-1).setRequestTimeoutInMs(-1).setUserAgent("loader/1.1");
+            b.setFollowRedirect(true).setConnectionTimeout(-1).setReadTimeout(-1).setUserAgent("loader/1.1");
 
             NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
 

@@ -39,8 +39,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 
 import static org.atmosphere.wasync.Event.MESSAGE;
@@ -166,7 +164,7 @@ public class SocketRuntime {
 
         return options.runtime().preparePost(request.uri())
                 .setHeaders(request.headers())
-                .setQueryParameters(m)
+                .setQueryParams(m)
                 .setMethod(Request.METHOD.POST.name());
     }
 

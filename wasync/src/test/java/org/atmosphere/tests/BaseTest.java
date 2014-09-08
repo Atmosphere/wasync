@@ -1392,7 +1392,7 @@ public abstract class BaseTest {
 
     @Test
     public void serverDownTest() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(3);
         final AtomicReference response = new AtomicReference();
         final AtomicReference response2 = new AtomicReference();
 
@@ -1515,7 +1515,7 @@ public abstract class BaseTest {
     public void timeoutTest() throws IOException, InterruptedException {
         logger.info("\n\ntimeoutTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(3);
+        final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch elatch = new CountDownLatch(1);
 
         Config config = new Config.Builder()
@@ -1565,17 +1565,11 @@ public abstract class BaseTest {
             public void on(String t) {
                 b.get().append(t);
             }
-        }).on(Event.REOPENED, new Function<String>() {
-            @Override
-            public void on(String t) {
-                if (latch.getCount() == 0) return;
-                b.get().append(t);
-                latch.countDown();
-            }
         }).on(new Function<IOException>() {
             @Override
             public void on(IOException ioe) {
                 ioe.printStackTrace();
+                b.get().append("ERROR");
                 elatch.countDown();
             }
         }).on(Event.OPEN, new Function<String>() {
@@ -1591,7 +1585,7 @@ public abstract class BaseTest {
 
         elatch.await(5, TimeUnit.SECONDS);
 
-        assertTrue(b.get().toString().startsWith("OPENCLOSEREOPENED"));
+        assertEquals(b.get().toString(), "OPENCLOSEERROR");
     }
 
     @Test
@@ -1697,15 +1691,15 @@ public abstract class BaseTest {
 
         // TODO: Hacky, but on slow machime the stop operation won't finish on time.
         // The ERRROR will never comes in that case and the client may reconnect.
-        assertTrue(b.get().toString().startsWith("OPENPINGCLOSE"));
+        assertEquals(b.get().toString(), "OPENPINGCLOSEERROR");
     }
 
     @Test
     public void reconnectFireTest() throws IOException, InterruptedException {
         logger.info("\n\nreconnectFireTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(3);
-        final CountDownLatch flatch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch flatch = new CountDownLatch(1);
         final CountDownLatch elatch = new CountDownLatch(1);
 
         Config config = new Config.Builder()
@@ -1815,12 +1809,7 @@ public abstract class BaseTest {
 
         elatch.await(5, TimeUnit.SECONDS);
 
-        // TODO: Hacky, but on slow machime the stop operation won't finish on time. The ERRROR will never comes in that case.
-        try {
-            assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSEERROR");
-        } catch (Throwable ex) {
-            assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSE");
-        }
+        assertEquals(b.get().toString(), "OPENPINGCLOSEERROR");
     }
 
     @Test
@@ -2294,7 +2283,7 @@ public abstract class BaseTest {
                 .fire("PING")
                 .fire("PONG").get();
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get().toString(), "PINGPONG");

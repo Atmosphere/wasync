@@ -27,12 +27,12 @@ import org.atmosphere.wasync.Socket;
  * @author Jeanfrancois Arcand
  */
 public class ClientUtil {
-    private static final String WASYNC_USER_AGENT = "wAsync/1.0";
+    private static final String WASYNC_USER_AGENT = "wAsync/2.0";
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
         AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
         int t = o.requestTimeoutInSeconds();
-        b.setFollowRedirects(true).setIdleConnectionTimeoutInMs(-1).setRequestTimeoutInMs(t == -1 ? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
+        b.setFollowRedirect(true).setConnectionTimeout(-1).setReadTimeout(t == -1 ? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
 
         NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
 
