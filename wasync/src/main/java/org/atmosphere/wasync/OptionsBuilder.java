@@ -28,11 +28,13 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
     private Transport transport;
     private boolean reconnect = true;
     private int reconnectInSecond = 0;
+    private int reconnectAttempts = 0;
     private long waitBeforeUnlocking = 2000;
     private AsyncHttpClient client;
     private boolean runtimeShared = false;
     private int requestTimeout = -1;
     protected final Class<T> derived;
+    private boolean binary;
 
     protected OptionsBuilder(Class<T> derived) {
         this.derived = derived;
@@ -79,6 +81,15 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
      */
     public T pauseBeforeReconnectInSeconds(int reconnectInSecond) {
         this.reconnectInSecond = reconnectInSecond;
+        return derived.cast(this);
+    }
+
+
+    /**
+     * Maximum reconnection attempts that will be executed if the connection is lost. Must be used in conjunction with {@link #reconnectInSeconds}
+     */
+    public T reconnectAttempts(int reconnectAttempts) {
+        this.reconnectAttempts = reconnectAttempts;
         return derived.cast(this);
     }
 
@@ -162,6 +173,15 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
     public int reconnectInSeconds(){
         return reconnectInSecond;
     }
+
+    /**
+     * Maximum reconnection attempts that will be executed if the connection is lost. Must be used in conjunction with {@link #reconnectInSeconds}
+     *
+     * @return the number of maximum reconnection attempts
+     */
+    public int reconnectAttempts(){
+        return reconnectAttempts;
+    }
     /**
      * The delay before considering the http connection has been fully processed by the server. By default, the library will wait 2 seconds before allowing the {@link Socket#fire(Object)}
      * to send message. Server side framework that aren't sending any data when suspending a connection may not be ready to fullfil request, hence some data may be lost.
@@ -192,6 +212,24 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
      */
     public int requestTimeoutInSeconds() {
         return requestTimeout;
+    }
+
+    /**
+     * Set to true in order to received byte data from the server. By default, binary aren't supported and response's server are considered as String.
+     * @param binary true to enabled
+     * @return this;
+     */
+    public T binary(boolean binary) {
+        this.binary = binary;
+        return derived.cast(this);
+    }
+
+    /**
+     * Return true is server's response binary is supported. Default is false
+     * @return true is server's response binary is supported. Default is false
+     */
+    public boolean binary() {
+        return binary;
     }
 
 }

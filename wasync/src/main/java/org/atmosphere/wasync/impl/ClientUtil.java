@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package org.atmosphere.wasync.impl;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
 
@@ -26,13 +27,19 @@ import org.atmosphere.wasync.Socket;
  * @author Jeanfrancois Arcand
  */
 public class ClientUtil {
-    private static final String WASYNC_USER_AGENT = "wAsync/1.0";
+    private static final String WASYNC_USER_AGENT = "wAsync/2.0";
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
         AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
         int t = o.requestTimeoutInSeconds();
-        b.setFollowRedirects(true).setIdleConnectionTimeoutInMs(-1).setRequestTimeoutInMs(t == -1 ? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
-        AsyncHttpClientConfig config = b.build();
+        b.setFollowRedirect(true).setConnectionTimeout(-1).setReadTimeout(t == -1 ? t : t * 1000).setUserAgent(WASYNC_USER_AGENT);
+
+        NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
+
+        nettyConfig.addProperty("child.tcpNoDelay", "true");
+        nettyConfig.addProperty("child.keepAlive", "true");
+
+        AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(nettyConfig).build();
         return new AsyncHttpClient(config);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,8 @@ import com.ning.http.client.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.util.Utils;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,6 +43,7 @@ public class LongPollingTransport extends StreamTransport {
      */
     private final AtomicBoolean handshakeOccured = new AtomicBoolean(true);
     protected boolean protocolReceived = false;
+    private int count = 0;
 
     public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super(requestBuilder, options, request, functions);
@@ -70,6 +73,10 @@ public class LongPollingTransport extends StreamTransport {
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         if (handshakeOccured.get()) {
+            // onOpen only called once
+            if (protocolEnabled && ++count == 1) {
+                status = Socket.STATUS.INIT;
+            }
             return super.onStatusReceived(responseStatus);
         }
         return STATE.CONTINUE;
@@ -81,12 +88,12 @@ public class LongPollingTransport extends StreamTransport {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
             if (protocolEnabled && !protocolReceived) {
-                if (!whiteSpace(payload)) {
+                if (!Utils.whiteSpace(payload)) {
                     TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
                     protocolReceived = true;
                 }
                 return AsyncHandler.STATE.CONTINUE;
-            } else if (!whiteSpace(payload)) {
+            } else if (!Utils.whiteSpace(payload)) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
             }
             unlockFuture();

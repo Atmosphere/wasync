@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,6 +54,12 @@ public class DefaultOptions implements Options {
     public int reconnectInSeconds(){
         return b.reconnectInSeconds();
     }
+
+    @Override
+    public int reconnectAttempts(){
+        return b.reconnectAttempts();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -87,5 +93,13 @@ public class DefaultOptions implements Options {
     @Override
     public int requestTimeoutInSeconds() {
         return b.requestTimeoutInSeconds();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean binary() {
+        return b.binary();
     }
 }

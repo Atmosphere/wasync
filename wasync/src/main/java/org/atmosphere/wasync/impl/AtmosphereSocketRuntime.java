@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,6 @@ import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
-import org.atmosphere.wasync.transport.WebSocketTransport;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +44,7 @@ public class AtmosphereSocketRuntime extends SocketRuntime {
 
         return options.runtime().preparePost(request.uri())
                 .setHeaders(request.headers())
-                .setQueryParameters(m)
+                .setQueryParams(m)
                 .setMethod(Request.METHOD.POST.name());
     }
 }

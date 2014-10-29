@@ -81,10 +81,12 @@ public abstract class BaseTest {
 
     abstract int notFoundCode();
 
+
     abstract int getCount();
 
     @BeforeMethod(alwaysRun = true)
     public void start() throws IOException {
+        if (server != null) server.stop();
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
     }
@@ -1390,7 +1392,7 @@ public abstract class BaseTest {
 
     @Test
     public void serverDownTest() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(3);
         final AtomicReference response = new AtomicReference();
         final AtomicReference response2 = new AtomicReference();
 
@@ -1431,7 +1433,7 @@ public abstract class BaseTest {
         latch.await(5, TimeUnit.SECONDS);
 
         assertEquals(response.get().getClass(), ConnectException.class);
-        assertEquals(response2.get().getClass(), IOException.class);
+        assertTrue(IOException.class.isAssignableFrom(response2.get().getClass()));
         assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
 
     }
@@ -1513,7 +1515,7 @@ public abstract class BaseTest {
     public void timeoutTest() throws IOException, InterruptedException {
         logger.info("\n\ntimeoutTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(3);
+        final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch elatch = new CountDownLatch(1);
 
         Config config = new Config.Builder()
@@ -1563,17 +1565,11 @@ public abstract class BaseTest {
             public void on(String t) {
                 b.get().append(t);
             }
-        }).on(Event.REOPENED, new Function<String>() {
-            @Override
-            public void on(String t) {
-                if (latch.getCount() == 0) return;
-                b.get().append(t);
-                latch.countDown();
-            }
         }).on(new Function<IOException>() {
             @Override
             public void on(IOException ioe) {
                 ioe.printStackTrace();
+                b.get().append("ERROR");
                 elatch.countDown();
             }
         }).on(Event.OPEN, new Function<String>() {
@@ -1589,7 +1585,7 @@ public abstract class BaseTest {
 
         elatch.await(5, TimeUnit.SECONDS);
 
-        assertEquals(b.get().toString(), "OPENCLOSEREOPENEDCLOSE");
+        assertEquals(b.get().toString(), "OPENCLOSEERROR");
     }
 
     @Test
@@ -1693,7 +1689,8 @@ public abstract class BaseTest {
 
         elatch.await(5, TimeUnit.SECONDS);
 
-
+        // TODO: Hacky, but on slow machime the stop operation won't finish on time.
+        // The ERRROR will never comes in that case and the client may reconnect.
         assertEquals(b.get().toString(), "OPENPINGCLOSEERROR");
     }
 
@@ -1701,8 +1698,8 @@ public abstract class BaseTest {
     public void reconnectFireTest() throws IOException, InterruptedException {
         logger.info("\n\nreconnectFireTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(3);
-        final CountDownLatch flatch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch flatch = new CountDownLatch(1);
         final CountDownLatch elatch = new CountDownLatch(1);
 
         Config config = new Config.Builder()
@@ -1769,6 +1766,8 @@ public abstract class BaseTest {
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
+                //System.out.println("=>" + t);
+
                 b.get().append(t);
                 flatch.countDown();
             }
@@ -1810,12 +1809,7 @@ public abstract class BaseTest {
 
         elatch.await(5, TimeUnit.SECONDS);
 
-        // TODO: Hacky, but on slow machime the stop operation won't finish on time. The ERRROR will never comes in that case.
-        try {
-            assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSEERROR");
-        } catch (Exception ex) {
-            assertEquals(b.get().toString(), "OPENPINGCLOSEREOPENEDPONGCLOSE");
-        }
+        assertEquals(b.get().toString(), "OPENPINGCLOSEERROR");
     }
 
     @Test
@@ -2073,7 +2067,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build() );
+        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build());
         socket.on(Event.CLOSE.name(), new Function<String>() {
 
             @Override
@@ -2289,12 +2283,223 @@ public abstract class BaseTest {
                 .fire("PING")
                 .fire("PONG").get();
 
-        latch.await(5, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS);
         socket.close();
 
         assertEquals(response.get().toString(), "PINGPONG");
     }
 
+    @Test
+    public void ahcCloseTest() throws IOException, InterruptedException {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.WEBSOCKET);
+
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
+        socket.open(request.build());
+        socket.close();
+
+        // AHC is async closed
+        Thread.sleep(1000);
+
+        assertTrue(ahc.isClosed());
+    }
+
+    @Test(enabled = true)
+    public void testCloseWithAtmosphereClient() throws IOException, InterruptedException {
+        final CountDownLatch l = new CountDownLatch(1);
+        final CountDownLatch closedLatch = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            @Override
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                l.countDown();
+                            }
+                        }).suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .enableProtocol(true)
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on(Event.CLOSE.name(), new Function<Object>() {
+            @Override
+            public void on(Object o) {
+                closedLatch.countDown();
+            }
+        });
+
+        socket.open(request.build());
+
+        // Wait until the connection is suspended
+        assertTrue(l.await(5, TimeUnit.SECONDS));
+
+        // Close the connection
+        socket.close();
+
+        // Check if Event.CLOSE was called
+        assertTrue(closedLatch.await(5, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void testOpenWithAtmosphereClientAndProtocol() throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+        final CountDownLatch openedLatch = new CountDownLatch(1);
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            @Override
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                l.countDown();
+                            }
+                        }).suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .enableProtocol(true)
+                .transport(transport());
+
+        Socket socket = client.create();
+        socket.on(Event.OPEN.name(), new Function<Object>() {
+            @Override
+            public void on(Object o) {
+                openedLatch.countDown();
+            }
+        });
+
+        socket.open(request.build());
+
+        // Wait until the connection is suspended
+        assertTrue(l.await(5, TimeUnit.SECONDS));
+
+        // Check if Event.OPEN was called
+        assertTrue(openedLatch.await(5, TimeUnit.SECONDS));
+
+        // Cleanup and close the connection
+        socket.close();
+    }
+
+    @Test
+    public void ahcCloseTest2() throws IOException, InterruptedException {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.WEBSOCKET);
+
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).runtimeShared(false).serializedFireStage(new DefaultSerializedFireStage()).build());
+        socket.open(request.build());
+        socket.close();
+
+        // AHC is async closed
+        Thread.sleep(1000);
+
+        assertTrue(ahc.isClosed());
+    }
 
     public final static class EventPOJO {
 

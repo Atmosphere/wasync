@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,6 +77,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected Future underlyingFuture;
     protected Future connectOperationFuture;
     protected final boolean protocolEnabled;
+    protected final ScheduledExecutorService timer;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -94,8 +97,12 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         this.request = request;
 
         protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
-        isBinary = request.headers().get("Content-Type") != null ?
-                request.headers().get("Content-Type").contains("application/octet-stream") : false;
+        isBinary = options.binary() ||
+                // Backward compatibility.
+                (request.headers().get("Content-Type") != null ?
+                        request.headers().get("Content-Type").contains("application/octet-stream") : false);
+
+        timer = Executors.newSingleThreadScheduledExecutor();
     }
 
     /**
@@ -128,7 +135,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
-            if (!whiteSpace(payload)) {
+            if (!Utils.whiteSpace(payload)) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
                 unlockFuture();
             }
@@ -219,8 +226,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             // We can't let the STATUS to close as fire() method won't work.
             status = Socket.STATUS.REOPENED;
             if (options.reconnectInSeconds() > 0) {
-                ScheduledExecutorService e = options.runtime().getConfig().reaper();
-                e.schedule(new Runnable() {
+                timer.schedule(new Runnable() {
                     public void run() {
                         reconnect();
                     }
@@ -237,7 +243,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         FluentStringsMap f = new FluentStringsMap();
         f.putAll(c);
         try {
-            options.runtime().executeRequest(requestBuilder.setQueryParameters(f).build(), StreamTransport.this);
+            options.runtime().executeRequest(requestBuilder.setQueryParams(f).build(), StreamTransport.this);
         } catch (IOException e) {
             logger.error("", e);
         }
@@ -258,6 +264,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public void close() {
         if (closed.getAndSet(true)) return;
         status = Socket.STATUS.CLOSE;
+
+        timer.shutdown();
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
 
@@ -306,13 +314,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void connectedFuture(Future f) {
         this.connectOperationFuture = f;
-    }
-
-    protected final static boolean whiteSpace(byte[] b) {
-        int i = b.length;
-        while (i-- > 0 && (b[i] == 10 || b[i] == 32)) {
-        }
-        return i == -1;
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,6 +31,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A specialized {@link org.atmosphere.wasync.Request} implementation to use with the Atmosphere Framework. Functionality
  * like track message length, broadcaster cache, etc. can be configured using this object. Make sure your server
  * is properly configured before changing the default.
+ *
+ * AtmosphereRequest MUST NOT be shared between {@link org.atmosphere.wasync.Socket} instance because they hold information about the
+ * Atmosphere Protocol like the UUID.
  *
  * @author Jeanfrancois Arcand
  */
@@ -178,7 +182,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         public AtmosphereRequest build() {
             if (enableProtocol) {
                 List<String> l = new ArrayList<String>();
-                l.add("2.0");
+                l.add("2.2.4");
                 queryString.put("X-Atmosphere-Framework", l);
 
                 l = new ArrayList<String>();
@@ -186,16 +190,19 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 queryString.put("X-Atmosphere-tracking-id", l);
 
                 l = new ArrayList<String>();
-                l.add("0");
-                queryString.put("X-Cache-Date", l);
-
-                l = new ArrayList<String>();
                 l.add("true");
                 queryString.put("X-atmo-protocol", l);
-            }
 
-            _addDecoder(0, sDecoder);
-            _addDecoder(0, bDecoder);
+                Collection ct = headers().get("Content-Type");
+                if (ct != null && ct.size() > 0) {
+                    l = new ArrayList<String>();
+                    l.addAll(ct);
+                    queryString.put("Content-Type", l);
+                }
+
+                _addDecoder(0, sDecoder);
+                _addDecoder(0, bDecoder);
+            }
 
             if (trackMessageLength) {
                 TrackMessageSizeDecoder trackMessageSizeDecoder;
@@ -220,14 +227,11 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         private final void handleProtocol(String s) {
             String[] proto = s.trim().split("\\|");
             // Track message size may have been appended
-            int pos = proto.length > 2 ? pos = 1 : 0;
+            int pos = trackMessageLength ? 1 : 0;
 
             List<String> l = new ArrayList<String>();
             l.add(proto[pos]);
             queryString.put("X-Atmosphere-tracking-id", l);
-            l = new ArrayList<String>();
-            l.add(proto[pos + 1]);
-            queryString.put("X-Cache-Date", l);
         }
 
         private final class SDecoder implements Decoder<String, Decoder.Decoded<String>> {

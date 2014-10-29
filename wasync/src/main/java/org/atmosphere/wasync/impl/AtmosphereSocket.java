@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AtmosphereSocket extends DefaultSocket {
 
     private final static Logger logger = LoggerFactory.getLogger(AtmosphereSocket.class);
-    private AtomicBoolean closed = new AtomicBoolean();
+    private AtomicBoolean closedByProtocol = new AtomicBoolean();
 
     public AtmosphereSocket(Options options) {
         super(options);
@@ -51,9 +51,9 @@ public class AtmosphereSocket extends DefaultSocket {
 
     protected void doCloseRequest() {
 
-        ((DefaultOptions)options).b.reconnect(false);
+        ((DefaultOptions) options).b.reconnect(false);
 
-        if (!closed.getAndSet(true)) {
+        if (!closedByProtocol.getAndSet(true)) {
             RequestBuilder r = new RequestBuilder();
             FluentStringsMap f = new FluentStringsMap();
             f.add("X-Atmosphere-Transport", "close").add("X-Atmosphere-tracking-id", decodeQueryString(request).get("X-Atmosphere-tracking-id"));
@@ -61,7 +61,7 @@ public class AtmosphereSocket extends DefaultSocket {
             r.setUrl(request.uri())
                     .setMethod("GET")
                     .setHeaders(request.headers())
-                    .setQueryParameters(f);
+                    .setQueryParams(f);
             try {
                 options.runtime().prepareRequest(r.build()).execute().get();
             } catch (Exception e) {
@@ -110,6 +110,13 @@ public class AtmosphereSocket extends DefaultSocket {
     @Override
     public void close() {
         doCloseRequest();
-        super.close();
+
+        // Not connected, but close the underlying AHC.
+        if (transportInUse == null) {
+            super.closeRuntime(false);
+        } else if (socketRuntime != null && (closedByProtocol.get() || !transportInUse.status().equals(STATUS.CLOSE))) {
+            transportInUse.close();
+            super.closeRuntime(true);
+        }
     }
 }

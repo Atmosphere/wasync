@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -119,7 +119,7 @@ public class DefaultSocket implements Socket {
         r.setUrl(request.uri())
                 .setMethod(request.method().name())
                 .setHeaders(request.headers())
-                .setQueryParameters(decodeQueryString(request));
+                .setQueryParams(decodeQueryString(request));
 
         List<Transport> transports = getTransport(r, request);
 
@@ -149,11 +149,12 @@ public class DefaultSocket implements Socket {
 
         try {
             if (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
-                r.setUrl(request.uri().replace("http", "ws"));
+                r.setUrl(webSocketUrl(request.uri()));
                 try {
                     transportInUse.future(new FutureProxy<ListenableFuture>(this,
                             options.runtime().prepareRequest(r.build()).execute((AsyncHandler<WebSocket>) transportInUse)));
 
+                    logger.trace("WebSocket Connect Timeout {}", timeout);
                     f.get(timeout, tu);
                 } catch (ExecutionException t) {
                     Throwable e = t.getCause();
@@ -177,14 +178,15 @@ public class DefaultSocket implements Socket {
                     return new VoidSocket();
                 }
             } else {
-                r.setUrl(request.uri().replace("ws", "http"));
+	            r.setUrl(httpUrl(request.uri()));
                 transportInUse.future(new FutureProxy<ListenableFuture>(this,
                         options.runtime().prepareRequest(r.build()).execute((AsyncHandler<String>) transportInUse)));
 
+                logger.debug("Http Connect Timeout {}", timeout);
                 try {
                     if (options.waitBeforeUnlocking() > 0) {
                         logger.info("Waiting {}, allowing the http connection to get handled by the server. To reduce the delay," +
-                                " make sure some bytes get written when the connection is suspendeded on the server", options.waitBeforeUnlocking());
+                                " make sure some bytes get written when the connection is suspended on the server", options.waitBeforeUnlocking());
                     }
 
                     f.get(options.waitBeforeUnlocking(), TimeUnit.MILLISECONDS);
@@ -197,6 +199,14 @@ public class DefaultSocket implements Socket {
             f.finishOrThrowException();
         }
         return this;
+    }
+
+    private String webSocketUrl(String url) {
+        return url.startsWith("http://") || url.startsWith("https://") ? "ws" + url.substring(4) : url;
+    }
+
+    private String httpUrl(String url) {
+        return url.startsWith("ws://") || url.startsWith("wss://") ? "http" + url.substring(2) : url;
     }
 
     protected void addFunction(final long timeout, final TimeUnit tu) {

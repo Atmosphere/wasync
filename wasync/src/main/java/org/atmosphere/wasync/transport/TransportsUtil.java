@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -60,6 +60,12 @@ public class TransportsUtil {
         for (FunctionWrapper wrapper : functions) {
             Function f = wrapper.function();
             Class<?>[] typeArguments = TypeResolver.resolveArguments(f.getClass(), Function.class);
+
+            if (typeArguments == null) {
+                logger.trace("Lambda function should not be used. Inferring type as String.class");
+                typeArguments = new Class[]{String.class};
+            }
+
             if (typeArguments.length > 0 && instanceType != null) {
                 boolean b = false;
                 if (decodedObjects.isEmpty()) {

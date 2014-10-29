@@ -1,6 +1,7 @@
 package org.atmosphere.tests;
 
 import org.atmosphere.wasync.Request;
+import org.testng.annotations.Test;
 
 public class StreamingTest extends BaseTest {
 
@@ -22,5 +23,9 @@ public class StreamingTest extends BaseTest {
     @Override
     int getCount() {
         return 5;
+    }
+
+    @Test(enabled = false)
+    public void closedFireTest() throws Exception {
     }
 }

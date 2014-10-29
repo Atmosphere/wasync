@@ -2,15 +2,16 @@
 
 wAsync is a Java based library allowing asynchronous communication with any WebServer supporting the WebSocket or Http Protocol.
 wAsync can be used with Node.js, Android, Atmosphere or any WebSocket Framework. To get started, read this super simple [Tutorial](https://github.com/Atmosphere/wasync/wiki/Getting-Started-with-wAsync)
+or read the [FAQ](https://github.com/Atmosphere/wasync/wiki/FAQ)
 
-You can browse the [javadoc](http://atmosphere.github.com/wasync/apidocs/) or browse our [samples](https://github.com/Atmosphere/wasync/tree/master/samples).
+You can browse the [javadoc](http://atmosphere.github.com/wasync/apidocs/) or browse our [samples](https://github.com/Atmosphere/atmosphere-samples/tree/master/wasync-samples).
 
 You can [download the jar](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22wasync%22) or use Maven
 ```xml
           <dependency>
               <groupId>org.atmosphere</groupId>
               <artifactId>wasync</artifactId>
-              <version>1.1.1</version>
+              <version>1.4.0</version>
           </dependency>
 
 ```
@@ -139,5 +140,8 @@ where myEvent could be read from the response's body.
 
 Want to write an Android Client? [See](http://jfarcand.wordpress.com/2013/04/04/wasync-websockets-with-fallbacks-transports-for-android-node-js-and-atmosphere/)
 
+
+#### Build Status
+[![Build Status](https://buildhive.cloudbees.com/job/Atmosphere/job/wasync/badge/icon)](https://buildhive.cloudbees.com/job/Atmosphere/job/wasync/)
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/6565d992c41200f6a5617e646f291569 "githalytics.com")](http://githalytics.com/Atmosphere/wasync)

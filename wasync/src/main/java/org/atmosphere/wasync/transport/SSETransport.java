@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Jeanfrancois Arcand
+ * Copyright 2014 Jeanfrancois Arcand
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,7 +53,7 @@ public class SSETransport extends StreamTransport {
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
 
         List<String> ct = headers.getHeaders().get("Content-Type");
-        if ( ct == null || ct.size() == 0 || !ct.get(0).contains("text/event-stream")) {
+        if (ct == null || ct.size() == 0 || !ct.get(0).contains("text/event-stream")) {
             status = Socket.STATUS.ERROR;
             throw new TransportNotSupported(500, "Invalid Content-Type" + ct);
         }
@@ -69,12 +69,12 @@ public class SSETransport extends StreamTransport {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
         if (m.length() > 0) {
             String[] data = m.split("data:");
-            for (String d: data) {
+            for (String d : data) {
                 if (d.length() > 0)
                     TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
+                unlockFuture();
             }
         }
-        if (connectOperationFuture != null) connectOperationFuture.finishOrThrowException();
         return STATE.CONTINUE;
     }
 }
