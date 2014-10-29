@@ -242,23 +242,26 @@ public class DefaultSocket implements Socket {
     }
 
     protected void closeRuntime(boolean async) {
-        if (!options.runtimeShared() && !options.runtime().isClosed()) {
-            if (async) {
-                // AHC is broken when calling closeAsynchronously.
-                // https://github.com/AsyncHttpClient/async-http-client/issues/290
-                final ExecutorService e = Executors.newSingleThreadExecutor();
-                e.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        options.runtime().close();
-                        e.shutdown();
-                    }
-                });
-            } else
-                options.runtime().close();
-        } else if (options.runtimeShared()) {
-            logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
-        }
+    	if (!options.runtime().isClosed()) {
+	        if (!options.runtimeShared()) {
+	            if (async) {
+	                // AHC is broken when calling closeAsynchronously.
+	                // https://github.com/AsyncHttpClient/async-http-client/issues/290
+	                final ExecutorService e = Executors.newSingleThreadExecutor();
+	                e.submit(new Runnable() {
+	                    @Override
+	                    public void run() {
+	                        options.runtime().close();
+	                        e.shutdown();
+	                    }
+	                });
+	            } else {
+	                options.runtime().close();
+	            }
+	        } else {
+	            logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");
+	        }
+    	}
     }
 
     @Override
