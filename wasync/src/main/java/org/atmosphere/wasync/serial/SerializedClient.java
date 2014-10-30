@@ -15,12 +15,10 @@
  */
 package org.atmosphere.wasync.serial;
 
-import com.ning.http.client.AsyncHttpClient;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
-import org.atmosphere.wasync.impl.ClientUtil;
 
 /**
  * {@code SerializedClient} is a {@link org.atmosphere.wasync.Client} that guarantees ordered message delivery, in-line with the
@@ -48,11 +46,6 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
      */
     @Override
     public Socket create(SerializedOptions options) {
-        AsyncHttpClient asyncHttpClient = options.runtime();
-        if (asyncHttpClient == null || asyncHttpClient.isClosed()) {
-            asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(options);
-            options.runtime(asyncHttpClient);
-        }
         return new SerializedSocket(options);
     }
 
@@ -61,11 +54,8 @@ public class SerializedClient implements Client<SerializedOptions, SerializedOpt
      */
     @Override
     public Socket create() {
-        AsyncHttpClient asyncHttpClient = ClientUtil.createDefaultAsyncHttpClient(newOptionsBuilder().reconnect(true).build());
-
         return new SerializedSocket(
                 new SerializedOptionsBuilder()
-                        .runtime(asyncHttpClient)
                         .serializedFireStage(new DefaultSerializedFireStage())
                         .build());
     }
