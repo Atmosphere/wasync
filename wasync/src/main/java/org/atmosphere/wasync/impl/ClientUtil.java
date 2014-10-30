@@ -41,7 +41,7 @@ public class ClientUtil {
     
     public final static AsyncHttpClient createDefaultAsyncHttpClient(int requestTimeoutInSeconds, NioClientSocketChannelFactory socketChannelFactory) {
         AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
-        b.setFollowRedirect(true).setConnectionTimeout(-1).setRequestTimeout(requestTimeoutInSeconds == -1 ? requestTimeoutInSeconds : requestTimeoutInSeconds * 1000).setUserAgent(WASYNC_USER_AGENT);
+        b.setFollowRedirect(true).setConnectionTimeout(-1).setReadTimeout(requestTimeoutInSeconds == -1 ? requestTimeoutInSeconds : requestTimeoutInSeconds * 1000).setUserAgent(WASYNC_USER_AGENT);
 
         NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
         
