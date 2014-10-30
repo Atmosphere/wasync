@@ -17,10 +17,10 @@ package org.atmosphere.wasync.impl;
 
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.AsyncHttpProviderConfig;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
 
 /**
@@ -32,29 +32,23 @@ public class ClientUtil {
     private static final String WASYNC_USER_AGENT = "wAsync/2.0";
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o) {
-    	return createDefaultAsyncHttpClient(o.requestTimeoutInSeconds(), null);      
-    }
-
-    public final static AsyncHttpClient createDefaultAsyncHttpClient(int requestTimeoutInSeconds) {
-    	return createDefaultAsyncHttpClient(requestTimeoutInSeconds, null);
-    }
-    
-    public final static AsyncHttpClient createDefaultAsyncHttpClient(int requestTimeoutInSeconds, NioClientSocketChannelFactory socketChannelFactory) {
-        AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
-        b.setFollowRedirect(true).setConnectionTimeout(-1).setReadTimeout(requestTimeoutInSeconds == -1 ? requestTimeoutInSeconds : requestTimeoutInSeconds * 1000).setUserAgent(WASYNC_USER_AGENT);
-
-        NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-        
-        if (socketChannelFactory != null) {
-        	nettyConfig.setSocketChannelFactory(socketChannelFactory);
-        }
+    	NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
         nettyConfig.addProperty("child.tcpNoDelay", "true");
         nettyConfig.addProperty("child.keepAlive", "true");
-
-        AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(nettyConfig).build();
-        return new AsyncHttpClient(config);
+        return createDefaultAsyncHttpClient(o.requestTimeoutInSeconds(), nettyConfig);  
     }
     
+    public final static AsyncHttpClient createDefaultAsyncHttpClient(Options o, AsyncHttpProviderConfig asyncHttpProviderConfig) {
+        return createDefaultAsyncHttpClient(o.requestTimeoutInSeconds(), asyncHttpProviderConfig);  
+    }
+    
+    public final static AsyncHttpClient createDefaultAsyncHttpClient(int requestTimeoutInSeconds, AsyncHttpProviderConfig asyncHttpProviderConfig) {
+        AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
+        b.setFollowRedirect(true).setConnectionTimeout(-1).setReadTimeout(requestTimeoutInSeconds == -1 ? requestTimeoutInSeconds : requestTimeoutInSeconds * 1000).setUserAgent(WASYNC_USER_AGENT);
+        AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(asyncHttpProviderConfig).build();
+        return new AsyncHttpClient(config);
+    }
+       
     public static Socket create(Options options) {
         return create(options, DefaultSocket.class);
     }
