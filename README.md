@@ -144,4 +144,4 @@ Want to write an Android Client? [See](http://jfarcand.wordpress.com/2013/04/04/
 #### Build Status
 [![Build Status](https://buildhive.cloudbees.com/job/Atmosphere/job/wasync/badge/icon)](https://buildhive.cloudbees.com/job/Atmosphere/job/wasync/)
 
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/6565d992c41200f6a5617e646f291569 "githalytics.com")](http://githalytics.com/Atmosphere/wasync)
+[![Analytics](https://ga-beacon.appspot.com/UA-31990725-2/Atmosphere/wasync)]
