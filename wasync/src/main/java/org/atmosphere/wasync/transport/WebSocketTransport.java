@@ -302,10 +302,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             reconnectAttempt.set(0);
             reconnecting.set(false);
-
-        } catch (IOException e) {
-            reconnecting.set(false);
-            logger.error("", e);
         } catch (InterruptedException e) {
             reconnecting.set(false);
             logger.error("", e);
