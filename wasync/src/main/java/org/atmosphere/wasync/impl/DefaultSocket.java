@@ -19,7 +19,7 @@ import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.RequestBuilder;
-import com.ning.http.client.websocket.WebSocket;
+import com.ning.http.client.ws.WebSocket;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
