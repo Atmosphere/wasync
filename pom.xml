@@ -9,7 +9,7 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>wasync-project</artifactId>
     <name>wasync</name>
-    <version>1.4.3</version>
+    <version>1.4.4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         wAsync: A WebSockets/HTTP Client Library
