@@ -44,7 +44,7 @@
 <a class="jxr_linenumber" name="34" href="#34">34</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereSocket.html">AtmosphereSocket</a> <strong class="jxr_keyword">extends</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultSocket.html">DefaultSocket</a> {
 <a class="jxr_linenumber" name="35" href="#35">35</a>  
 <a class="jxr_linenumber" name="36" href="#36">36</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> Logger logger = LoggerFactory.getLogger(AtmosphereSocket.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="37" href="#37">37</a>      <strong class="jxr_keyword">private</strong> AtomicBoolean closed = <strong class="jxr_keyword">new</strong> AtomicBoolean();
+<a class="jxr_linenumber" name="37" href="#37">37</a>      <strong class="jxr_keyword">private</strong> AtomicBoolean closedByProtocol = <strong class="jxr_keyword">new</strong> AtomicBoolean();
 <a class="jxr_linenumber" name="38" href="#38">38</a>  
 <a class="jxr_linenumber" name="39" href="#39">39</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/AtmosphereSocket.html">AtmosphereSocket</a>(<a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options) {
 <a class="jxr_linenumber" name="40" href="#40">40</a>          <strong class="jxr_keyword">super</strong>(options);
@@ -61,9 +61,9 @@
 <a class="jxr_linenumber" name="51" href="#51">51</a>  
 <a class="jxr_linenumber" name="52" href="#52">52</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> doCloseRequest() {
 <a class="jxr_linenumber" name="53" href="#53">53</a>  
-<a class="jxr_linenumber" name="54" href="#54">54</a>          ((<a href="../../../../org/atmosphere/wasync/impl/DefaultOptions.html">DefaultOptions</a>)options).b.reconnect(false);
+<a class="jxr_linenumber" name="54" href="#54">54</a>          ((<a href="../../../../org/atmosphere/wasync/impl/DefaultOptions.html">DefaultOptions</a>) options).b.reconnect(false);
 <a class="jxr_linenumber" name="55" href="#55">55</a>  
-<a class="jxr_linenumber" name="56" href="#56">56</a>          <strong class="jxr_keyword">if</strong> (!closed.getAndSet(<strong class="jxr_keyword">true</strong>)) {
+<a class="jxr_linenumber" name="56" href="#56">56</a>          <strong class="jxr_keyword">if</strong> (!closedByProtocol.getAndSet(<strong class="jxr_keyword">true</strong>)) {
 <a class="jxr_linenumber" name="57" href="#57">57</a>              <a href="../../../../org/atmosphere/wasync/RequestBuilder.html">RequestBuilder</a> r = <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/RequestBuilder.html">RequestBuilder</a>();
 <a class="jxr_linenumber" name="58" href="#58">58</a>              FluentStringsMap f = <strong class="jxr_keyword">new</strong> FluentStringsMap();
 <a class="jxr_linenumber" name="59" href="#59">59</a>              f.add(<span class="jxr_string">"X-Atmosphere-Transport"</span>, <span class="jxr_string">"close"</span>).add(<span class="jxr_string">"X-Atmosphere-tracking-id"</span>, decodeQueryString(request).get(<span class="jxr_string">"X-Atmosphere-tracking-id"</span>));
@@ -71,7 +71,7 @@
 <a class="jxr_linenumber" name="61" href="#61">61</a>              r.setUrl(request.uri())
 <a class="jxr_linenumber" name="62" href="#62">62</a>                      .setMethod(<span class="jxr_string">"GET"</span>)
 <a class="jxr_linenumber" name="63" href="#63">63</a>                      .setHeaders(request.headers())
-<a class="jxr_linenumber" name="64" href="#64">64</a>                      .setQueryParameters(f);
+<a class="jxr_linenumber" name="64" href="#64">64</a>                      .setQueryParams(f);
 <a class="jxr_linenumber" name="65" href="#65">65</a>              <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="66" href="#66">66</a>                  options.runtime().prepareRequest(r.build()).execute().get();
 <a class="jxr_linenumber" name="67" href="#67">67</a>              } <strong class="jxr_keyword">catch</strong> (Exception e) {
@@ -120,9 +120,16 @@
 <a class="jxr_linenumber" name="110" href="#110">110</a>     @Override
 <a class="jxr_linenumber" name="111" href="#111">111</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> close() {
 <a class="jxr_linenumber" name="112" href="#112">112</a>         doCloseRequest();
-<a class="jxr_linenumber" name="113" href="#113">113</a>         <strong class="jxr_keyword">super</strong>.close();
-<a class="jxr_linenumber" name="114" href="#114">114</a>     }
-<a class="jxr_linenumber" name="115" href="#115">115</a> }
+<a class="jxr_linenumber" name="113" href="#113">113</a> 
+<a class="jxr_linenumber" name="114" href="#114">114</a>         <em class="jxr_comment">// Not connected, but close the underlying AHC.</em>
+<a class="jxr_linenumber" name="115" href="#115">115</a>         <strong class="jxr_keyword">if</strong> (transportInUse == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="116" href="#116">116</a>             <strong class="jxr_keyword">super</strong>.closeRuntime(false);
+<a class="jxr_linenumber" name="117" href="#117">117</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (socketRuntime != <strong class="jxr_keyword">null</strong> &amp;&amp; (closedByProtocol.get() || !transportInUse.status().equals(STATUS.CLOSE))) {
+<a class="jxr_linenumber" name="118" href="#118">118</a>             transportInUse.close();
+<a class="jxr_linenumber" name="119" href="#119">119</a>             <strong class="jxr_keyword">super</strong>.closeRuntime(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="120" href="#120">120</a>         }
+<a class="jxr_linenumber" name="121" href="#121">121</a>     }
+<a class="jxr_linenumber" name="122" href="#122">122</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

@@ -29,7 +29,7 @@
 <a class="jxr_linenumber" name="19" href="#19">19</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.FluentStringsMap;
 <a class="jxr_linenumber" name="20" href="#20">20</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.ListenableFuture;
 <a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.RequestBuilder;
-<a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.websocket.WebSocket;
+<a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> com.ning.http.client.ws.WebSocket;
 <a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Event;
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.Function;
 <a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> org.atmosphere.wasync.FunctionWrapper;
@@ -129,7 +129,7 @@
 <a class="jxr_linenumber" name="119" href="#119">119</a>         r.setUrl(request.uri())
 <a class="jxr_linenumber" name="120" href="#120">120</a>                 .setMethod(request.method().name())
 <a class="jxr_linenumber" name="121" href="#121">121</a>                 .setHeaders(request.headers())
-<a class="jxr_linenumber" name="122" href="#122">122</a>                 .setQueryParameters(decodeQueryString(request));
+<a class="jxr_linenumber" name="122" href="#122">122</a>                 .setQueryParams(decodeQueryString(request));
 <a class="jxr_linenumber" name="123" href="#123">123</a> 
 <a class="jxr_linenumber" name="124" href="#124">124</a>         List&lt;Transport&gt; transports = getTransport(r, request);
 <a class="jxr_linenumber" name="125" href="#125">125</a> 
@@ -159,7 +159,7 @@
 <a class="jxr_linenumber" name="149" href="#149">149</a> 
 <a class="jxr_linenumber" name="150" href="#150">150</a>         <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="151" href="#151">151</a>             <strong class="jxr_keyword">if</strong> (transportInUse.name().equals(Request.TRANSPORT.WEBSOCKET)) {
-<a class="jxr_linenumber" name="152" href="#152">152</a>                 r.setUrl(request.uri().replace(<span class="jxr_string">"http"</span>, <span class="jxr_string">"ws"</span>));
+<a class="jxr_linenumber" name="152" href="#152">152</a>                 r.setUrl(webSocketUrl(request.uri()));
 <a class="jxr_linenumber" name="153" href="#153">153</a>                 <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="154" href="#154">154</a>                     transportInUse.future(<strong class="jxr_keyword">new</strong> FutureProxy&lt;ListenableFuture&gt;(<strong class="jxr_keyword">this</strong>,
 <a class="jxr_linenumber" name="155" href="#155">155</a>                             options.runtime().prepareRequest(r.build()).execute((AsyncHandler&lt;WebSocket&gt;) transportInUse)));
@@ -188,7 +188,7 @@
 <a class="jxr_linenumber" name="178" href="#178">178</a>                     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultSocket.html">VoidSocket</a>();
 <a class="jxr_linenumber" name="179" href="#179">179</a>                 }
 <a class="jxr_linenumber" name="180" href="#180">180</a>             } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="181" href="#181">181</a>                 r.setUrl(request.uri().replace(<span class="jxr_string">"ws"</span>, <span class="jxr_string">"http"</span>));
+<a class="jxr_linenumber" name="181" href="#181">181</a> 	            r.setUrl(httpUrl(request.uri()));
 <a class="jxr_linenumber" name="182" href="#182">182</a>                 transportInUse.future(<strong class="jxr_keyword">new</strong> FutureProxy&lt;ListenableFuture&gt;(<strong class="jxr_keyword">this</strong>,
 <a class="jxr_linenumber" name="183" href="#183">183</a>                         options.runtime().prepareRequest(r.build()).execute((AsyncHandler&lt;String&gt;) transportInUse)));
 <a class="jxr_linenumber" name="184" href="#184">184</a> 
@@ -211,151 +211,162 @@
 <a class="jxr_linenumber" name="201" href="#201">201</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
 <a class="jxr_linenumber" name="202" href="#202">202</a>     }
 <a class="jxr_linenumber" name="203" href="#203">203</a> 
-<a class="jxr_linenumber" name="204" href="#204">204</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> addFunction(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> timeout, <strong class="jxr_keyword">final</strong> TimeUnit tu) {
-<a class="jxr_linenumber" name="205" href="#205">205</a>         functions.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/FunctionWrapper.html">FunctionWrapper</a>(<span class="jxr_string">""</span>, <strong class="jxr_keyword">new</strong> Function&lt;TransportNotSupported&gt;() {
-<a class="jxr_linenumber" name="206" href="#206">206</a>             @Override
-<a class="jxr_linenumber" name="207" href="#207">207</a>             <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> on(<a href="../../../../org/atmosphere/wasync/transport/TransportNotSupported.html">TransportNotSupported</a> transportNotSupported) {
-<a class="jxr_linenumber" name="208" href="#208">208</a>                 request.transport().remove(0);
-<a class="jxr_linenumber" name="209" href="#209">209</a>                 <strong class="jxr_keyword">if</strong> (request.transport().size() &gt; 0) {
-<a class="jxr_linenumber" name="210" href="#210">210</a>                     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="211" href="#211">211</a>                         open(request, timeout, tu);
-<a class="jxr_linenumber" name="212" href="#212">212</a>                     } <strong class="jxr_keyword">catch</strong> (IOException e) {
-<a class="jxr_linenumber" name="213" href="#213">213</a>                         logger.error(<span class="jxr_string">""</span>, e);
-<a class="jxr_linenumber" name="214" href="#214">214</a>                     }
-<a class="jxr_linenumber" name="215" href="#215">215</a>                 } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="216" href="#216">216</a>                     <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Error(<span class="jxr_string">"No suitable transport supported by the server"</span>);
-<a class="jxr_linenumber" name="217" href="#217">217</a>                 }
-<a class="jxr_linenumber" name="218" href="#218">218</a>             }
-<a class="jxr_linenumber" name="219" href="#219">219</a>         }));
-<a class="jxr_linenumber" name="220" href="#220">220</a>     }
-<a class="jxr_linenumber" name="221" href="#221">221</a> 
-<a class="jxr_linenumber" name="222" href="#222">222</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="223" href="#223">223</a> <em class="jxr_javadoccomment">     * {@inheritDoc}</em>
-<a class="jxr_linenumber" name="224" href="#224">224</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="225" href="#225">225</a>     @Override
-<a class="jxr_linenumber" name="226" href="#226">226</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> close() {
-<a class="jxr_linenumber" name="227" href="#227">227</a>         <em class="jxr_comment">// Not connected, but close the underlying AHC.</em>
-<a class="jxr_linenumber" name="228" href="#228">228</a>         <strong class="jxr_keyword">if</strong> (transportInUse == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="229" href="#229">229</a>             closeRuntime(false);
-<a class="jxr_linenumber" name="230" href="#230">230</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (socketRuntime != <strong class="jxr_keyword">null</strong> &amp;&amp; !transportInUse.status().equals(STATUS.CLOSE)) {
-<a class="jxr_linenumber" name="231" href="#231">231</a>             transportInUse.close();
-<a class="jxr_linenumber" name="232" href="#232">232</a>             closeRuntime(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="233" href="#233">233</a>         }
-<a class="jxr_linenumber" name="234" href="#234">234</a>     }
-<a class="jxr_linenumber" name="235" href="#235">235</a> 
-<a class="jxr_linenumber" name="236" href="#236">236</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> closeRuntime(<strong class="jxr_keyword">boolean</strong> async) {
-<a class="jxr_linenumber" name="237" href="#237">237</a>         <strong class="jxr_keyword">if</strong> (!options.runtimeShared() &amp;&amp; !options.runtime().isClosed()) {
-<a class="jxr_linenumber" name="238" href="#238">238</a>             <strong class="jxr_keyword">if</strong> (async) {
-<a class="jxr_linenumber" name="239" href="#239">239</a>                 <em class="jxr_comment">// AHC is broken when calling closeAsynchronously.</em>
-<a class="jxr_linenumber" name="240" href="#240">240</a>                 <em class="jxr_comment">// https://github.com/AsyncHttpClient/async-http-client/issues/290</em>
-<a class="jxr_linenumber" name="241" href="#241">241</a>                 <strong class="jxr_keyword">final</strong> ExecutorService e = Executors.newSingleThreadExecutor();
-<a class="jxr_linenumber" name="242" href="#242">242</a>                 e.submit(<strong class="jxr_keyword">new</strong> Runnable() {
-<a class="jxr_linenumber" name="243" href="#243">243</a>                     @Override
-<a class="jxr_linenumber" name="244" href="#244">244</a>                     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> run() {
-<a class="jxr_linenumber" name="245" href="#245">245</a>                         options.runtime().close();
-<a class="jxr_linenumber" name="246" href="#246">246</a>                         e.shutdown();
-<a class="jxr_linenumber" name="247" href="#247">247</a>                     }
-<a class="jxr_linenumber" name="248" href="#248">248</a>                 });
-<a class="jxr_linenumber" name="249" href="#249">249</a>             } <strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="250" href="#250">250</a>                 options.runtime().close();
-<a class="jxr_linenumber" name="251" href="#251">251</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (options.runtimeShared()) {
-<a class="jxr_linenumber" name="252" href="#252">252</a>             logger.warn(<span class="jxr_string">"Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually."</span>);
-<a class="jxr_linenumber" name="253" href="#253">253</a>         }
-<a class="jxr_linenumber" name="254" href="#254">254</a>     }
-<a class="jxr_linenumber" name="255" href="#255">255</a> 
-<a class="jxr_linenumber" name="256" href="#256">256</a>     @Override
-<a class="jxr_linenumber" name="257" href="#257">257</a>     <strong class="jxr_keyword">public</strong> Socket.STATUS status() {
-<a class="jxr_linenumber" name="258" href="#258">258</a>         <strong class="jxr_keyword">if</strong> (transportInUse == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="259" href="#259">259</a>             <strong class="jxr_keyword">return</strong> STATUS.CLOSE;
-<a class="jxr_linenumber" name="260" href="#260">260</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="261" href="#261">261</a>             <strong class="jxr_keyword">return</strong> transportInUse.status();
-<a class="jxr_linenumber" name="262" href="#262">262</a>         }
-<a class="jxr_linenumber" name="263" href="#263">263</a>     }
-<a class="jxr_linenumber" name="264" href="#264">264</a> 
-<a class="jxr_linenumber" name="265" href="#265">265</a>     <strong class="jxr_keyword">protected</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a> internalSocket() {
-<a class="jxr_linenumber" name="266" href="#266">266</a>         <strong class="jxr_keyword">return</strong> socketRuntime;
-<a class="jxr_linenumber" name="267" href="#267">267</a>     }
-<a class="jxr_linenumber" name="268" href="#268">268</a> 
-<a class="jxr_linenumber" name="269" href="#269">269</a>     <strong class="jxr_keyword">protected</strong> List&lt;Transport&gt; getTransport(<a href="../../../../org/atmosphere/wasync/RequestBuilder.html">RequestBuilder</a> r, <a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request) <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="270" href="#270">270</a>         List&lt;Transport&gt; transports = <strong class="jxr_keyword">new</strong> ArrayList&lt;Transport&gt;();
-<a class="jxr_linenumber" name="271" href="#271">271</a> 
-<a class="jxr_linenumber" name="272" href="#272">272</a>         <strong class="jxr_keyword">if</strong> (request.transport().size() == 0) {
-<a class="jxr_linenumber" name="273" href="#273">273</a>             transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/WebSocketTransport.html">WebSocketTransport</a>(r, options, request, functions));
-<a class="jxr_linenumber" name="274" href="#274">274</a>             transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/LongPollingTransport.html">LongPollingTransport</a>(r, options, request, functions));
-<a class="jxr_linenumber" name="275" href="#275">275</a>         }
-<a class="jxr_linenumber" name="276" href="#276">276</a> 
-<a class="jxr_linenumber" name="277" href="#277">277</a>         <strong class="jxr_keyword">for</strong> (Request.TRANSPORT t : request.transport()) {
-<a class="jxr_linenumber" name="278" href="#278">278</a>             <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.WEBSOCKET)) {
-<a class="jxr_linenumber" name="279" href="#279">279</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/WebSocketTransport.html">WebSocketTransport</a>(r, options, request, functions));
-<a class="jxr_linenumber" name="280" href="#280">280</a>             } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.SSE)) {
-<a class="jxr_linenumber" name="281" href="#281">281</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/SSETransport.html">SSETransport</a>(r, options, request, functions));
-<a class="jxr_linenumber" name="282" href="#282">282</a>             } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.LONG_POLLING)) {
-<a class="jxr_linenumber" name="283" href="#283">283</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/LongPollingTransport.html">LongPollingTransport</a>(r, options, request, functions));
-<a class="jxr_linenumber" name="284" href="#284">284</a>             } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.STREAMING)) {
-<a class="jxr_linenumber" name="285" href="#285">285</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/StreamTransport.html">StreamTransport</a>(r, options, request, functions));
-<a class="jxr_linenumber" name="286" href="#286">286</a>             }
-<a class="jxr_linenumber" name="287" href="#287">287</a>         }
-<a class="jxr_linenumber" name="288" href="#288">288</a>         <strong class="jxr_keyword">return</strong> transports;
-<a class="jxr_linenumber" name="289" href="#289">289</a>     }
-<a class="jxr_linenumber" name="290" href="#290">290</a> 
-<a class="jxr_linenumber" name="291" href="#291">291</a> 
-<a class="jxr_linenumber" name="292" href="#292">292</a>     <strong class="jxr_keyword">protected</strong> <a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request() {
-<a class="jxr_linenumber" name="293" href="#293">293</a>         <strong class="jxr_keyword">return</strong> request;
-<a class="jxr_linenumber" name="294" href="#294">294</a>     }
-<a class="jxr_linenumber" name="295" href="#295">295</a> 
-<a class="jxr_linenumber" name="296" href="#296">296</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultSocket.html">VoidSocket</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> {
-<a class="jxr_linenumber" name="297" href="#297">297</a> 
-<a class="jxr_linenumber" name="298" href="#298">298</a>         @Override
-<a class="jxr_linenumber" name="299" href="#299">299</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Future.html">Future</a> fire(Object data) <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="300" href="#300">300</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
-<a class="jxr_linenumber" name="301" href="#301">301</a>         }
+<a class="jxr_linenumber" name="204" href="#204">204</a>     <strong class="jxr_keyword">private</strong> String webSocketUrl(String url) {
+<a class="jxr_linenumber" name="205" href="#205">205</a>         <strong class="jxr_keyword">return</strong> url.startsWith(<span class="jxr_string">"http://"</span>) || url.startsWith(<span class="jxr_string">"https://"</span>) ? <span class="jxr_string">"ws"</span> + url.substring(4) : url;
+<a class="jxr_linenumber" name="206" href="#206">206</a>     }
+<a class="jxr_linenumber" name="207" href="#207">207</a> 
+<a class="jxr_linenumber" name="208" href="#208">208</a>     <strong class="jxr_keyword">private</strong> String httpUrl(String url) {
+<a class="jxr_linenumber" name="209" href="#209">209</a>         <strong class="jxr_keyword">return</strong> url.startsWith(<span class="jxr_string">"ws://"</span>) || url.startsWith(<span class="jxr_string">"wss://"</span>) ? <span class="jxr_string">"http"</span> + url.substring(2) : url;
+<a class="jxr_linenumber" name="210" href="#210">210</a>     }
+<a class="jxr_linenumber" name="211" href="#211">211</a> 
+<a class="jxr_linenumber" name="212" href="#212">212</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> addFunction(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> timeout, <strong class="jxr_keyword">final</strong> TimeUnit tu) {
+<a class="jxr_linenumber" name="213" href="#213">213</a>         functions.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/FunctionWrapper.html">FunctionWrapper</a>(<span class="jxr_string">""</span>, <strong class="jxr_keyword">new</strong> Function&lt;TransportNotSupported&gt;() {
+<a class="jxr_linenumber" name="214" href="#214">214</a>             @Override
+<a class="jxr_linenumber" name="215" href="#215">215</a>             <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> on(<a href="../../../../org/atmosphere/wasync/transport/TransportNotSupported.html">TransportNotSupported</a> transportNotSupported) {
+<a class="jxr_linenumber" name="216" href="#216">216</a>                 request.transport().remove(0);
+<a class="jxr_linenumber" name="217" href="#217">217</a>                 <strong class="jxr_keyword">if</strong> (request.transport().size() &gt; 0) {
+<a class="jxr_linenumber" name="218" href="#218">218</a>                     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="219" href="#219">219</a>                         open(request, timeout, tu);
+<a class="jxr_linenumber" name="220" href="#220">220</a>                     } <strong class="jxr_keyword">catch</strong> (IOException e) {
+<a class="jxr_linenumber" name="221" href="#221">221</a>                         logger.error(<span class="jxr_string">""</span>, e);
+<a class="jxr_linenumber" name="222" href="#222">222</a>                     }
+<a class="jxr_linenumber" name="223" href="#223">223</a>                 } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="224" href="#224">224</a>                     <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Error(<span class="jxr_string">"No suitable transport supported by the server"</span>);
+<a class="jxr_linenumber" name="225" href="#225">225</a>                 }
+<a class="jxr_linenumber" name="226" href="#226">226</a>             }
+<a class="jxr_linenumber" name="227" href="#227">227</a>         }));
+<a class="jxr_linenumber" name="228" href="#228">228</a>     }
+<a class="jxr_linenumber" name="229" href="#229">229</a> 
+<a class="jxr_linenumber" name="230" href="#230">230</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="231" href="#231">231</a> <em class="jxr_javadoccomment">     * {@inheritDoc}</em>
+<a class="jxr_linenumber" name="232" href="#232">232</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="233" href="#233">233</a>     @Override
+<a class="jxr_linenumber" name="234" href="#234">234</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> close() {
+<a class="jxr_linenumber" name="235" href="#235">235</a>         <em class="jxr_comment">// Not connected, but close the underlying AHC.</em>
+<a class="jxr_linenumber" name="236" href="#236">236</a>         <strong class="jxr_keyword">if</strong> (transportInUse == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="237" href="#237">237</a>             closeRuntime(false);
+<a class="jxr_linenumber" name="238" href="#238">238</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (socketRuntime != <strong class="jxr_keyword">null</strong> &amp;&amp; !transportInUse.status().equals(STATUS.CLOSE)) {
+<a class="jxr_linenumber" name="239" href="#239">239</a>             transportInUse.close();
+<a class="jxr_linenumber" name="240" href="#240">240</a>             closeRuntime(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="241" href="#241">241</a>         }
+<a class="jxr_linenumber" name="242" href="#242">242</a>     }
+<a class="jxr_linenumber" name="243" href="#243">243</a> 
+<a class="jxr_linenumber" name="244" href="#244">244</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> closeRuntime(<strong class="jxr_keyword">boolean</strong> async) {
+<a class="jxr_linenumber" name="245" href="#245">245</a>     	<strong class="jxr_keyword">if</strong> (!options.runtime().isClosed()) {
+<a class="jxr_linenumber" name="246" href="#246">246</a> 	        <strong class="jxr_keyword">if</strong> (!options.runtimeShared()) {
+<a class="jxr_linenumber" name="247" href="#247">247</a> 	            <strong class="jxr_keyword">if</strong> (async) {
+<a class="jxr_linenumber" name="248" href="#248">248</a> 	                <em class="jxr_comment">// AHC is broken when calling closeAsynchronously.</em>
+<a class="jxr_linenumber" name="249" href="#249">249</a> 	                <em class="jxr_comment">// https://github.com/AsyncHttpClient/async-http-client/issues/290</em>
+<a class="jxr_linenumber" name="250" href="#250">250</a> 	                <strong class="jxr_keyword">final</strong> ExecutorService e = Executors.newSingleThreadExecutor();
+<a class="jxr_linenumber" name="251" href="#251">251</a> 	                e.submit(<strong class="jxr_keyword">new</strong> Runnable() {
+<a class="jxr_linenumber" name="252" href="#252">252</a> 	                    @Override
+<a class="jxr_linenumber" name="253" href="#253">253</a> 	                    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> run() {
+<a class="jxr_linenumber" name="254" href="#254">254</a> 	                        options.runtime().close();
+<a class="jxr_linenumber" name="255" href="#255">255</a> 	                        e.shutdown();
+<a class="jxr_linenumber" name="256" href="#256">256</a> 	                    }
+<a class="jxr_linenumber" name="257" href="#257">257</a> 	                });
+<a class="jxr_linenumber" name="258" href="#258">258</a> 	            } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="259" href="#259">259</a> 	                options.runtime().close();
+<a class="jxr_linenumber" name="260" href="#260">260</a> 	            }
+<a class="jxr_linenumber" name="261" href="#261">261</a> 	        } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="262" href="#262">262</a> 	            logger.warn(<span class="jxr_string">"Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually."</span>);
+<a class="jxr_linenumber" name="263" href="#263">263</a> 	        }
+<a class="jxr_linenumber" name="264" href="#264">264</a>     	}
+<a class="jxr_linenumber" name="265" href="#265">265</a>     }
+<a class="jxr_linenumber" name="266" href="#266">266</a> 
+<a class="jxr_linenumber" name="267" href="#267">267</a>     @Override
+<a class="jxr_linenumber" name="268" href="#268">268</a>     <strong class="jxr_keyword">public</strong> Socket.STATUS status() {
+<a class="jxr_linenumber" name="269" href="#269">269</a>         <strong class="jxr_keyword">if</strong> (transportInUse == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="270" href="#270">270</a>             <strong class="jxr_keyword">return</strong> STATUS.CLOSE;
+<a class="jxr_linenumber" name="271" href="#271">271</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="272" href="#272">272</a>             <strong class="jxr_keyword">return</strong> transportInUse.status();
+<a class="jxr_linenumber" name="273" href="#273">273</a>         }
+<a class="jxr_linenumber" name="274" href="#274">274</a>     }
+<a class="jxr_linenumber" name="275" href="#275">275</a> 
+<a class="jxr_linenumber" name="276" href="#276">276</a>     <strong class="jxr_keyword">protected</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a> internalSocket() {
+<a class="jxr_linenumber" name="277" href="#277">277</a>         <strong class="jxr_keyword">return</strong> socketRuntime;
+<a class="jxr_linenumber" name="278" href="#278">278</a>     }
+<a class="jxr_linenumber" name="279" href="#279">279</a> 
+<a class="jxr_linenumber" name="280" href="#280">280</a>     <strong class="jxr_keyword">protected</strong> List&lt;Transport&gt; getTransport(<a href="../../../../org/atmosphere/wasync/RequestBuilder.html">RequestBuilder</a> r, <a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request) <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="281" href="#281">281</a>         List&lt;Transport&gt; transports = <strong class="jxr_keyword">new</strong> ArrayList&lt;Transport&gt;();
+<a class="jxr_linenumber" name="282" href="#282">282</a> 
+<a class="jxr_linenumber" name="283" href="#283">283</a>         <strong class="jxr_keyword">if</strong> (request.transport().size() == 0) {
+<a class="jxr_linenumber" name="284" href="#284">284</a>             transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/WebSocketTransport.html">WebSocketTransport</a>(r, options, request, functions));
+<a class="jxr_linenumber" name="285" href="#285">285</a>             transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/LongPollingTransport.html">LongPollingTransport</a>(r, options, request, functions));
+<a class="jxr_linenumber" name="286" href="#286">286</a>         }
+<a class="jxr_linenumber" name="287" href="#287">287</a> 
+<a class="jxr_linenumber" name="288" href="#288">288</a>         <strong class="jxr_keyword">for</strong> (Request.TRANSPORT t : request.transport()) {
+<a class="jxr_linenumber" name="289" href="#289">289</a>             <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.WEBSOCKET)) {
+<a class="jxr_linenumber" name="290" href="#290">290</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/WebSocketTransport.html">WebSocketTransport</a>(r, options, request, functions));
+<a class="jxr_linenumber" name="291" href="#291">291</a>             } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.SSE)) {
+<a class="jxr_linenumber" name="292" href="#292">292</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/SSETransport.html">SSETransport</a>(r, options, request, functions));
+<a class="jxr_linenumber" name="293" href="#293">293</a>             } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.LONG_POLLING)) {
+<a class="jxr_linenumber" name="294" href="#294">294</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/LongPollingTransport.html">LongPollingTransport</a>(r, options, request, functions));
+<a class="jxr_linenumber" name="295" href="#295">295</a>             } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (t.equals(Request.TRANSPORT.STREAMING)) {
+<a class="jxr_linenumber" name="296" href="#296">296</a>                 transports.add(<strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/transport/StreamTransport.html">StreamTransport</a>(r, options, request, functions));
+<a class="jxr_linenumber" name="297" href="#297">297</a>             }
+<a class="jxr_linenumber" name="298" href="#298">298</a>         }
+<a class="jxr_linenumber" name="299" href="#299">299</a>         <strong class="jxr_keyword">return</strong> transports;
+<a class="jxr_linenumber" name="300" href="#300">300</a>     }
+<a class="jxr_linenumber" name="301" href="#301">301</a> 
 <a class="jxr_linenumber" name="302" href="#302">302</a> 
-<a class="jxr_linenumber" name="303" href="#303">303</a>         @Override
-<a class="jxr_linenumber" name="304" href="#304">304</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> on(Function&lt;? <strong class="jxr_keyword">extends</strong> Object&gt; function) {
-<a class="jxr_linenumber" name="305" href="#305">305</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
-<a class="jxr_linenumber" name="306" href="#306">306</a>         }
-<a class="jxr_linenumber" name="307" href="#307">307</a> 
-<a class="jxr_linenumber" name="308" href="#308">308</a>         @Override
-<a class="jxr_linenumber" name="309" href="#309">309</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> on(String functionMessage, Function&lt;? <strong class="jxr_keyword">extends</strong> Object&gt; function) {
-<a class="jxr_linenumber" name="310" href="#310">310</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
-<a class="jxr_linenumber" name="311" href="#311">311</a>         }
-<a class="jxr_linenumber" name="312" href="#312">312</a> 
-<a class="jxr_linenumber" name="313" href="#313">313</a>         @Override
-<a class="jxr_linenumber" name="314" href="#314">314</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> on(<a href="../../../../org/atmosphere/wasync/Event.html">Event</a> event, Function&lt;?&gt; function) {
-<a class="jxr_linenumber" name="315" href="#315">315</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
-<a class="jxr_linenumber" name="316" href="#316">316</a>         }
-<a class="jxr_linenumber" name="317" href="#317">317</a> 
-<a class="jxr_linenumber" name="318" href="#318">318</a>         @Override
-<a class="jxr_linenumber" name="319" href="#319">319</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> open(<a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request) <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="320" href="#320">320</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
-<a class="jxr_linenumber" name="321" href="#321">321</a>         }
-<a class="jxr_linenumber" name="322" href="#322">322</a> 
-<a class="jxr_linenumber" name="323" href="#323">323</a>         @Override
-<a class="jxr_linenumber" name="324" href="#324">324</a>         <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> close() {
-<a class="jxr_linenumber" name="325" href="#325">325</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
-<a class="jxr_linenumber" name="326" href="#326">326</a>         }
-<a class="jxr_linenumber" name="327" href="#327">327</a> 
-<a class="jxr_linenumber" name="328" href="#328">328</a>         @Override
-<a class="jxr_linenumber" name="329" href="#329">329</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">STATUS</a> status() {
-<a class="jxr_linenumber" name="330" href="#330">330</a>             <strong class="jxr_keyword">return</strong> STATUS.ERROR;
-<a class="jxr_linenumber" name="331" href="#331">331</a>         }
-<a class="jxr_linenumber" name="332" href="#332">332</a> 
-<a class="jxr_linenumber" name="333" href="#333">333</a>         @Override
-<a class="jxr_linenumber" name="334" href="#334">334</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> open(<a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request, <strong class="jxr_keyword">long</strong> timeout, TimeUnit tu) <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="335" href="#335">335</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occured during connection. Please add a Function(Throwable) to debug."</span>);
-<a class="jxr_linenumber" name="336" href="#336">336</a>         }
-<a class="jxr_linenumber" name="337" href="#337">337</a>     }
+<a class="jxr_linenumber" name="303" href="#303">303</a>     <strong class="jxr_keyword">protected</strong> <a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request() {
+<a class="jxr_linenumber" name="304" href="#304">304</a>         <strong class="jxr_keyword">return</strong> request;
+<a class="jxr_linenumber" name="305" href="#305">305</a>     }
+<a class="jxr_linenumber" name="306" href="#306">306</a> 
+<a class="jxr_linenumber" name="307" href="#307">307</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../org/atmosphere/wasync/impl/DefaultSocket.html">VoidSocket</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> {
+<a class="jxr_linenumber" name="308" href="#308">308</a> 
+<a class="jxr_linenumber" name="309" href="#309">309</a>         @Override
+<a class="jxr_linenumber" name="310" href="#310">310</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Future.html">Future</a> fire(Object data) <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="311" href="#311">311</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
+<a class="jxr_linenumber" name="312" href="#312">312</a>         }
+<a class="jxr_linenumber" name="313" href="#313">313</a> 
+<a class="jxr_linenumber" name="314" href="#314">314</a>         @Override
+<a class="jxr_linenumber" name="315" href="#315">315</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> on(Function&lt;? <strong class="jxr_keyword">extends</strong> Object&gt; function) {
+<a class="jxr_linenumber" name="316" href="#316">316</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
+<a class="jxr_linenumber" name="317" href="#317">317</a>         }
+<a class="jxr_linenumber" name="318" href="#318">318</a> 
+<a class="jxr_linenumber" name="319" href="#319">319</a>         @Override
+<a class="jxr_linenumber" name="320" href="#320">320</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> on(String functionMessage, Function&lt;? <strong class="jxr_keyword">extends</strong> Object&gt; function) {
+<a class="jxr_linenumber" name="321" href="#321">321</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
+<a class="jxr_linenumber" name="322" href="#322">322</a>         }
+<a class="jxr_linenumber" name="323" href="#323">323</a> 
+<a class="jxr_linenumber" name="324" href="#324">324</a>         @Override
+<a class="jxr_linenumber" name="325" href="#325">325</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> on(<a href="../../../../org/atmosphere/wasync/Event.html">Event</a> event, Function&lt;?&gt; function) {
+<a class="jxr_linenumber" name="326" href="#326">326</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
+<a class="jxr_linenumber" name="327" href="#327">327</a>         }
+<a class="jxr_linenumber" name="328" href="#328">328</a> 
+<a class="jxr_linenumber" name="329" href="#329">329</a>         @Override
+<a class="jxr_linenumber" name="330" href="#330">330</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> open(<a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request) <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="331" href="#331">331</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
+<a class="jxr_linenumber" name="332" href="#332">332</a>         }
+<a class="jxr_linenumber" name="333" href="#333">333</a> 
+<a class="jxr_linenumber" name="334" href="#334">334</a>         @Override
+<a class="jxr_linenumber" name="335" href="#335">335</a>         <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> close() {
+<a class="jxr_linenumber" name="336" href="#336">336</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occurred during connection. Please add a Function(Throwable) to debug."</span>);
+<a class="jxr_linenumber" name="337" href="#337">337</a>         }
 <a class="jxr_linenumber" name="338" href="#338">338</a> 
-<a class="jxr_linenumber" name="339" href="#339">339</a>     <strong class="jxr_keyword">void</strong> checkState() {
-<a class="jxr_linenumber" name="340" href="#340">340</a>         <strong class="jxr_keyword">if</strong> (transportInUse == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="341" href="#341">341</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"Invalid Socket Status : Not Connected"</span>);
+<a class="jxr_linenumber" name="339" href="#339">339</a>         @Override
+<a class="jxr_linenumber" name="340" href="#340">340</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">STATUS</a> status() {
+<a class="jxr_linenumber" name="341" href="#341">341</a>             <strong class="jxr_keyword">return</strong> STATUS.ERROR;
 <a class="jxr_linenumber" name="342" href="#342">342</a>         }
-<a class="jxr_linenumber" name="343" href="#343">343</a>     }
-<a class="jxr_linenumber" name="344" href="#344">344</a> 
-<a class="jxr_linenumber" name="345" href="#345">345</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a> createRuntime(<a href="../../../../org/atmosphere/wasync/impl/DefaultFuture.html">DefaultFuture</a> future, <a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options, List&lt;FunctionWrapper&gt; functions) {
-<a class="jxr_linenumber" name="346" href="#346">346</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a>(transportInUse, options, future, functions);
-<a class="jxr_linenumber" name="347" href="#347">347</a>     }
-<a class="jxr_linenumber" name="348" href="#348">348</a> }
+<a class="jxr_linenumber" name="343" href="#343">343</a> 
+<a class="jxr_linenumber" name="344" href="#344">344</a>         @Override
+<a class="jxr_linenumber" name="345" href="#345">345</a>         <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/Socket.html">Socket</a> open(<a href="../../../../org/atmosphere/wasync/Request.html">Request</a> request, <strong class="jxr_keyword">long</strong> timeout, TimeUnit tu) <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="346" href="#346">346</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"An error occured during connection. Please add a Function(Throwable) to debug."</span>);
+<a class="jxr_linenumber" name="347" href="#347">347</a>         }
+<a class="jxr_linenumber" name="348" href="#348">348</a>     }
+<a class="jxr_linenumber" name="349" href="#349">349</a> 
+<a class="jxr_linenumber" name="350" href="#350">350</a>     <strong class="jxr_keyword">void</strong> checkState() {
+<a class="jxr_linenumber" name="351" href="#351">351</a>         <strong class="jxr_keyword">if</strong> (transportInUse == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="352" href="#352">352</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"Invalid Socket Status : Not Connected"</span>);
+<a class="jxr_linenumber" name="353" href="#353">353</a>         }
+<a class="jxr_linenumber" name="354" href="#354">354</a>     }
+<a class="jxr_linenumber" name="355" href="#355">355</a> 
+<a class="jxr_linenumber" name="356" href="#356">356</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a> createRuntime(<a href="../../../../org/atmosphere/wasync/impl/DefaultFuture.html">DefaultFuture</a> future, <a href="../../../../org/atmosphere/wasync/Options.html">Options</a> options, List&lt;FunctionWrapper&gt; functions) {
+<a class="jxr_linenumber" name="357" href="#357">357</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../org/atmosphere/wasync/impl/SocketRuntime.html">SocketRuntime</a>(transportInUse, options, future, functions);
+<a class="jxr_linenumber" name="358" href="#358">358</a>     }
+<a class="jxr_linenumber" name="359" href="#359">359</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>
