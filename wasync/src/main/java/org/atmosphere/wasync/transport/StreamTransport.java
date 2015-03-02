@@ -219,6 +219,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         if (status == Socket.STATUS.ERROR) {
             return "";
         }
+        
+        close();
 
         if (options.reconnect()) {
             // We can't let the STATUS to close as fire() method won't work.
@@ -232,9 +234,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             } else {
                 reconnect();
             }
-        } else {
-            close();
-        }
+        } 
         return "";
     }
 
