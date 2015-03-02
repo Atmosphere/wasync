@@ -16,6 +16,7 @@
 package org.atmosphere.wasync;
 
 import com.ning.http.client.AsyncHttpClient;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for building {@link Options}
@@ -27,7 +28,7 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
 
     private Transport transport;
     private boolean reconnect = true;
-    private int reconnectInSecond = 0;
+    private int reconnectTimeoutInMilliseconds = 0;
     private int reconnectAttempts = 0;
     private long waitBeforeUnlocking = 2000;
     private AsyncHttpClient client;
@@ -74,13 +75,24 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
     }
 
     /**
-     * The time in second, before the reconnection occurs. Default is 1 second
+     * The time in seconds, before the reconnection occurs. Default is instant(0).
      *
-     * @param reconnectInSecond time in second, before the reconnection occurs. Default is 1 second
+     * @param reconnectInSecond time in seconds, before the reconnection occurs. Default is instant.
      * @return this
      */
     public T pauseBeforeReconnectInSeconds(int reconnectInSecond) {
-        this.reconnectInSecond = reconnectInSecond;
+        this.reconnectTimeoutInMilliseconds = TimeUnit.SECONDS.toMillis(reconnectInSecond);
+        return derived.cast(this);
+    }
+    
+    /**
+     * The time in milliseconds, before the reconnection occurs. Default is instant(0).
+     *
+     * @param reconnectTimeoutInMilliseconds time in milliseconds, before the reconnection occurs. Default is instant.
+     * @return this
+     */
+    public T pauseBeforeReconnectInMilliseconds(int reconnectTimeoutInMilliseconds) {
+        this.reconnectTimeoutInMilliseconds = reconnectTimeoutInMilliseconds;
         return derived.cast(this);
     }
 
@@ -167,11 +179,11 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
         return reconnect;
     }
     /**
-     * The delay, in second, before reconnecting.
-     * @return The delay, in second, before reconnecting.
+     * The delay, in milliseconds, before reconnecting.
+     * @return The delay, in milliseconds, before reconnecting.
      */
-    public int reconnectInSeconds(){
-        return reconnectInSecond;
+    public int reconnectTimeoutInMilliseconds(){
+        return reconnectTimeoutInMilliseconds;
     }
 
     /**

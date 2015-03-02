@@ -219,7 +219,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         if (status == Socket.STATUS.ERROR) {
             return "";
         }
-
+        
         close();
 
         if (options.reconnect()) {
@@ -234,7 +234,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             } else {
                 reconnect();
             }
-        }
+        } 
         return "";
     }
 

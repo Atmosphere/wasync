@@ -51,8 +51,8 @@ public class DefaultOptions implements Options {
      * {@inheritDoc}
      */
     @Override
-    public int reconnectInSeconds(){
-        return b.reconnectInSeconds();
+    public int reconnectTimeoutInMilliseconds(){
+        return b.reconnectTimeoutInMilliseconds();
     }
 
     @Override
