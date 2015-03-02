@@ -15,6 +15,7 @@
  */
 package org.atmosphere.wasync;
 
+import com.ning.http.client.AsyncHttpClient;
 import java.util.concurrent.TimeUnit;
 
 /**
