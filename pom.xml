@@ -272,7 +272,7 @@
         <target.property>1.7</target.property>
         <atmosphere.version>2.3.0-RC1</atmosphere.version>
         <nettosphere.version>2.3.0-RC1</nettosphere.version>
-        <ahc.version>1.9.10</ahc.version>
+        <ahc.version>1.9.11</ahc.version>
     </properties>
 </project>
 
