@@ -223,13 +223,13 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
 
         if (options.reconnect()) {
         	intermediateClose();
-            if (options.reconnectInSeconds() > 0) {
+            if (options.reconnectTimeoutInMilliseconds() > 0) {
                 timer.schedule(new Runnable() {
                     public void run() {
                         status = Socket.STATUS.REOPENED;
                         reconnect();
                     }
-                }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+                }, options.reconnectTimeoutInMilliseconds(), TimeUnit.MILLISECONDS);
             } else {
                 status = Socket.STATUS.REOPENED;
                 reconnect();

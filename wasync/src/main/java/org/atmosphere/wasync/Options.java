@@ -38,11 +38,11 @@ public interface Options {
     public boolean reconnect();
 
     /**
-     * The delay, in second, before reconnecting.
+     * The delay, in milliseconds, before reconnecting.
      *
-     * @return The delay, in second, before reconnecting.
+     * @return The delay, in milliseconds, before reconnecting.
      */
-    public int reconnectInSeconds();
+    public int reconnectTimeoutInMilliseconds();
 
     /**
      * Maximum reconnection attempts that will run in the interval defined by {@link #reconnectInSeconds}

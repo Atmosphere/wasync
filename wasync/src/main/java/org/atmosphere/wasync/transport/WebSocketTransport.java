@@ -129,7 +129,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         status = Socket.STATUS.CLOSE;
         if (closed.getAndSet(true)) return;
 
-        if (options.reconnectInSeconds() <= 0 && !options.reconnect()) {
+        if (options.reconnectTimeoutInMilliseconds() <= 0 && !options.reconnect()) {
             timer.shutdown();
         }
 
@@ -275,12 +275,12 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         reconnectAttempt.incrementAndGet();
 
-        if (options.reconnectInSeconds() > 0) {
+        if (options.reconnectTimeoutInMilliseconds() > 0) {
             timer.schedule(new Runnable() {
                 public void run() {
                     reconnect();
                 }
-            }, options.reconnectInSeconds(), TimeUnit.SECONDS);
+            }, options.reconnectTimeoutInMilliseconds(), TimeUnit.MILLISECONDS);
         } else {
             reconnect();
         }

@@ -40,6 +40,7 @@ public class DefaultOptions implements Options {
     public Transport transport() {
         return b.transport();
     }
+    
     /**
      * {@inheritDoc}
      */
@@ -47,14 +48,18 @@ public class DefaultOptions implements Options {
     public boolean reconnect(){
         return b.reconnect();
     }
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    public int reconnectInSeconds(){
-        return b.reconnectInSeconds();
+    public int reconnectTimeoutInMilliseconds(){
+        return b.reconnectTimeoutInMilliseconds();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int reconnectAttempts(){
         return b.reconnectAttempts();
