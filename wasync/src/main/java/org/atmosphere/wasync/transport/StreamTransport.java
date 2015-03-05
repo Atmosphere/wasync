@@ -21,6 +21,7 @@ import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
+
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.FunctionResolver;
@@ -220,22 +221,28 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             return "";
         }
 
-        close();
-
         if (options.reconnect()) {
-            // We can't let the STATUS to close as fire() method won't work.
-            status = Socket.STATUS.REOPENED;
+        	intermediateClose();
             if (options.reconnectInSeconds() > 0) {
                 timer.schedule(new Runnable() {
                     public void run() {
+                        status = Socket.STATUS.REOPENED;
                         reconnect();
                     }
                 }, options.reconnectInSeconds(), TimeUnit.SECONDS);
             } else {
+                status = Socket.STATUS.REOPENED;
                 reconnect();
             }
+        } else {
+            close();
         }
         return "";
+    }
+    
+    private void intermediateClose() {
+    	status = Socket.STATUS.CLOSE;
+        if (underlyingFuture != null) underlyingFuture.cancel(false);
     }
 
     void reconnect() {
