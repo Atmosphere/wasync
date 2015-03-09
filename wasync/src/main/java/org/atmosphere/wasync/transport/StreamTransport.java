@@ -222,7 +222,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         }
 
         if (options.reconnect()) {
-        	intermediateClose();
+            close(false);
             if (options.reconnectTimeoutInMilliseconds() > 0) {
                 timer.schedule(new Runnable() {
                     public void run() {
@@ -238,11 +238,6 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             close();
         }
         return "";
-    }
-    
-    private void intermediateClose() {
-    	status = Socket.STATUS.CLOSE;
-        if (underlyingFuture != null) underlyingFuture.cancel(false);
     }
 
     void reconnect() {
@@ -265,10 +260,18 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public void close() {
-        if (closed.getAndSet(true)) return;
+        close(true);
+    }
+
+
+    private void close(boolean force) {
+        if (force && closed.getAndSet(true)) return;
+
         status = Socket.STATUS.CLOSE;
 
-        timer.shutdown();
+        if (force) {
+            timer.shutdown();
+        }
 
         TransportsUtil.invokeFunction(CLOSE, decoders, functions, String.class, CLOSE.name(), CLOSE.name(), resolver);
 
