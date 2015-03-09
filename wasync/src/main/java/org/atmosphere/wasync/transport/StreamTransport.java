@@ -122,6 +122,9 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public void onThrowable(Throwable t) {
         if (CancellationException.class.isAssignableFrom(t.getClass())) return;
 
+        if(request != null) {
+        	logger.warn("StreamTransport notified with exception {} for request : {}", t, request.uri());
+        }
         logger.warn("", t);
         status = Socket.STATUS.ERROR;
         connectFutureException(t);
