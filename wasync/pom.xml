@@ -11,7 +11,7 @@
     <artifactId>wasync</artifactId>
     <name>wasync</name>
     <version>2.1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <description>
         wAsync: A WebSockets/HTTP Client Library
     </description>
@@ -58,6 +58,19 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>org.atmosphere.wasync</Bundle-SymbolicName>
+                        <Export-Package>
+                            org.atmosphere.wasync.*
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
