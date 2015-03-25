@@ -36,6 +36,7 @@ import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.impl.AtmosphereClient;
 import org.atmosphere.wasync.serial.DefaultSerializedFireStage;
 import org.atmosphere.wasync.serial.SerializedClient;
+import org.atmosphere.wasync.serial.SerializedOptions;
 import org.atmosphere.wasync.serial.SerializedOptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -2498,7 +2499,6 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
 
         RequestBuilder request = client.newRequestBuilder()
@@ -2506,14 +2506,15 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(Request.TRANSPORT.WEBSOCKET);
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).runtimeShared(false).serializedFireStage(new DefaultSerializedFireStage()).build());
+        SerializedOptions options = client.newOptionsBuilder().serializedFireStage(new DefaultSerializedFireStage()).build();
+        Socket socket = client.create(options);
         socket.open(request.build());
         socket.close();
 
         // AHC is async closed
         Thread.sleep(1000);
 
-        assertTrue(ahc.isClosed());
+        assertTrue(options.runtime().isClosed());
     }
 
     public final static class EventPOJO {
