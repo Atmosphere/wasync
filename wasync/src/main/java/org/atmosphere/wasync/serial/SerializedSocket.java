@@ -21,9 +21,9 @@ import java.util.List;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.impl.AtmosphereSocket;
 import org.atmosphere.wasync.impl.ClientUtil;
 import org.atmosphere.wasync.impl.DefaultFuture;
-import org.atmosphere.wasync.impl.DefaultSocket;
 import org.atmosphere.wasync.impl.SocketRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ import com.ning.http.client.Response;
  *
  * @author Christian Bach
  */
-public class SerializedSocket extends DefaultSocket {
+public class SerializedSocket extends AtmosphereSocket {
 
     private final static Logger logger = LoggerFactory.getLogger(SerializedSocket.class);
 
