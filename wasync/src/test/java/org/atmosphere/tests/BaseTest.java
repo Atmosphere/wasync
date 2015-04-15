@@ -1632,7 +1632,7 @@ public abstract class BaseTest {
     public void closeWriteTest() throws IOException, InterruptedException {
         logger.info("\n\ncloseWriteTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(3);
+        final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch flatch = new CountDownLatch(1);
         final CountDownLatch elatch = new CountDownLatch(1);
 
@@ -1706,7 +1706,6 @@ public abstract class BaseTest {
             @Override
             public void on(String t) {
                 b.get().append(t);
-                latch.countDown();
             }
         }).on(new Function<IOException>() {
             @Override
@@ -1719,8 +1718,11 @@ public abstract class BaseTest {
             @Override
             public void on(String t) {
                 b.get().append(t);
+                latch.countDown();
             }
         }).open(clientRequest.build());
+
+        latch.await(5, TimeUnit.SECONDS);
 
         socket.fire("PING");
         flatch.await(5, TimeUnit.SECONDS);
@@ -2055,7 +2057,7 @@ public abstract class BaseTest {
 
         }).open(request.build());
 
-        latch.await();
+        latch.await(5, TimeUnit.SECONDS);
 
 
         logger.error("SOCKET STATUS [{}]", socket.status());
