@@ -112,9 +112,9 @@ public abstract class BaseTest {
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(int requestTimeout) {
         NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-           nettyConfig.addProperty("child.tcpNoDelay", "true");
-           nettyConfig.addProperty("child.keepAlive", "true");
-        
+        nettyConfig.addProperty("child.tcpNoDelay", "true");
+        nettyConfig.addProperty("child.keepAlive", "true");
+
         AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
         b.setFollowRedirect(true)
                 .setMaxRequestRetry(-1)
@@ -124,7 +124,8 @@ public abstract class BaseTest {
         return new AsyncHttpClient(config);
     }
 
-    public final static AsyncHttpClient createDefaultAsyncHttpClient() {;
+    public final static AsyncHttpClient createDefaultAsyncHttpClient() {
+        ;
         return createDefaultAsyncHttpClient(-1);
     }
 
@@ -1169,7 +1170,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                logger.error("", t); 
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -1206,7 +1207,7 @@ public abstract class BaseTest {
                                         r.getResponse().write("yo!".getBytes()).flushBuffer();
                                     } catch (IOException e) {
                                         logger.error("", e);
-                                        
+
                                     }
                                 }
                             }).suspend();
@@ -1265,7 +1266,7 @@ public abstract class BaseTest {
             sockets[i].on(new Function<Throwable>() {
                 @Override
                 public void on(Throwable t) {
-                    logger.error("", t); 
+                    logger.error("", t);
                 }
             });
 
@@ -1362,7 +1363,7 @@ public abstract class BaseTest {
             @Override
             public void on(Throwable t) {
                 System.out.println("=============== ERROR");
-                logger.error("", t); 
+                logger.error("", t);
             }
 
         }).open(request.build())
@@ -1539,7 +1540,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                logger.error("", t); 
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -1610,7 +1611,8 @@ public abstract class BaseTest {
         }).on(new Function<IOException>() {
             @Override
             public void on(IOException ioe) {
-                logger.error("", ioe); ;
+                logger.error("", ioe);
+                ;
                 b.get().append("ERROR");
                 elatch.countDown();
             }
@@ -1830,7 +1832,7 @@ public abstract class BaseTest {
                     socket.fire("PONG");
                 } catch (IOException e) {
                     logger.error("", e);
-                    
+
                 }
                 latch.countDown();
             }
@@ -1838,7 +1840,7 @@ public abstract class BaseTest {
             @Override
             public void on(IOException ioe) {
                 logger.error("", ioe);
-                
+
                 b.get().append("ERROR");
                 elatch.countDown();
             }
@@ -2006,7 +2008,7 @@ public abstract class BaseTest {
 
     @Test
     public void basicHelloTest() throws Exception {
-        final CountDownLatch l = new CountDownLatch(1);
+        final CountDownLatch l = new CountDownLatch(2);
 
         Config config = new Config.Builder()
                 .port(port)
@@ -2016,9 +2018,20 @@ public abstract class BaseTest {
                     private final AtomicBoolean b = new AtomicBoolean(false);
 
                     @Override
-                    public void onRequest(AtmosphereResource r) throws IOException {
-                        r.getResponse().getWriter().print("HELLO");
-                        // at this point, I think Socket should have a STATUS other than INIT when it reads the response in the socket.on(...)
+                    public void onRequest(final AtmosphereResource r) throws IOException {
+
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            @Override
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                try {
+                                    r.getResponse().getWriter().print("HELLO");
+                                    r.getResponse().flushBuffer();
+                                } catch (IOException e) {
+                                    logger.error("", e);
+                                }
+                                l.countDown();
+                            }
+                        }).suspend();
                     }
 
                     @Override
@@ -2057,7 +2070,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                logger.error("", t); 
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -2250,7 +2263,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                logger.error("", t); 
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -2265,6 +2278,7 @@ public abstract class BaseTest {
 
     @Test(enabled = true)
     public void serializeFutureGetTest() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(4);
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -2273,18 +2287,23 @@ public abstract class BaseTest {
                     private final AtomicInteger count = new AtomicInteger(1);
 
                     @Override
-                    public void onRequest(AtmosphereResource r) throws IOException {
+                    public void onRequest(final AtmosphereResource r) throws IOException {
                         if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
-                            r.suspend(-1);
+                            r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                                @Override
+                                public void onSuspend(AtmosphereResourceEvent event) {
+                                    latch.countDown();
+                                }
+                            }).suspend();
                         } else {
                             try {
                                 r.getBroadcaster().broadcast(r.getRequest().getReader().readLine()).get();
                             } catch (InterruptedException e) {
                                 logger.error("", e);
-                               ;
+                                ;
                             } catch (ExecutionException e) {
                                 logger.error("", e);
-                               
+
                             }
                         }
                     }
@@ -2309,7 +2328,6 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final CountDownLatch latch = new CountDownLatch(2);
         final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
         SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
 
@@ -2330,7 +2348,12 @@ public abstract class BaseTest {
                 response.get().append(t);
                 latch.countDown();
             }
-        }).open(request.build())
+        }).on(Event.OPEN.name(), new Function<Object>() {
+                    @Override
+                    public void on(Object o) {
+                        latch.countDown();
+                    }
+                }).open(request.build())
                 .fire("PING")
                 .fire("PONG").get();
 
