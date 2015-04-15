@@ -203,7 +203,7 @@ public class LongPollingTest extends StreamingTest {
                     public void onStateChange(AtmosphereResourceEvent event) throws IOException {
                         logger.info("cached : {}", event.getMessage());
 
-                        if (List.class.isAssignableFrom(event.getMessage().getClass())) {
+                        if (event.getMessage() != null && List.class.isAssignableFrom(event.getMessage().getClass())) {
                             List<String> cached = (List<String>) List.class.cast(event.getMessage());
                             for (String m : cached) {
                                 event.getResource().getResponse().write(m);
