@@ -53,10 +53,11 @@ public class AtmosphereSocket extends DefaultSocket {
 
         ((DefaultOptions) options).b.reconnect(false);
 
+        List<String> uuid = decodeQueryString(request).get("X-Atmosphere-tracking-id");
         if (!closedByProtocol.getAndSet(true)) {
             RequestBuilder r = new RequestBuilder();
             FluentStringsMap f = new FluentStringsMap();
-            f.add("X-Atmosphere-Transport", "close").add("X-Atmosphere-tracking-id", decodeQueryString(request).get("X-Atmosphere-tracking-id"));
+            f.add("X-Atmosphere-Transport", "close").add("X-Atmosphere-tracking-id", uuid);
 
             r.setUrl(request.uri())
                     .setMethod("GET")
@@ -65,6 +66,7 @@ public class AtmosphereSocket extends DefaultSocket {
             try {
                 options.runtime().prepareRequest(r.build()).execute().get();
             } catch (Exception e) {
+                logger.debug("Was unable to send the close request {}", uuid);
                 logger.trace("", e);
             }
         }
