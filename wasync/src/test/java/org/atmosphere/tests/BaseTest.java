@@ -2349,7 +2349,9 @@ public abstract class BaseTest {
             @Override
             public void on(String t) {
                 logger.info("Serialized Function invoked {}", t);
-                response.get().append(t);
+                synchronized (response) {
+                    response.get().append(t);
+                }
                 latch.countDown();
                 // If we received the message in a single packet
                 if (t.equals("PINGPONG")) latch.countDown();
