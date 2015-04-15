@@ -2285,6 +2285,7 @@ public abstract class BaseTest {
         logger.info("\n\nserializeFutureGetTest\n\n");
 
         final CountDownLatch latch = new CountDownLatch(4);
+        final AtomicInteger allMessagesReceived = new AtomicInteger();
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -2316,7 +2317,11 @@ public abstract class BaseTest {
                     public void onStateChange(AtmosphereResourceEvent r) throws IOException {
                         if (r.getMessage() != null) {
                             r.getResource().getResponse().write(r.getMessage().toString());
-                            if (r.getResource().transport().equals(AtmosphereResource.TRANSPORT.LONG_POLLING)) {
+
+                            // If the connection is about to resume we will loose the message so we must make sure we got 2 messages
+                            // before resuming.
+                            if (allMessagesReceived.getAndIncrement() == 1
+                                    && r.getResource().transport().equals(AtmosphereResource.TRANSPORT.LONG_POLLING)) {
                                 r.getResource().resume();
                             }
                         }
@@ -2349,9 +2354,7 @@ public abstract class BaseTest {
             @Override
             public void on(String t) {
                 logger.info("Serialized Function get invoked {}", t);
-                synchronized (response) {
-                    response.get().append(t);
-                }
+                response.get().append(t);
                 latch.countDown();
                 // If we received the message in a single packet
                 if (t.equals("PINGPONG")) latch.countDown();
@@ -2366,6 +2369,7 @@ public abstract class BaseTest {
                 .fire("PONG").get(5, TimeUnit.SECONDS);
 
         latch.await(10, TimeUnit.SECONDS);
+
         socket.close();
 
         assertEquals(response.get().toString(), "PINGPONG");
