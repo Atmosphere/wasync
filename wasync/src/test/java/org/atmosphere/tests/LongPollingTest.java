@@ -164,7 +164,11 @@ public class LongPollingTest extends StreamingTest {
         assertEquals(hasEchoReplied.get(), true);
     }
 
-    @Test
+    /**
+     * Due to the reconnection cycle, this test may or may not work on Jenkins due ti the connection latency. Better to disable it.
+     * @throws Exception
+     */
+    @Test(enabled = false)
     public void noMessageLostTest() throws Exception {
 
         logger.info("\n\nnoMessageLostTest\n\n");
