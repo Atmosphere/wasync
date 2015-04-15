@@ -205,17 +205,14 @@ public class LongPollingTest extends StreamingTest {
 
                         if (event.getMessage() != null && List.class.isAssignableFrom(event.getMessage().getClass())) {
                             List<String> cached = (List<String>) List.class.cast(event.getMessage());
+                            StringBuilder b = new StringBuilder();
                             for (String m : cached) {
-                                event.getResource().getResponse().write(m);
+                                b.append(m).append("-");
                             }
+                            // Write message in a single IO operation to prevent the connection from resuming.
+                            event.getResource().getResponse().write(b.toString());
                         } else {
-                            event.getResource().getResponse().write((String) event.getMessage());
-                        }
-                        // Netty may still write the bytes, so give a chance to those bytes to get written
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            event.getResource().getResponse().write((String) event.getMessage() + "-");
                         }
                         event.getResource().resume();
                     }
@@ -252,8 +249,11 @@ public class LongPollingTest extends StreamingTest {
             @Override
             public void on(String message) {
                 logger.info("received : {}", message);
-                response.get().add(message);
-                latch.countDown();
+
+                for (String m : message.split("-")) {
+                    response.get().add(m);
+                    latch.countDown();
+                }
             }
         }).on(new Function<Throwable>() {
             @Override
