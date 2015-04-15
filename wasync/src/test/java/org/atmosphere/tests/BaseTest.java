@@ -1865,6 +1865,7 @@ public abstract class BaseTest {
 
     @Test
     public void eventDecoderTest() throws Exception {
+        logger.info("\n\neventDecoderTest\n\n");
 
         Config config = new Config.Builder()
                 .port(port)
@@ -2008,6 +2009,8 @@ public abstract class BaseTest {
 
     @Test
     public void basicHelloTest() throws Exception {
+        logger.info("\n\nbasicHelloTest\n\n");
+
         final CountDownLatch l = new CountDownLatch(2);
 
         Config config = new Config.Builder()
@@ -2278,6 +2281,8 @@ public abstract class BaseTest {
 
     @Test(enabled = true)
     public void serializeFutureGetTest() throws Exception {
+        logger.info("\n\nserializeFutureGetTest\n\n");
+
         final CountDownLatch latch = new CountDownLatch(4);
         Config config = new Config.Builder()
                 .port(port)
