@@ -1763,11 +1763,11 @@ public abstract class BaseTest {
                         if (r.getRequest().getMethod().equals("GET")) {
                             r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
                                 public void onSuspend(AtmosphereResourceEvent event) {
-                                    latch.countDown();
                                     resource.set(r);
                                     for (int i = 0; i < 8192; i++) {
                                         resource.get().write(" ");
                                     }
+                                    latch.countDown();
                                 }
                             }).suspend();
                         } else {
@@ -1852,8 +1852,8 @@ public abstract class BaseTest {
             }
         }).open(clientRequest.build());
 
-        socket.fire("PING");
         latch.await(10, TimeUnit.SECONDS);
+        socket.fire("PING");
         flatch.await(10, TimeUnit.SECONDS);
 
         server.stop();
@@ -2283,8 +2283,6 @@ public abstract class BaseTest {
                 .port(port)
                 .host("127.0.0.1")
                 .resource("/suspend", new AtmosphereHandler() {
-
-                    private final AtomicInteger count = new AtomicInteger(1);
 
                     @Override
                     public void onRequest(final AtmosphereResource r) throws IOException {
