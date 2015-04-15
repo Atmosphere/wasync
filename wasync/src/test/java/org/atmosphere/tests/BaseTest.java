@@ -1095,8 +1095,8 @@ public abstract class BaseTest {
             }
 
         }).open(request.build())
-                .fire("PING").get()
-                .fire("PONG").get();
+                .fire("PING").get(5, TimeUnit.SECONDS)
+                .fire("PONG").get(5, TimeUnit.SECONDS);
 
         latch.await(5, TimeUnit.SECONDS);
         socket.close();
@@ -1368,7 +1368,7 @@ public abstract class BaseTest {
 
         }).open(request.build())
                 .fire("PING")
-                .fire("PONG").get();
+                .fire("PONG").get(5, TimeUnit.SECONDS);
 
         latch.await(5, TimeUnit.SECONDS);
         socket.close();
@@ -2360,7 +2360,7 @@ public abstract class BaseTest {
                     }
                 }).open(request.build())
                 .fire("PING")
-                .fire("PONG").get();
+                .fire("PONG").get(5, TimeUnit.SECONDS);
 
         latch.await(10, TimeUnit.SECONDS);
         socket.close();
