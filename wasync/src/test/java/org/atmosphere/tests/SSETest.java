@@ -15,6 +15,7 @@
  */
 package org.atmosphere.tests;
 
+import com.ning.http.client.AsyncHttpClient;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
@@ -55,6 +56,7 @@ public class SSETest {
     protected Nettosphere server;
     protected String targetUrl;
     protected int port;
+    protected AsyncHttpClient ahc;
 
     protected int findFreePort() throws IOException {
         ServerSocket socket = null;
@@ -74,6 +76,7 @@ public class SSETest {
     public void tearDownGlobal() throws Exception {
         if (server != null && server.isStarted()) {
             server.stop();
+            ahc.closeAsynchronously();
         }
     }
 
@@ -81,6 +84,7 @@ public class SSETest {
     public void start() throws IOException {
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
+        ahc = BaseTest.createDefaultAsyncHttpClient();
     }
 
     Request.TRANSPORT transport() {
@@ -143,7 +147,7 @@ public class SSETest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().reconnect(false).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).reconnect(false).build());
         socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
@@ -206,7 +210,7 @@ public class SSETest {
                 .enableProtocol(true)
                 .transport(transport());
 
-        Socket socket = client.create();
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
         socket.on(Event.OPEN.name(), new Function<Object>() {
             @Override
             public void on(Object o) {

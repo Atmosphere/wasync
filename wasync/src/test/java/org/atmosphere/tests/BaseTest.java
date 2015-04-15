@@ -69,7 +69,7 @@ public abstract class BaseTest {
     public String targetUrl;
     public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
-    private AsyncHttpClient ahc;
+    public AsyncHttpClient ahc;
 
     public int findFreePort() throws IOException {
         ServerSocket socket = null;
