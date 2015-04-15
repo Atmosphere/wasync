@@ -2348,7 +2348,7 @@ public abstract class BaseTest {
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
-                logger.info("Serialized Function invoked {}", t);
+                logger.info("Serialized Function get invoked {}", t);
                 synchronized (response) {
                     response.get().append(t);
                 }
