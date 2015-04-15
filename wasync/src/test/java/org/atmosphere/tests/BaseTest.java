@@ -1632,7 +1632,7 @@ public abstract class BaseTest {
     public void closeWriteTest() throws IOException, InterruptedException {
         logger.info("\n\ncloseWriteTest\n\n");
         final AtomicReference<StringBuilder> b = new AtomicReference<StringBuilder>(new StringBuilder());
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(2);
         final CountDownLatch flatch = new CountDownLatch(1);
         final CountDownLatch elatch = new CountDownLatch(1);
 
@@ -1657,6 +1657,7 @@ public abstract class BaseTest {
                                             break;
                                         }
                                     }
+                                    latch.countDown();
                                 }
                             }).suspend();
                         } else {
