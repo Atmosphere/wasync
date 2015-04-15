@@ -176,7 +176,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).reconnect(false).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).reconnect(false).build());
         socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
@@ -238,7 +238,7 @@ public abstract class BaseTest {
         server.start();
 
         Client client = ClientFactory.getDefault().newClient();
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.close();
         assertEquals(socket.status(), Socket.STATUS.CLOSE);
     }
@@ -290,7 +290,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         ;
         socket.on("message", new Function<String>() {
             @Override
@@ -364,7 +364,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         socket.on(new Function<String>() {
             @Override
@@ -428,7 +428,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {
@@ -500,7 +500,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/ratata")
                 .transport(transport());
 
-        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {
@@ -555,7 +555,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(new Function<Integer>() {
             @Override
             public void on(Integer statusCode) {
@@ -595,7 +595,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         IOException ioException = null;
         try {
@@ -630,7 +630,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         IOException ioException = null;
         try {
@@ -706,7 +706,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         ;
         socket.on("message", new Function<String>() {
             @Override
@@ -766,7 +766,7 @@ public abstract class BaseTest {
 
         ahc = createDefaultAsyncHttpClient(5 * 1000);
 
-        Options o = client.newOptionsBuilder().runtime(ahc).reconnect(false).build();
+        Options o = client.newOptionsBuilder().runtime(ahc, false).reconnect(false).build();
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
                 .uri(targetUrl + "/suspend")
@@ -849,7 +849,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.MESSAGE, new Function<POJO>() {
             @Override
             public void on(POJO t) {
@@ -913,7 +913,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.TRANSPORT, new Function<Request.TRANSPORT>() {
             @Override
             public void on(Request.TRANSPORT t) {
@@ -988,7 +988,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
@@ -1077,7 +1077,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         socket.on("message", new Function<String>() {
             @Override
@@ -1157,7 +1157,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         socket.on("message", new Function<String>() {
             @Override
@@ -1417,7 +1417,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
@@ -1447,7 +1447,7 @@ public abstract class BaseTest {
                 .uri(unreachableUrl + "/suspend")
                 .transport(transport());
 
-        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         IOException ioException = null;
         try {
 
@@ -1602,7 +1602,7 @@ public abstract class BaseTest {
                     }
                 }).transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.CLOSE, new Function<String>() {
             @Override
             public void on(String t) {
@@ -1696,7 +1696,7 @@ public abstract class BaseTest {
                     }
                 }).transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
@@ -1810,7 +1810,7 @@ public abstract class BaseTest {
                     }
                 }).transport(transport());
 
-        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on("message", new Function<String>() {
             @Override
             public void on(String t) {
@@ -1930,7 +1930,7 @@ public abstract class BaseTest {
                 })
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(new Function<POJO>() {
             @Override
             public void on(POJO t) {
@@ -1981,7 +1981,7 @@ public abstract class BaseTest {
                 .trackMessageLength(true)
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         IOException ioException = null;
         try {
             socket.on(new Function<ConnectException>() {
@@ -2057,7 +2057,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         socket.on("message", new Function<String>() {
             @Override
@@ -2194,7 +2194,7 @@ public abstract class BaseTest {
                 .header("X-Test", "foo")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         socket.open(request.build()).close();
 
@@ -2250,7 +2250,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
         socket.on("message", new Function<String>() {
             @Override
@@ -2331,7 +2331,7 @@ public abstract class BaseTest {
         final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
         SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
 
-        SerializedOptionsBuilder b = client.newOptionsBuilder().runtime(ahc);
+        SerializedOptionsBuilder b = client.newOptionsBuilder().runtime(ahc, false);
         b.serializedFireStage(new DefaultSerializedFireStage());
 
         RequestBuilder request = client.newRequestBuilder()
@@ -2449,7 +2449,7 @@ public abstract class BaseTest {
                 .enableProtocol(true)
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.CLOSE.name(), new Function<Object>() {
             @Override
             public void on(Object o) {
@@ -2509,7 +2509,7 @@ public abstract class BaseTest {
                 .enableProtocol(true)
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.OPEN.name(), new Function<Object>() {
             @Override
             public void on(Object o) {
@@ -2565,7 +2565,7 @@ public abstract class BaseTest {
                 .uri(targetUrl + "/suspend")
                 .transport(Request.TRANSPORT.WEBSOCKET);
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).runtimeShared(false).serializedFireStage(new DefaultSerializedFireStage()).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).runtimeShared(false).serializedFireStage(new DefaultSerializedFireStage()).build());
         socket.open(request.build());
         socket.close();
 

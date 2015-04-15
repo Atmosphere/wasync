@@ -130,7 +130,7 @@ public class LongPollingTest extends StreamingTest {
                 .header("Content-Type", "application/octet-stream")
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
-        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
 
         socket.on(new Function<Integer>() {
@@ -240,7 +240,7 @@ public class LongPollingTest extends StreamingTest {
                 .uri(targetUrl + "/suspend")
                 .transport(Request.TRANSPORT.LONG_POLLING);
 
-        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
 
         socket.on(new Function<Integer>() {

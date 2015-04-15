@@ -147,7 +147,7 @@ public class SSETest {
                 .uri(targetUrl + "/suspend")
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).reconnect(false).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).reconnect(false).build());
         socket.on(Event.MESSAGE, new Function<String>() {
             @Override
             public void on(String t) {
@@ -210,7 +210,7 @@ public class SSETest {
                 .enableProtocol(true)
                 .transport(transport());
 
-        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.OPEN.name(), new Function<Object>() {
             @Override
             public void on(Object o) {

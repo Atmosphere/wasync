@@ -15,6 +15,7 @@
  */
 package org.atmosphere.tests;
 
+import com.ning.http.client.AsyncHttpClient;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
@@ -49,6 +50,7 @@ public class TypedTest {
     public String targetUrl;
     public static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
     public int port;
+    protected AsyncHttpClient ahc;
 
     public int findFreePort() throws IOException {
         ServerSocket socket = null;
@@ -68,6 +70,7 @@ public class TypedTest {
     public void tearDownGlobal() throws Exception {
         if (server != null) {
             server.stop();
+            ahc.closeAsynchronously();
         }
     }
 
@@ -75,6 +78,7 @@ public class TypedTest {
     public void start() throws IOException {
         port = findFreePort();
         targetUrl = "http://127.0.0.1:" + port;
+        ahc = BaseTest.createDefaultAsyncHttpClient();
     }
 
     @Test
@@ -130,7 +134,7 @@ public class TypedTest {
                 })
                 .transport(Request.TRANSPORT.WEBSOCKET);
 
-        Socket socket = client.create();
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
         socket.on(Event.MESSAGE.name(), new Function<POJO>() {
             @Override
             public void on(POJO t) {
