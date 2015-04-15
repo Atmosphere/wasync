@@ -130,6 +130,8 @@ public abstract class BaseTest {
 
     @Test
     public void closeTest() throws Exception {
+        logger.info("\n\ncloseTest\n\n");
+
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -185,7 +187,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -300,7 +302,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -715,7 +717,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -996,7 +998,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -1087,7 +1089,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t);
                 latch.countDown();
             }
 
@@ -1167,7 +1169,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t); 
                 latch.countDown();
             }
 
@@ -1203,7 +1205,8 @@ public abstract class BaseTest {
                                     try {
                                         r.getResponse().write("yo!".getBytes()).flushBuffer();
                                     } catch (IOException e) {
-                                        e.printStackTrace();
+                                        logger.error("", e);
+                                        
                                     }
                                 }
                             }).suspend();
@@ -1262,7 +1265,7 @@ public abstract class BaseTest {
             sockets[i].on(new Function<Throwable>() {
                 @Override
                 public void on(Throwable t) {
-                    t.printStackTrace();
+                    logger.error("", t); 
                 }
             });
 
@@ -1305,9 +1308,9 @@ public abstract class BaseTest {
                             try {
                                 r.getBroadcaster().broadcast(r.getRequest().getReader().readLine()).get();
                             } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                logger.error("", e);
                             } catch (ExecutionException e) {
-                                e.printStackTrace();
+                                logger.error("", e);
                             }
                         }
                     }
@@ -1359,7 +1362,7 @@ public abstract class BaseTest {
             @Override
             public void on(Throwable t) {
                 System.out.println("=============== ERROR");
-                t.printStackTrace();
+                logger.error("", t); 
             }
 
         }).open(request.build())
@@ -1536,7 +1539,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t); 
                 latch.countDown();
             }
 
@@ -1607,7 +1610,7 @@ public abstract class BaseTest {
         }).on(new Function<IOException>() {
             @Override
             public void on(IOException ioe) {
-                ioe.printStackTrace();
+                logger.error("", ioe); ;
                 b.get().append("ERROR");
                 elatch.countDown();
             }
@@ -1653,7 +1656,7 @@ public abstract class BaseTest {
                                         try {
                                             resource.get().getResponse().getOutputStream().write(" ".getBytes());
                                         } catch (IOException e) {
-                                            e.printStackTrace();
+                                            logger.error("", e);
                                             break;
                                         }
                                     }
@@ -1711,7 +1714,7 @@ public abstract class BaseTest {
         }).on(new Function<IOException>() {
             @Override
             public void on(IOException ioe) {
-                ioe.printStackTrace();
+                logger.error("", ioe);
                 b.get().append("ERROR");
                 elatch.countDown();
             }
@@ -1826,14 +1829,16 @@ public abstract class BaseTest {
                 try {
                     socket.fire("PONG");
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("", e);
+                    
                 }
                 latch.countDown();
             }
         }).on(new Function<IOException>() {
             @Override
             public void on(IOException ioe) {
-                ioe.printStackTrace();
+                logger.error("", ioe);
+                
                 b.get().append("ERROR");
                 elatch.countDown();
             }
@@ -2052,7 +2057,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t); 
                 latch.countDown();
             }
 
@@ -2245,7 +2250,7 @@ public abstract class BaseTest {
 
             @Override
             public void on(Throwable t) {
-                t.printStackTrace();
+                logger.error("", t); 
                 latch.countDown();
             }
 
@@ -2275,9 +2280,11 @@ public abstract class BaseTest {
                             try {
                                 r.getBroadcaster().broadcast(r.getRequest().getReader().readLine()).get();
                             } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                logger.error("", e);
+                               ;
                             } catch (ExecutionException e) {
-                                e.printStackTrace();
+                                logger.error("", e);
+                               
                             }
                         }
                     }

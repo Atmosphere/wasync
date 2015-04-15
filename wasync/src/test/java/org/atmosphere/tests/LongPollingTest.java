@@ -19,6 +19,7 @@ import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
 import org.atmosphere.nettosphere.Config;
 import org.atmosphere.nettosphere.Nettosphere;
 import org.atmosphere.wasync.ClientFactory;
@@ -62,6 +63,10 @@ public class LongPollingTest extends StreamingTest {
 
     @Test
     public void BinaryEchoTest() throws Exception {
+
+        logger.info("\n\nBinaryEchoTest\n\n");
+        final CountDownLatch suspendedLatch = new CountDownLatch(2);
+
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -70,7 +75,12 @@ public class LongPollingTest extends StreamingTest {
                     @Override
                     public void onRequest(AtmosphereResource resource) throws IOException {
                         if (resource.getRequest().getMethod().equals("GET")) {
-                            resource.suspend(-1);
+                            resource.addEventListener(new AtmosphereResourceEventListenerAdapter.OnSuspend() {
+                                @Override
+                                public void onSuspend(AtmosphereResourceEvent event) {
+                                    suspendedLatch.countDown();
+                                }
+                            }).suspend(-1);
                         } else {
                             int payloadSize = resource.getRequest().getContentLength();
                             byte[] payload = new byte[payloadSize];
@@ -122,7 +132,6 @@ public class LongPollingTest extends StreamingTest {
 
         final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
 
-        final CountDownLatch suspendedLatch = new CountDownLatch(1);
 
         socket.on(new Function<Integer>() {
             @Override
@@ -157,6 +166,10 @@ public class LongPollingTest extends StreamingTest {
 
     @Test
     public void noMessageLostTest() throws Exception {
+
+        logger.info("\n\nnoMessageLostTest\n\n");
+        final CountDownLatch suspendedLatch = new CountDownLatch(2);
+
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
@@ -167,7 +180,12 @@ public class LongPollingTest extends StreamingTest {
                     public void onRequest(AtmosphereResource resource) throws IOException {
                         if (resource.getRequest().getMethod().equals("GET")) {
                             logger.info("Suspending : {}", resource.uuid());
-                            resource.suspend(-1);
+                            resource.addEventListener(new AtmosphereResourceEventListenerAdapter.OnSuspend() {
+                                @Override
+                                public void onSuspend(AtmosphereResourceEvent event) {
+                                    suspendedLatch.countDown();
+                                }
+                            }).suspend(-1);
                         } else {
                             String echo = resource.getRequest().getReader().readLine();
                             logger.info("echoing : {}", echo);
@@ -224,7 +242,6 @@ public class LongPollingTest extends StreamingTest {
 
         final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc).build());
 
-        final CountDownLatch suspendedLatch = new CountDownLatch(1);
 
         socket.on(new Function<Integer>() {
             @Override
@@ -255,6 +272,7 @@ public class LongPollingTest extends StreamingTest {
 
         latch.await(10, TimeUnit.SECONDS);
 
+        logger.info("RESPONSE {}", response.get());
         assertEquals(response.get().size(), 5);
         socket.close();
         server.stop();
