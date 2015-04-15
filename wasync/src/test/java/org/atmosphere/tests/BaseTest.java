@@ -2350,6 +2350,8 @@ public abstract class BaseTest {
                 logger.info("Serialized Function invoked {}", t);
                 response.get().append(t);
                 latch.countDown();
+                // If we received the message in a single packet
+                if (t.equals("PINGPONG")) latch.countDown();
             }
         }).on(Event.OPEN.name(), new Function<Object>() {
                     @Override
