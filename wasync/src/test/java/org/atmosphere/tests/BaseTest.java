@@ -2322,6 +2322,7 @@ public abstract class BaseTest {
                             // before resuming.
                             if (allMessagesReceived.getAndIncrement() == 1
                                     && r.getResource().transport().equals(AtmosphereResource.TRANSPORT.LONG_POLLING)) {
+                                r.getResource().getResponse().flushBuffer();
                                 r.getResource().resume();
                             }
                         }
