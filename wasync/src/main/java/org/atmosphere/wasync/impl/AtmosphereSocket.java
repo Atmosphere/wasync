@@ -111,7 +111,9 @@ public class AtmosphereSocket extends DefaultSocket {
      */
     @Override
     public void close() {
-        doCloseRequest();
+        if(request != null) {
+            doCloseRequest();
+        }
 
         // Not connected, but close the underlying AHC.
         if (transportInUse == null) {
