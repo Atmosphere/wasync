@@ -44,7 +44,7 @@ public class WebSocketLoader {
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"5", "1", "1", "http://127.0.0.1:8080/simple/test"};
+            s = new String[]{"5", "2000", "1000", "http://127.0.0.1:8080/"};
         }
 
         int run = Integer.valueOf(s[0]);
@@ -73,7 +73,7 @@ public class WebSocketLoader {
             RequestBuilder request = client.newRequestBuilder();
             request.method(Request.METHOD.GET).uri(url);
             request.transport(Request.TRANSPORT.WEBSOCKET);
-            request.header("X-wakeUpNIO", "true");
+            request.header("Sec-WebSocket-Protocol", "rpm-protocol");
 
             final CountDownLatch l = new CountDownLatch(clientNum);
             final CountDownLatch messages = new CountDownLatch(messageNum * clientNum);
@@ -100,9 +100,9 @@ public class WebSocketLoader {
                                     String[] m = s.split("\n\r");
                                     mCount += m.length;
                                     messages.countDown();
-                                    System.out.println("Message left receive " + messages.getCount() + " message " + s);
+//                                    System.out.println("Message left receive " + messages.getCount() + " message " + s);
                                     if (mCount == messageNum) {
-                                        // System.out.println("All messages received " + mCount);
+//                                        System.out.println("All messages received " + mCount);
                                         total.addAndGet(System.currentTimeMillis() - start.get());
                                     }
                                 }
@@ -124,13 +124,12 @@ public class WebSocketLoader {
 
             System.out.println("OK, all Connected: " + clientNum);
 
-            Socket socket = client.create(client.newOptionsBuilder().runtime(c).build());
-            socket.open(request.build());
-            for (int i = 0; i < messageNum; i++) {
-                socket.fire("message" + i);
+            for (int i = 0; i < clientCount; i++) {
+                for (int j = 0; j < messageNum; j++) {
+                    sockets[i].fire("message" + i);
+                }
             }
             messages.await(1, TimeUnit.HOURS);
-            socket.close();
             for (int i = 0; i < clientCount; i++) {
                 sockets[i].close();
             }
@@ -139,7 +138,7 @@ public class WebSocketLoader {
             c.close();
             System.gc();
         }
-        System.out.println("=== Means " + (count/run) + "=====");
+        System.out.println("=== Means " + (count / run) + "=====");
     }
 
 }
