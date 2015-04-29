@@ -44,13 +44,13 @@ public class WebSocketLoader {
     public static void main(String[] s) throws InterruptedException, IOException {
 
         if (s.length == 0) {
-            s = new String[]{"5", "2000", "1000", "http://127.0.0.1:8080/"};
+            s = new String[]{"5", "5000", "1", "http://127.0.0.1:8080/"};
         }
 
         int run = Integer.valueOf(s[0]);
         final int clientNum = Integer.valueOf(s[1]);
         final int messageNum = Integer.valueOf(s[2]);
-        String url = s[3];
+        String url = "http://" + s[3];
 
         System.out.println("Stressing: " + url);
         System.out.println("Number of Client: " + clientNum);
