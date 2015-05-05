@@ -15,6 +15,8 @@
  */
 package org.atmosphere.tests;
 
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -23,11 +25,15 @@ import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
 import org.atmosphere.nettosphere.Config;
 import org.atmosphere.nettosphere.Nettosphere;
 import org.atmosphere.wasync.ClientFactory;
+import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.impl.AtmosphereClient;
+import org.atmosphere.wasync.serial.DefaultSerializedFireStage;
+import org.atmosphere.wasync.serial.SerializedClient;
+import org.atmosphere.wasync.serial.SerializedOptionsBuilder;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -39,10 +45,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class LongPollingTest extends StreamingTest {
 
@@ -164,6 +172,96 @@ public class LongPollingTest extends StreamingTest {
         assertEquals(hasEchoReplied.get(), true);
     }
 
+    @Test(enabled = true)
+    public void serializeTest() throws Exception {
+        System.out.println("=============== STARTING SerializedTest");
+        if (server != null) {
+            server.stop();
+        }
+
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicInteger count = new AtomicInteger(2);
+                    private final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
+                            r.suspend(-1);
+                        } else {
+                            try {
+                                r.getBroadcaster().broadcast(r.getRequest().getReader().readLine()).get();
+                            } catch (InterruptedException e) {
+                                logger.error("", e);
+                            } catch (ExecutionException e) {
+                                logger.error("", e);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (r.getMessage() != null) {
+                            response.get().append(r.getMessage());
+                            if (count.decrementAndGet() == 0) {
+                                r.getResource().getResponse().write(response.toString());
+                                r.getResource().resume();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        SerializedOptionsBuilder b = client.newOptionsBuilder();
+        b.serializedFireStage(new DefaultSerializedFireStage());
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(b.build());
+
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Serialized Function invoked {}", t);
+                response.get().append(t);
+                latch.countDown();
+            }
+        }).on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                System.out.println("=============== ERROR");
+                logger.error("", t);
+            }
+
+        }).open(request.build())
+                .fire("PING")
+                .fire("PONG").get(5, TimeUnit.SECONDS);
+
+        latch.await(5, TimeUnit.SECONDS);
+        socket.close();
+
+        assertEquals(response.get().toString(), "PINGPONG");
+    }
+
     /**
      * Due to the reconnection cycle, this test may or may not work on Jenkins due ti the connection latency. Better to disable it.
      * @throws Exception
@@ -281,5 +379,154 @@ public class LongPollingTest extends StreamingTest {
         socket.close();
         server.stop();
 
+    }
+
+    @Test(enabled = true)
+    public void serializeFutureGetTest() throws Exception {
+        logger.info("\n\nserializeFutureGetTest\n\n");
+
+        final CountDownLatch latch = new CountDownLatch(4);
+        final AtomicInteger allMessagesReceived = new AtomicInteger();
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    @Override
+                    public void onRequest(final AtmosphereResource r) throws IOException {
+                        if (r.getRequest().getMethod().equalsIgnoreCase("GET")) {
+                            r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                                @Override
+                                public void onSuspend(AtmosphereResourceEvent event) {
+                                    latch.countDown();
+                                }
+                            }).suspend();
+                        } else {
+                            try {
+                                String msg = r.getRequest().getReader().readLine();
+                                // In case the message arrive in a single chunk.
+                                if (msg.equalsIgnoreCase("PINGPONG")) {
+                                    r.getBroadcaster().broadcast("PING").get();
+                                    r.getBroadcaster().broadcast("PONG").get();
+                                } else {
+                                    r.getBroadcaster().broadcast(msg).get();
+                                }
+                            } catch (InterruptedException e) {
+                                logger.error("", e);
+                                ;
+                            } catch (ExecutionException e) {
+                                logger.error("", e);
+
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                        if (r.getMessage() != null) {
+                            r.getResource().getResponse().write(r.getMessage().toString());
+
+                            // If the connection is about to resume we will loose the message so we must make sure we got 2 messages
+                            // before resuming.
+                            if (allMessagesReceived.incrementAndGet() == 2
+                                    && r.getResource().transport().equals(AtmosphereResource.TRANSPORT.LONG_POLLING)) {
+                                r.getResource().getResponse().flushBuffer();
+                                r.getResource().resume();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final AtomicReference<StringBuffer> response = new AtomicReference<StringBuffer>(new StringBuffer());
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        SerializedOptionsBuilder b = client.newOptionsBuilder().runtime(ahc, false);
+        b.serializedFireStage(new DefaultSerializedFireStage());
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(b.build());
+
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Serialized Function get invoked {}", t);
+                response.get().append(t);
+                latch.countDown();
+                // If we received the message in a single packet
+                if (t.equals("PINGPONG")) latch.countDown();
+            }
+        }).on(Event.OPEN.name(), new Function<Object>() {
+                    @Override
+                    public void on(Object o) {
+                        latch.countDown();
+                    }
+                }).open(request.build())
+                .fire("PING")
+                .fire("PONG").get(5, TimeUnit.SECONDS);
+
+        latch.await(10, TimeUnit.SECONDS);
+
+        socket.close();
+
+        assertEquals(response.get().toString(), "PINGPONG");
+    }
+
+    @Test
+    public void ahcCloseTest2() throws IOException, InterruptedException {
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(AtmosphereResource r) throws IOException {
+                        r.suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(Request.TRANSPORT.WEBSOCKET);
+
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).runtimeShared(false).serializedFireStage(new DefaultSerializedFireStage()).build());
+        socket.open(request.build());
+        socket.close();
+
+        // AHC is async closed
+        Thread.sleep(1000);
+
+        assertTrue(ahc.isClosed());
     }
 }
