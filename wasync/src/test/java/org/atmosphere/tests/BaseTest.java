@@ -2634,7 +2634,7 @@ public abstract class BaseTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> response = new AtomicReference<String>();
-        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+        AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
