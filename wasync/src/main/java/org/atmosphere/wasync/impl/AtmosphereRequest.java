@@ -88,7 +88,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
     /**
      * The padding size sent by Atmosphere
      *
-     * @return padding size. Default is 2048
+     * @return padding size. Default is 4098
      */
     public int getPaddingSize() {
         return builder.paddingSize;
