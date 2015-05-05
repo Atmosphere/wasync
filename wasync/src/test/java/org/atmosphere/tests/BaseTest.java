@@ -2303,7 +2303,14 @@ public abstract class BaseTest {
                             }).suspend();
                         } else {
                             try {
-                                r.getBroadcaster().broadcast(r.getRequest().getReader().readLine()).get();
+                                String msg = r.getRequest().getReader().readLine();
+                                // In case the message arrive in a single chunk.
+                                if (msg.equalsIgnoreCase("PINGPONG")) {
+                                    r.getBroadcaster().broadcast("PING").get();
+                                    r.getBroadcaster().broadcast("PONG").get();
+                                } else {
+                                    r.getBroadcaster().broadcast(msg).get();
+                                }
                             } catch (InterruptedException e) {
                                 logger.error("", e);
                                 ;
@@ -2321,7 +2328,7 @@ public abstract class BaseTest {
 
                             // If the connection is about to resume we will loose the message so we must make sure we got 2 messages
                             // before resuming.
-                            if (allMessagesReceived.getAndIncrement() == 1
+                            if (allMessagesReceived.incrementAndGet() == 2
                                     && r.getResource().transport().equals(AtmosphereResource.TRANSPORT.LONG_POLLING)) {
                                 r.getResource().getResponse().flushBuffer();
                                 r.getResource().resume();
