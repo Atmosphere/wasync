@@ -41,8 +41,7 @@ public class LongPollingTransport extends StreamTransport {
     /**
      * When Atmosphere Protocol is used, we must not invoke any Function until the protocol has been processed.
      */
-    private final AtomicBoolean handshakeOccured = new AtomicBoolean(true);
-    protected boolean protocolReceived = false;
+    private final AtomicBoolean handshakeOccurred = new AtomicBoolean(true);
     private int count = 0;
 
     public LongPollingTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
@@ -52,7 +51,7 @@ public class LongPollingTransport extends StreamTransport {
         if (protocol != null && transport != null
                 && protocol.get(0).equals("true")
                 && transport.get(0).equals("long-polling")) {
-            handshakeOccured.set(false);
+            handshakeOccurred.set(false);
         }
     }
 
@@ -61,7 +60,7 @@ public class LongPollingTransport extends StreamTransport {
      */
     @Override
     public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        if (handshakeOccured.get()) {
+        if (handshakeOccurred.get()) {
             return super.onHeadersReceived(headers);
         }
         return STATE.CONTINUE;
@@ -72,7 +71,7 @@ public class LongPollingTransport extends StreamTransport {
      */
     @Override
     public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
-        if (handshakeOccured.get()) {
+        if (handshakeOccurred.get()) {
             // onOpen only called once
             if (protocolEnabled && ++count == 1) {
                 status = Socket.STATUS.INIT;
@@ -84,7 +83,7 @@ public class LongPollingTransport extends StreamTransport {
 
     @Override
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
-        handshakeOccured.set(true);
+        handshakeOccurred.set(true);
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
             if (protocolEnabled && !protocolReceived) {
@@ -93,19 +92,20 @@ public class LongPollingTransport extends StreamTransport {
                     protocolReceived = true;
                 }
                 return AsyncHandler.STATE.CONTINUE;
-            } else if (!Utils.whiteSpace(payload)) {
+            } else {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
             }
             unlockFuture();
         } else {
-            String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+            String m = new String(bodyPart.getBodyPartBytes(), charSet);
             if (protocolEnabled && !protocolReceived) {
+                m = m.trim();
                 if (m.length() > 0) {
                     TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
                     protocolReceived = true;
                 }
                 return AsyncHandler.STATE.CONTINUE;
-            } else if (m.length() > 0) {
+            } else {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
             unlockFuture();

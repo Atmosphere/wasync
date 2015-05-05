@@ -145,7 +145,7 @@ public class TransportsUtil {
                         logger.trace("Decoder {} fully decoded {}", d, instanceType);
                         decodedObjects.add(o);
                         break;
-                    } else {
+                    } else if (o.decoded() != null) {
                         decoded = o.decoded();
                     }
                 }

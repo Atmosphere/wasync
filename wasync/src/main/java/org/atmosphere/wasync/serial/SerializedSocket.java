@@ -15,9 +15,9 @@
  */
 package org.atmosphere.wasync.serial;
 
-import java.io.IOException;
-import java.util.List;
-
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.ListenableFuture;
+import com.ning.http.client.Response;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Socket;
@@ -28,9 +28,8 @@ import org.atmosphere.wasync.impl.SocketRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.ListenableFuture;
-import com.ning.http.client.Response;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * {@code SerializedSocket} is a {@link Socket} implementation that guarantees ordered message delivery of
@@ -56,6 +55,11 @@ public class SerializedSocket extends AtmosphereSocket {
             options.runtime(asyncHttpClient);
         }
         this.serializedFireStage = options.serializedFireStage();
+
+        if (serializedFireStage == null) {
+            serializedFireStage = new DefaultSerializedFireStage();
+        }
+
         this.serializedFireStage.setSocket(this);
     }
 

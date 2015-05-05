@@ -2588,6 +2588,88 @@ public abstract class BaseTest {
         assertTrue(ahc.isClosed());
     }
 
+    @Test
+    public void whitespaceTest() throws Exception {
+        logger.info("\n\nwhitespaceTest\n\n");
+
+        final CountDownLatch l = new CountDownLatch(2);
+        final String WHITE_SPACE = "              ";
+        Config config = new Config.Builder()
+                .port(port)
+                .host("127.0.0.1")
+                .resource("/suspend", new AtmosphereHandler() {
+
+                    private final AtomicBoolean b = new AtomicBoolean(false);
+
+                    @Override
+                    public void onRequest(final AtmosphereResource r) throws IOException {
+
+                        r.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+                            @Override
+                            public void onSuspend(AtmosphereResourceEvent event) {
+                                try {
+                                    r.getResponse().getWriter().print(WHITE_SPACE);
+                                    r.getResponse().flushBuffer();
+                                } catch (IOException e) {
+                                    logger.error("", e);
+                                }
+                                l.countDown();
+                            }
+                        }).suspend();
+                    }
+
+                    @Override
+                    public void onStateChange(AtmosphereResourceEvent r) throws IOException {
+                    }
+
+                    @Override
+                    public void destroy() {
+
+                    }
+                }).build();
+
+        server = new Nettosphere.Builder().config(config).build();
+        assertNotNull(server);
+        server.start();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<String> response = new AtomicReference<String>();
+        SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
+
+        RequestBuilder request = client.newRequestBuilder()
+                .method(Request.METHOD.GET)
+                .uri(targetUrl + "/suspend")
+                .transport(transport());
+
+        Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
+
+        socket.on("message", new Function<String>() {
+            @Override
+            public void on(String t) {
+                response.set(t);
+                latch.countDown();
+            }
+        }).on(new Function<Throwable>() {
+
+            @Override
+            public void on(Throwable t) {
+                logger.error("", t);
+                latch.countDown();
+            }
+
+        }).open(request.build());
+
+        latch.await(5, TimeUnit.SECONDS);
+
+        assertEquals(response.get(), WHITE_SPACE);
+        assertEquals(socket.status(), Socket.STATUS.OPEN);
+
+        socket.close();
+
+        assertEquals(socket.status(), Socket.STATUS.CLOSE);
+    }
+
+
     public final static class EventPOJO {
 
         public final String message;

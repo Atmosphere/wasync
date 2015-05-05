@@ -21,7 +21,6 @@ import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.RequestBuilder;
-
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.FunctionResolver;
@@ -79,6 +78,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     protected Future connectOperationFuture;
     protected final boolean protocolEnabled;
     protected final ScheduledExecutorService timer;
+    protected boolean protocolReceived = false;
 
     public StreamTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         this.decoders = request.decoders();
@@ -139,13 +139,26 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
-            if (!Utils.whiteSpace(payload)) {
+
+            if (!protocolReceived && !Utils.whiteSpace(payload)) {
+                protocolReceived = true;
+            }
+
+            if (protocolReceived) {
                 TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
                 unlockFuture();
             }
         } else {
-            String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-            if (m.length() > 0) {
+            String m = new String(bodyPart.getBodyPartBytes(), charSet);
+
+            if (!protocolReceived) {
+                m = m.trim();
+                if (m.length() > 0) {
+                    protocolReceived = true;
+                }
+            }
+
+            if (protocolReceived) {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
                 unlockFuture();
             }

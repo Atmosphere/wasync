@@ -85,6 +85,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     protected final boolean protocolEnabled;
     protected boolean supportBinary = false;
     protected final ScheduledExecutorService timer;
+    protected boolean protocolReceived = false;
 
     public WebSocketTransport(RequestBuilder requestBuilder, Options options, Request request, List<FunctionWrapper> functions) {
         super();
@@ -369,9 +370,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         @Override
         public void onMessage(String message) {
             logger.trace("onMessage {} for {}", message, webSocket);
-            message = message.trim();
             logger.trace("{} received {}", name(), message);
-            if (message.length() > 0) {
+            if (protocolReceived || message.length() > 0) {
                 TransportsUtil.invokeFunction(MESSAGE,
                         decoders,
                         functions,
@@ -385,6 +385,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                     unlockFuture();
                 }
             }
+            protocolReceived = true;
         }
 
         @Override
@@ -432,7 +433,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
         @Override
         public void onMessage(byte[] message) {
             logger.trace("{} received {}", name(), message);
-            if (message.length > 0 && !Utils.whiteSpace(message)) {
+            if (protocolReceived || (message.length > 0 && !Utils.whiteSpace(message))) {
                 TransportsUtil.invokeFunction(MESSAGE,
                         decoders,
                         functions,
@@ -446,6 +447,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                     unlockFuture();
                 }
             }
+            protocolReceived = true;
         }
 
         @Override

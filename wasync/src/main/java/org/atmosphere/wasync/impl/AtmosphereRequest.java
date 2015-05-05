@@ -18,6 +18,7 @@ package org.atmosphere.wasync.impl;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.RequestBuilder;
+import org.atmosphere.wasync.decoder.PaddingDecoder;
 import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A specialized {@link org.atmosphere.wasync.Request} implementation to use with the Atmosphere Framework. Functionality
  * like track message length, broadcaster cache, etc. can be configured using this object. Make sure your server
  * is properly configured before changing the default.
- *
+ * <p/>
  * AtmosphereRequest MUST NOT be shared between {@link org.atmosphere.wasync.Socket} instance because they hold information about the
  * Atmosphere Protocol like the UUID.
  *
@@ -85,6 +86,15 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
     }
 
     /**
+     * The padding size sent by Atmosphere
+     *
+     * @return padding size. Default is 2048
+     */
+    public int getPaddingSize() {
+        return builder.paddingSize;
+    }
+
+    /**
      * A builder for {@link AtmosphereRequest}. This builder configure the Atmosphere Protocol on the request object.
      */
     public static class AtmosphereRequestBuilder extends RequestBuilder<AtmosphereRequestBuilder> {
@@ -92,6 +102,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         private CACHE cacheType = CACHE.NO_BROADCAST_CACHE;
         private boolean trackMessageLength = false;
         private String trackMessageLengthDelimiter = "|";
+        private int paddingSize = 4098;
         private boolean enableProtocol = true;
         private final BDecoder bDecoder = new BDecoder();
         private final SDecoder sDecoder = new SDecoder();
@@ -174,6 +185,17 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         }
 
         /**
+         * Set the size of the padding bytes or String send by Atmosphere's PaddingAtmosphereInterceptor
+         *
+         * @param paddingSize false to disable.
+         * @return this
+         */
+        public AtmosphereRequestBuilder paddingSize(int paddingSize) {
+            this.paddingSize = paddingSize;
+            return this;
+        }
+
+        /**
          * {@inheritDoc}
          * Important: You cannot call the build() method more than once if {@link #enableProtocol} or {@link #trackMessageLength}
          * are set to true.
@@ -208,12 +230,12 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 TrackMessageSizeDecoder trackMessageSizeDecoder;
                 if (trackMessageLengthDelimiter.length() > 0) {
                     trackMessageSizeDecoder = new TrackMessageSizeDecoder(trackMessageLengthDelimiter, enableProtocol);
-                }
-                else {
+                } else {
                     trackMessageSizeDecoder = new TrackMessageSizeDecoder(enableProtocol);
                 }
                 _addDecoder(0, trackMessageSizeDecoder);
             }
+            _addDecoder(new PaddingDecoder(paddingSize));
 
             return new AtmosphereRequest(this);
         }
@@ -221,6 +243,12 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
         private void _addDecoder(int pos, Decoder decoder) {
             if (!decoders.contains(decoder)) {
                 decoders.add(pos, decoder);
+            }
+        }
+
+        private void _addDecoder(Decoder decoder) {
+            if (!decoders.contains(decoder)) {
+                decoders.add(decoder);
             }
         }
 
