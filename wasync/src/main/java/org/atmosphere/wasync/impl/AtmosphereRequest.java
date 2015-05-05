@@ -18,7 +18,7 @@ package org.atmosphere.wasync.impl;
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.RequestBuilder;
-import org.atmosphere.wasync.decoder.PaddingDecoder;
+import org.atmosphere.wasync.decoder.PaddingAndHeartbeatDecoder;
 import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -235,7 +235,6 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 }
                 _addDecoder(0, trackMessageSizeDecoder);
             }
-            _addDecoder(new PaddingDecoder(paddingSize));
 
             return new AtmosphereRequest(this);
         }
@@ -260,6 +259,12 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
             List<String> l = new ArrayList<String>();
             l.add(proto[pos]);
             queryString.put("X-Atmosphere-tracking-id", l);
+
+            String heartbeatChar = "X";
+            if (proto.length == 3) {
+                heartbeatChar = proto[2];
+            }
+            _addDecoder(2,new PaddingAndHeartbeatDecoder(paddingSize, heartbeatChar));
         }
 
         private final class SDecoder implements Decoder<String, Decoder.Decoded<String>> {

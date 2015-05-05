@@ -20,25 +20,33 @@ import org.atmosphere.wasync.Decoder.Decoded;
 import org.atmosphere.wasync.Event;
 
 /**
- * Trim white space protocol sent by the Atmosphere's org.atmosphere.interceptor.PaddingAtmosphereInterceptor
+ * Trim white space protocol sent by the Atmosphere's org.atmosphere.interceptor.PaddingAtmosphereInterceptor,
+ * discard heartbeat message from the server.
  *
  * @Author Jean-Francois Arcand
  */
-public class PaddingDecoder implements Decoder<String, Decoded<String>> {
+public class PaddingAndHeartbeatDecoder implements Decoder<String, Decoded<String>> {
 
     private final int paddingSize;
+    private final String heartbeatChar;
 
-    public PaddingDecoder(){
-        this(4098);
+    public PaddingAndHeartbeatDecoder(){
+        this(4098, "X");
     }
 
-    public PaddingDecoder(int paddingSize) {
+    public PaddingAndHeartbeatDecoder(int paddingSize, String heartbeatChar) {
         this.paddingSize = paddingSize;
+        this.heartbeatChar = heartbeatChar;
     }
 
     @Override
     public Decoded<String>  decode(Event type, String message) {
         if (type.equals(Event.MESSAGE)) {
+
+            if (message.equalsIgnoreCase(heartbeatChar)) {
+                return new Decoded<String>(message, Decoded.ACTION.ABORT);
+            }
+
             message = ltrim(message);
             if (message == null) {
                 return new Decoded<String>(message, Decoded.ACTION.ABORT);
@@ -56,4 +64,5 @@ public class PaddingDecoder implements Decoder<String, Decoded<String>> {
 
         return i == paddingSize ? s.trim().length() == 0 ? null : s.substring(i) : s;
     }
+
 }
