@@ -9,7 +9,7 @@
 <div id="overview"><a href="../../../../../apidocs/org/atmosphere/wasync/transport/TransportsUtil.html">View Javadoc</a></div><pre>
 
 <a class="jxr_linenumber" name="1" href="#1">1</a>   <em class="jxr_comment">/*</em>
-<a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_comment"> * Copyright 2014 Jeanfrancois Arcand</em>
+<a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_comment"> * Copyright 2015 Async-IO.org</em>
 <a class="jxr_linenumber" name="3" href="#3">3</a>   <em class="jxr_comment"> *</em>
 <a class="jxr_linenumber" name="4" href="#4">4</a>   <em class="jxr_comment"> * Licensed under the Apache License, Version 2.0 (the "License"); you may not</em>
 <a class="jxr_linenumber" name="5" href="#5">5</a>   <em class="jxr_comment"> * use this file except in compliance with the License. You may obtain a copy of</em>
@@ -155,7 +155,7 @@
 <a class="jxr_linenumber" name="145" href="#145">145</a>                         logger.trace(<span class="jxr_string">"Decoder {} fully decoded {}"</span>, d, instanceType);
 <a class="jxr_linenumber" name="146" href="#146">146</a>                         decodedObjects.add(o);
 <a class="jxr_linenumber" name="147" href="#147">147</a>                         <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="148" href="#148">148</a>                     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="148" href="#148">148</a>                     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (o.decoded() != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="149" href="#149">149</a>                         decoded = o.decoded();
 <a class="jxr_linenumber" name="150" href="#150">150</a>                     }
 <a class="jxr_linenumber" name="151" href="#151">151</a>                 }
