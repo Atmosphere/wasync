@@ -2429,6 +2429,7 @@ public abstract class BaseTest {
         assertEquals(response.get(), WHITE_SPACE);
         assertEquals(socket.status(), Socket.STATUS.OPEN);
 
+        server.stop();
         socket.close();
 
         assertEquals(socket.status(), Socket.STATUS.CLOSE);
