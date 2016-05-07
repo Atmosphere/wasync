@@ -351,6 +351,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         if (!reconnecting.get()) {
             logger.trace("onFailure {}", t);
+
             connectFutureException(t);
             errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
         }
@@ -426,7 +427,19 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             logger.trace("onError for {}", t);
             status = Socket.STATUS.ERROR;
             logger.debug("", t);
-            onFailure(t);
+
+            // On Android, ErrnoException is fired if lose connection (WIFI)
+            if(t.getClass().getName().equals("android.system.ErrnoException")){
+                if (options.reconnect()) {
+                    close(); // force release resources and reconnect
+                    tryReconnect();
+                }else{
+                    onFailure(new IOException(t.getMessage(), t));
+                }
+            }else{
+                onFailure(t);
+            }
+
         }
     }
 
