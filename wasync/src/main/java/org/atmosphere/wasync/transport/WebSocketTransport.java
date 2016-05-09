@@ -428,15 +428,15 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             status = Socket.STATUS.ERROR;
             logger.debug("", t);
 
-            // On Android, ErrnoException is fired if lose connection (WIFI)
-            if(t.getClass().getName().equals("android.system.ErrnoException")){
+            // On Android, ErrnoException is fired if lose connection (WIFI) or timeout
+            if (t.getClass().getName().equals("android.system.ErrnoException")) {
                 if (options.reconnect()) {
                     close(); // force release resources and reconnect
                     tryReconnect();
-                }else{
+                } else {
                     onFailure(new IOException(t.getMessage(), t));
                 }
-            }else{
+            } else {
                 onFailure(t);
             }
 
