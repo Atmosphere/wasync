@@ -257,7 +257,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             unlockFuture();
         }
 
-        ok.set(true);
         WebSocketListener l = new TextListener();
         if (supportBinary) {
             l = new BinaryListener(l);
@@ -291,6 +290,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
     void reconnect() {
         try {
             reconnecting.set(true);
+            ok.set(false);
+            
             status = Socket.STATUS.REOPENED;
 
             ListenableFuture<WebSocket> webSocketListenableFuture = options.runtime().executeRequest(requestBuilder.build(), WebSocketTransport.this);
@@ -301,6 +302,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
             logger.info("reconnect successful ! in attempt [{}/{}]", reconnectAttempt.get(), options.reconnectAttempts());
 
+            TransportsUtil.invokeFunction(REOPENED, decoders, functions, String.class, REOPENED.name(), REOPENED.name(), resolver);
+
+            closed.set(false);
             reconnectAttempt.set(0);
             reconnecting.set(false);
         } catch (InterruptedException e) {
@@ -316,6 +320,10 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
                 onFailure(e.getCause() != null ? e.getCause() : e);
             }
         }
+    }
+
+    public boolean touchSuccess() {
+        return ok.getAndSet(true);
     }
 
     /**
@@ -343,6 +351,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 
         if (!reconnecting.get()) {
             logger.trace("onFailure {}", t);
+
             connectFutureException(t);
             errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
         }
@@ -418,7 +427,19 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
             logger.trace("onError for {}", t);
             status = Socket.STATUS.ERROR;
             logger.debug("", t);
-            onFailure(t);
+
+            // On Android, ErrnoException is fired if lose connection (WIFI) or timeout
+            if (t.getClass().getName().equals("android.system.ErrnoException")) {
+                if (options.reconnect()) {
+                    close(); // force release resources and reconnect
+                    tryReconnect();
+                } else {
+                    onFailure(new IOException(t.getMessage(), t));
+                }
+            } else {
+                onFailure(t);
+            }
+
         }
     }
 
