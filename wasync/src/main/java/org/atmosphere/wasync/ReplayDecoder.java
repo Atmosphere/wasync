@@ -17,12 +17,16 @@ package org.atmosphere.wasync;
 
 import java.util.List;
 
+import org.atmosphere.wasync.Decoder.Decoded;
+
 /**
  * A {@link Decoder} that always return a List of message to be dispatched one by one to the remaining list of Decoder.
  *
+ * @param <U>
+ * @param <T>
  * @author Jeanfrancois Arcand
  */
-public interface ReplayDecoder extends Decoder<String, List<?>> {
+public interface ReplayDecoder<U, T> extends Decoder<U, Decoded<List<T>>> {
 
     /**
      * Decode a String into a List of Objects. Each element of the List will be dispatched to the decoders that where
@@ -34,5 +38,5 @@ public interface ReplayDecoder extends Decoder<String, List<?>> {
      * @return a List of Object
      */
     @Override
-    public List<?> decode(Event e, String s);
+    public Decoded<List<T>> decode(Event e, U s);
 }

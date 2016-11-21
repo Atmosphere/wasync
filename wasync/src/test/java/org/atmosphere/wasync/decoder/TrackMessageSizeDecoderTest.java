@@ -15,15 +15,16 @@
  */
 package org.atmosphere.wasync.decoder;
 
-import org.atmosphere.wasync.Event;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
+import org.atmosphere.wasync.Decoder.Decoded;
+import org.atmosphere.wasync.Event;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -44,16 +45,16 @@ public class TrackMessageSizeDecoderTest {
         decoder = new TrackMessageSizeDecoder(DELIMITER, true);
         String message = "37|{\"message\":\"ab\",\"time\":1373900488808}";
 
-        List<String> result = decoder.decode(Event.MESSAGE, message);
-        assertEquals(result, Collections.<String>emptyList());
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, message);
+        assertEquals(result.decoded(), Collections.<String>emptyList());
 
         List<String> expected = new ArrayList<String>() {
             {
                 add("{\"message\":\"ab\",\"time\":1373900488808}");
             }
         };
-        List<String> result2 = decoder.decode(Event.MESSAGE, message);
-        assertEquals(result2, expected);
+        Decoded<List<String>> result2 = decoder.decode(Event.MESSAGE, message);
+        assertEquals(result2.decoded(), expected);
     }
 
     @Test
@@ -65,8 +66,8 @@ public class TrackMessageSizeDecoderTest {
                 add("{\"message\":\"ab\",\"time\":1373900488808}");
             }
         };
-        List<String> result = decoder.decode(Event.MESSAGE, message);
-        assertEquals(result, expected);
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, message);
+        assertEquals(result.decoded(), expected);
     }
 
     @Test
@@ -86,8 +87,8 @@ public class TrackMessageSizeDecoderTest {
                 add("{\"message\":\"ab\",\"time\":1373900488831}");
             }
         };
-        List<String> result = decoder.decode(Event.MESSAGE, messages);
-        assertEquals(result, expected);
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, messages);
+        assertEquals(result.decoded(), expected);
     }
 
     @Test
@@ -107,11 +108,32 @@ public class TrackMessageSizeDecoderTest {
                 add("{\"message\":\"ab\",\"time\":1373900488831}");
             }
         };
-        List<String> result = decoder.decode(Event.MESSAGE, messages);
-        assertEquals(result.size(), expected.size() -1);
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, messages);
+        assertEquals(result.decoded().size(), expected.size() -1);
 
-        result.addAll(decoder.decode(Event.MESSAGE, "\"message\":\"ab\",\"time\":1373900488831}"));
-        assertEquals(result, expected);
+        result.decoded().addAll(decoder.decode(Event.MESSAGE, "\"message\":\"ab\",\"time\":1373900488831}").decoded());
+        assertEquals(result.decoded(), expected);
+    }
+    
+    @Test
+    public void testSingleIncompleteMessageSplitOverSeveralWebsocketFrames() {
+        decoder = new TrackMessageSizeDecoder(DELIMITER, false);
+        String firstMessagePart = "37|{\"message\":\"ab\",";
+        String seconMessagedPart ="\"time\":1373900";
+        String thirdMessagePart ="488807}";
+        List<String> expected = new ArrayList<String>() {
+            {
+                add("{\"message\":\"ab\",\"time\":1373900488807}");
+            }
+        };
+        Decoded<List<String>> firstDecodeCall = decoder.decode(Event.MESSAGE, firstMessagePart);
+        assertEquals(firstDecodeCall.decoded().size(), 0);
+        Decoded<List<String>> secondDecodeCall = decoder.decode(Event.MESSAGE, seconMessagedPart);
+        assertEquals(secondDecodeCall.decoded().size(), 0);
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, thirdMessagePart);
+        
+        result.decoded().addAll(decoder.decode(Event.MESSAGE, "{\"message\":\"ab\",\"time\":1373900488807}").decoded());
+        assertEquals(result.decoded(), expected);
     }
 
     @Test
@@ -125,7 +147,7 @@ public class TrackMessageSizeDecoderTest {
                 add("{\"message\":\"ab\",\"time\":1373900488810}");
             }
         };
-        List<String> result = decoder.decode(Event.MESSAGE, messages);
-        assertEquals(result, expected);
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, messages);
+        assertEquals(result.decoded(), expected);
     }
 }

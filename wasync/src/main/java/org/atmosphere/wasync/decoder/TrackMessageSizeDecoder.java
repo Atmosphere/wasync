@@ -15,24 +15,24 @@
  */
 package org.atmosphere.wasync.decoder;
 
-import org.atmosphere.wasync.Event;
-import org.atmosphere.wasync.ReplayDecoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TrackMessageSizeDecoder implements ReplayDecoder {
+import org.atmosphere.wasync.Event;
+import org.atmosphere.wasync.ReplayDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class TrackMessageSizeDecoder implements ReplayDecoder<String, String> {
 
     private final Logger logger = LoggerFactory.getLogger(TrackMessageSizeDecoder.class);
 
     private final String delimiter;
     private final StringBuffer messagesBuffer = new StringBuffer();
     private final AtomicBoolean skipFirstMessage = new AtomicBoolean();
-    private final List<String> empty = Collections.<String>emptyList();
+    private final Decoded<List<String>> empty = new Decoded<List<String>>(Collections.<String>emptyList());
 
     public TrackMessageSizeDecoder() {
         this.delimiter = "|";
@@ -49,11 +49,11 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
     }
 
     @Override
-    public List<String> decode(Event type, String message) {
+    public Decoded<List<String>> decode(Event type, String message) {
         if (type.equals(Event.MESSAGE)) {
 
             if (skipFirstMessage.getAndSet(false)) return empty;
-            LinkedList<String> messages = new LinkedList<String>();
+            Decoded<List<String>> messages = new Decoded<List<String>>(new LinkedList<String>());
 
             message = messagesBuffer.append(message).toString().replace(delimiter, "__");
             messagesBuffer.setLength(0);
@@ -68,7 +68,7 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
                 while (pos < tokens.length) {
                     m = tokens[pos];
                     if (m.length() >= length) {
-                        messages.addLast(m.substring(0, length));
+                    	messages.decoded().add(m.substring(0, length));
                         String t = m.substring(length);
                         if (t.length() > 0) {
                             length = Integer.valueOf(t);
@@ -79,12 +79,15 @@ public class TrackMessageSizeDecoder implements ReplayDecoder {
                         } else {
                             messagesBuffer.append(message);
                         }
-                        break;
+                        if (messages.decoded().size() > 0) {
+                        	return messages;
+                        } else {
+                        	return new Decoded<List<String>>(new LinkedList<String>(), Decoded.ACTION.ABORT);
+                        }
                     }
                     pos++;
                 }
             }
-
             return messages;
         } else {
             return empty;
