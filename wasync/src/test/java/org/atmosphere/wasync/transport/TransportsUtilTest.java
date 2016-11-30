@@ -39,7 +39,7 @@ public class TransportsUtilTest {
         assertTrue(modifiableMessages.isEmpty());
     }
 
-    @Test(enabled = false)
+    @Test
     public void testInvokeFunctionWithTrackMessageSizeDecoder_CombinedMessages() throws Exception {
         List<String> originalMessages = createMessages(5);
         List<String> modifiableMessages = new ArrayList<>(originalMessages);
@@ -53,7 +53,7 @@ public class TransportsUtilTest {
             combinedMessages += withLengthPrefixed(message);
         }
         assertTrue(TransportsUtil.invokeFunction(decoders, functions, String.class, withLengthPrefixed(firstMessage), FUNCTION_NAME_MESSAGE, FunctionResolver.DEFAULT));
-        assertTrue(TransportsUtil.invokeFunction(decoders, functions, String.class, withLengthPrefixed(combinedMessages), FUNCTION_NAME_MESSAGE, FunctionResolver.DEFAULT));
+        assertTrue(TransportsUtil.invokeFunction(decoders, functions, String.class, combinedMessages, FUNCTION_NAME_MESSAGE, FunctionResolver.DEFAULT));
 
         assertTrue(latch.await(3, TimeUnit.SECONDS), "latch count was " + latch.getCount());
         assertTrue(modifiableMessages.isEmpty());
