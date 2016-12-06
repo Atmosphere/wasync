@@ -226,7 +226,11 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 _addDecoder(0, bDecoder);
             }
 
-            if (trackMessageLength) {
+            if (trackMessageLength) {                
+                List<String> l = new ArrayList<String>();
+                l.add("true");
+                queryString.put("X-Atmosphere-TrackMessageSize", l);
+                
                 TrackMessageSizeDecoder trackMessageSizeDecoder;
                 if (trackMessageLengthDelimiter.length() > 0) {
                     trackMessageSizeDecoder = new TrackMessageSizeDecoder(trackMessageLengthDelimiter, enableProtocol);
