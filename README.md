@@ -46,7 +46,7 @@ As simple as
         }).on(new Function<IOException>() {
 
             @Override
-            public void on(Throwable t) {
+            public void on(IOException ioe) {
                 // Some IOException occurred
             }
 
