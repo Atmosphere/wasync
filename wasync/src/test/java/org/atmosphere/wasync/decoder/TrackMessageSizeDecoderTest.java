@@ -15,16 +15,16 @@
  */
 package org.atmosphere.wasync.decoder;
 
-import static org.testng.Assert.assertEquals;
+import org.atmosphere.wasync.Decoder.Decoded;
+import org.atmosphere.wasync.Event;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.atmosphere.wasync.Decoder.Decoded;
-import org.atmosphere.wasync.Event;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
 
 /**
  *
@@ -148,6 +148,34 @@ public class TrackMessageSizeDecoderTest {
             }
         };
         Decoded<List<String>> result = decoder.decode(Event.MESSAGE, messages);
+        assertEquals(result.decoded(), expected);
+    }
+
+    @Test
+    /* This test will pass */
+    public void testGoodNotification() {
+        decoder = new TrackMessageSizeDecoder(DELIMITER, false);
+        String message = "36|{\n   \"id\" : \"G1JclURxSyAgLX8O5zgw\"\n}";
+        List<String> expected = new ArrayList<String>() {
+            {
+                add("{\n   \"id\" : \"G1JclURxSyAgLX8O5zgw\"\n}");
+            }
+        };
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, message);
+        assertEquals(result.decoded(), expected);
+    }
+
+    @Test
+    /* This test will fail due the JSON id containing "__" */
+    public void testBadNotification() {
+        decoder = new TrackMessageSizeDecoder(DELIMITER, false);
+        String message = "38|{\n   \"id\" : \"G1J__clURxSyAgLX8O5zgw\"\n}";
+        List<String> expected = new ArrayList<String>() {
+            {
+                add("{\n   \"id\" : \"G1J__clURxSyAgLX8O5zgw\"\n}");
+            }
+        };
+        Decoded<List<String>> result = decoder.decode(Event.MESSAGE, message);
         assertEquals(result.decoded(), expected);
     }
 }

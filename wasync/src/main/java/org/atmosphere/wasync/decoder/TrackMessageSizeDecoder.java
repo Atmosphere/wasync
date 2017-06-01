@@ -15,15 +15,15 @@
  */
 package org.atmosphere.wasync.decoder;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.ReplayDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TrackMessageSizeDecoder implements ReplayDecoder<String, String> {
 
@@ -33,6 +33,8 @@ public class TrackMessageSizeDecoder implements ReplayDecoder<String, String> {
     private final StringBuffer messagesBuffer = new StringBuffer();
     private final AtomicBoolean skipFirstMessage = new AtomicBoolean();
     private final Decoded<List<String>> empty = new Decoded<List<String>>(Collections.<String>emptyList());
+
+    private final static String charReplacement = "!!&;_!!";
 
     public TrackMessageSizeDecoder() {
         this.delimiter = "|";
@@ -55,11 +57,11 @@ public class TrackMessageSizeDecoder implements ReplayDecoder<String, String> {
             if (skipFirstMessage.getAndSet(false)) return empty;
             Decoded<List<String>> messages = new Decoded<List<String>>(new LinkedList<String>());
 
-            message = messagesBuffer.append(message).toString().replace(delimiter, "__");
+            message = messagesBuffer.append(message).toString().replace(delimiter, charReplacement);
             messagesBuffer.setLength(0);
 
-            if (message.indexOf("__") != -1) {
-                String[] tokens = message.split("__");
+            if (message.indexOf(charReplacement) != -1) {
+                String[] tokens = message.split(charReplacement);
 
                 // Skip first.
                 int pos = 1;
