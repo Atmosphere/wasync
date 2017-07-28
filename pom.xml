@@ -245,9 +245,9 @@
     <properties>
         <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
-        <source.property>1.7</source.property>
-        <target.property>1.7</target.property>
         <atmosphere.version>2.5.9</atmosphere.version>
+        <source.property>1.8</source.property>
+        <target.property>1.8</target.property>
         <nettosphere.version>2.4.10</nettosphere.version>
         <ahc.version>2.0.33</ahc.version>
     </properties>
