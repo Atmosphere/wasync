@@ -15,9 +15,28 @@
  */
 package org.atmosphere.tests;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNotSame;
+import static org.testng.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.ConnectException;
+import java.net.ServerSocket;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -41,24 +60,6 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.ConnectException;
-import java.net.ServerSocket;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNotSame;
-import static org.testng.Assert.assertTrue;
 
 public abstract class BaseTest {
     public final static String RESUME = "Resume";
@@ -88,7 +89,7 @@ public abstract class BaseTest {
         if (server != null && server.isStarted()) {
             server.stop();
         }
-        ahc.closeAsynchronously();
+        ahc.close();
     }
 
     abstract Request.TRANSPORT transport();
@@ -109,17 +110,15 @@ public abstract class BaseTest {
     }
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(int requestTimeout) {
-        NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-        nettyConfig.addProperty("child.tcpNoDelay", "true");
-        nettyConfig.addProperty("child.keepAlive", "true");
 
-        AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
+        DefaultAsyncHttpClientConfig.Builder b = new DefaultAsyncHttpClientConfig.Builder();
         b.setFollowRedirect(true)
                 .setMaxRequestRetry(-1)
                 .setConnectTimeout(-1)
-                .setReadTimeout(requestTimeout);
-        AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(nettyConfig).build();
-        return new AsyncHttpClient(config);
+                .setReadTimeout(requestTimeout)
+                .setTcpNoDelay(true)
+                .setKeepAlive(true);
+        return new DefaultAsyncHttpClient(b.build());
     }
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient() {
@@ -1299,7 +1298,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient c = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        final AsyncHttpClient c = new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         final CountDownLatch l = new CountDownLatch(getCount());
         Client client = ClientFactory.getDefault().newClient();
         RequestBuilder request = client.newRequestBuilder();
@@ -2289,7 +2288,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        final AsyncHttpClient ahc = new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
         RequestBuilder request = client.newRequestBuilder()

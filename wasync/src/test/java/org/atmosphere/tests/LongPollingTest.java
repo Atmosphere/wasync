@@ -15,8 +15,26 @@
  */
 package org.atmosphere.tests;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -35,22 +53,6 @@ import org.atmosphere.wasync.serial.DefaultSerializedFireStage;
 import org.atmosphere.wasync.serial.SerializedClient;
 import org.atmosphere.wasync.serial.SerializedOptionsBuilder;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 
 public class LongPollingTest extends StreamingTest {
 
@@ -512,7 +514,7 @@ public class LongPollingTest extends StreamingTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        final AsyncHttpClient ahc = new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         SerializedClient client = ClientFactory.getDefault().newClient(SerializedClient.class);
 
         RequestBuilder request = client.newRequestBuilder()

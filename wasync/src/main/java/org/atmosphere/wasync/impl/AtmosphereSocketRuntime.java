@@ -15,15 +15,16 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.FluentStringsMap;
+import java.util.Arrays;
+import java.util.List;
+
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Transport;
-
-import java.util.Arrays;
-import java.util.List;
+import org.atmosphere.wasync.util.FluentStringsMap;
 
 /**
  * Atmosphere Specific protocol information.
@@ -37,7 +38,7 @@ public class AtmosphereSocketRuntime extends SocketRuntime {
     }
 
     @Override
-    protected AsyncHttpClient.BoundRequestBuilder configureAHC(Request request) {
+    protected BoundRequestBuilder configureAHC(Request request) {
         FluentStringsMap m = DefaultSocket.decodeQueryString(request);
         m.put("X-Atmosphere-Transport", Arrays.asList(new String[]{"polling"}));
         m.remove("X-atmo-protocol");

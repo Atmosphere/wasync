@@ -17,7 +17,7 @@ package org.atmosphere.wasync;
 
 import java.util.concurrent.TimeUnit;
 
-import com.ning.http.client.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClient;
 
 /**
  * Base class for building {@link Options}

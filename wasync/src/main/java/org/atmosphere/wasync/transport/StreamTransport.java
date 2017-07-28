@@ -15,24 +15,14 @@
  */
 package org.atmosphere.wasync.transport;
 
-import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.FluentStringsMap;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.HttpResponseStatus;
-import com.ning.http.client.RequestBuilder;
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.Event;
-import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Future;
-import org.atmosphere.wasync.Options;
-import org.atmosphere.wasync.Request;
-import org.atmosphere.wasync.Socket;
-import org.atmosphere.wasync.Transport;
-import org.atmosphere.wasync.util.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.atmosphere.wasync.Event.CLOSE;
+import static org.atmosphere.wasync.Event.ERROR;
+import static org.atmosphere.wasync.Event.HEADERS;
+import static org.atmosphere.wasync.Event.MESSAGE;
+import static org.atmosphere.wasync.Event.OPEN;
+import static org.atmosphere.wasync.Event.REOPENED;
+import static org.atmosphere.wasync.Event.STATUS;
+import static org.atmosphere.wasync.Event.TRANSPORT;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,15 +33,25 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.atmosphere.wasync.Event.CLOSE;
-import static org.atmosphere.wasync.Event.ERROR;
-import static org.atmosphere.wasync.Event.HEADERS;
-import static org.atmosphere.wasync.Event.MESSAGE;
-import static org.atmosphere.wasync.Event.OPEN;
-import static org.atmosphere.wasync.Event.REOPENED;
-import static org.atmosphere.wasync.Event.STATUS;
-import static org.atmosphere.wasync.Event.TRANSPORT;
-import static org.atmosphere.wasync.Socket.STATUS;
+import org.asynchttpclient.AsyncHandler;
+import org.asynchttpclient.HttpResponseBodyPart;
+import org.asynchttpclient.HttpResponseHeaders;
+import org.asynchttpclient.HttpResponseStatus;
+import org.asynchttpclient.RequestBuilder;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Event;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Options;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.Socket.STATUS;
+import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.util.FluentStringsMap;
+import org.atmosphere.wasync.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Streaming {@link org.atmosphere.wasync.Transport} implementation
@@ -136,7 +136,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      * {@inheritDoc}
      */
     @Override
-    public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+    public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
 
@@ -164,7 +164,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
             }
         }
 
-        return AsyncHandler.STATE.CONTINUE;
+        return State.CONTINUE;
     }
 
     void unlockFuture() {
@@ -183,11 +183,11 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      * {@inheritDoc}
      */
     @Override
-    public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+    public State onHeadersReceived(HttpResponseHeaders headers) throws Exception {
         TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headers.getHeaders(), HEADERS.name(), resolver);
 
         // TODO: Parse charset
-        return AsyncHandler.STATE.CONTINUE;
+        return AsyncHandler.State.CONTINUE;
     }
 
     void futureDone() {
@@ -198,7 +198,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      * {@inheritDoc}
      */
     @Override
-    public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+    public AsyncHandler.State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         if (connectOperationFuture != null && !protocolEnabled) {
             connectOperationFuture.finishOrThrowException();
         }
@@ -214,7 +214,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
 
         TransportsUtil.invokeFunction(MESSAGE, decoders, functions, Integer.class, new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
 
-        return AsyncHandler.STATE.CONTINUE;
+        return State.CONTINUE;
     }
 
     void triggerOpen() {

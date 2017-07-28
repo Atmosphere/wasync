@@ -15,7 +15,17 @@
  */
 package org.atmosphere.tests;
 
-import com.ning.http.client.AsyncHttpClient;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.asynchttpclient.AsyncHttpClient;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
@@ -34,16 +44,6 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 public class TypedTest {
     public Nettosphere server;
@@ -70,7 +70,7 @@ public class TypedTest {
     public void tearDownGlobal() throws Exception {
         if (server != null) {
             server.stop();
-            ahc.closeAsynchronously();
+            ahc.close();
         }
     }
 

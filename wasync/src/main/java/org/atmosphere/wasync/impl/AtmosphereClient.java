@@ -18,8 +18,7 @@ package org.atmosphere.wasync.impl;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.Socket;
-
-import static org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
+import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 
 /**
  * A specialized {@link Client} for the Atmosphere Framework. This client support the Atmosphere Protocol.
