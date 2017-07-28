@@ -15,9 +15,14 @@
  */
 package org.atmosphere.wasync.util;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
 import org.atmosphere.wasync.Function;
@@ -26,11 +31,6 @@ import org.atmosphere.wasync.RequestBuilder;
 import org.atmosphere.wasync.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A utility class that can be used to load a WebSocket enabled Server
@@ -60,15 +60,10 @@ public class WebSocketLoader {
 
         for (int r = 0; r < run; r++) {
 
-            AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
-            b.setFollowRedirect(true).setConnectTimeout(-1).setReadTimeout(-1).setUserAgent("loader/1.1");
+        	DefaultAsyncHttpClientConfig.Builder b = new DefaultAsyncHttpClientConfig.Builder();
+			b.setFollowRedirect(true).setConnectTimeout(-1).setReadTimeout(-1).setUserAgent("loader/1.1").setTcpNoDelay(true).setKeepAlive(true);
 
-            NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-
-            nettyConfig.addProperty("child.tcpNoDelay", "true");
-            nettyConfig.addProperty("child.keepAlive", "true");
-
-            final AsyncHttpClient c = new AsyncHttpClient(b.setAsyncHttpClientProviderConfig(nettyConfig).build());
+            final AsyncHttpClient c = new DefaultAsyncHttpClient(b.build());
             Client client = ClientFactory.getDefault().newClient();
             RequestBuilder request = client.newRequestBuilder();
             request.method(Request.METHOD.GET).uri(url);

@@ -16,7 +16,6 @@
 package org.atmosphere.wasync;
 
 import java.io.IOException;
-
 import java.util.concurrent.TimeUnit;
 
 /**

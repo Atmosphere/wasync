@@ -15,23 +15,7 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.FluentStringsMap;
-import com.ning.http.client.ListenableFuture;
-import com.ning.http.client.Response;
-import org.atmosphere.wasync.Encoder;
-import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Future;
-import org.atmosphere.wasync.Options;
-import org.atmosphere.wasync.Request;
-import org.atmosphere.wasync.Socket;
-import org.atmosphere.wasync.Transport;
-import org.atmosphere.wasync.transport.TransportsUtil;
-import org.atmosphere.wasync.transport.WebSocketTransport;
-import org.atmosphere.wasync.util.ReaderInputStream;
-import org.atmosphere.wasync.util.TypeResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.atmosphere.wasync.Event.MESSAGE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,7 +25,24 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import static org.atmosphere.wasync.Event.MESSAGE;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.Response;
+import org.atmosphere.wasync.Encoder;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Options;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.Socket;
+import org.atmosphere.wasync.Transport;
+import org.atmosphere.wasync.transport.TransportsUtil;
+import org.atmosphere.wasync.transport.WebSocketTransport;
+import org.atmosphere.wasync.util.FluentStringsMap;
+import org.atmosphere.wasync.util.ReaderInputStream;
+import org.atmosphere.wasync.util.TypeResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implement the logic for communicating with a remote server.
@@ -143,7 +144,7 @@ public class SocketRuntime {
 
     public ListenableFuture<Response> httpWrite(Request request, Object object, Object data) throws IOException {
 
-        AsyncHttpClient.BoundRequestBuilder b = configureAHC(request);
+        BoundRequestBuilder b = configureAHC(request);
 
         if (InputStream.class.isAssignableFrom(object.getClass())) {
             //TODO: Allow reading the response.
@@ -159,7 +160,7 @@ public class SocketRuntime {
         }
     }
 
-    protected AsyncHttpClient.BoundRequestBuilder configureAHC(Request request) {
+    protected BoundRequestBuilder configureAHC(Request request) {
         FluentStringsMap m = DefaultSocket.decodeQueryString(request);
 
         return options.runtime().preparePost(request.uri())

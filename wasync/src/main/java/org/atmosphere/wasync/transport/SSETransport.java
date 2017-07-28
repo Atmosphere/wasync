@@ -15,17 +15,17 @@
  */
 package org.atmosphere.wasync.transport;
 
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.RequestBuilder;
+import static org.atmosphere.wasync.Event.MESSAGE;
+
+import java.util.List;
+
+import org.asynchttpclient.HttpResponseBodyPart;
+import org.asynchttpclient.HttpResponseHeaders;
+import org.asynchttpclient.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
-
-import java.util.List;
-
-import static org.atmosphere.wasync.Event.MESSAGE;
 
 /**
  * Server Side Events {@link org.atmosphere.wasync.Transport} implementation
@@ -50,9 +50,9 @@ public class SSETransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
-    public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+    public State onHeadersReceived(HttpResponseHeaders headers) throws Exception {
 
-        List<String> ct = headers.getHeaders().get("Content-Type");
+        List<String> ct = headers.getHeaders().getAll("Content-Type");
         if (ct == null || ct.size() == 0 || !ct.get(0).contains("text/event-stream")) {
             status = Socket.STATUS.ERROR;
             throw new TransportNotSupported(500, "Invalid Content-Type" + ct);
@@ -65,7 +65,7 @@ public class SSETransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
-    public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+    public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
         if (m.length() > 0) {
             String[] data = m.split("data:");
@@ -75,6 +75,6 @@ public class SSETransport extends StreamTransport {
                 unlockFuture();
             }
         }
-        return STATE.CONTINUE;
+        return State.CONTINUE;
     }
 }

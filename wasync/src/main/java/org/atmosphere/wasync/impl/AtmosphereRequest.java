@@ -15,6 +15,11 @@
  */
 package org.atmosphere.wasync.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.RequestBuilder;
@@ -22,11 +27,6 @@ import org.atmosphere.wasync.decoder.PaddingAndHeartbeatDecoder;
 import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A specialized {@link org.atmosphere.wasync.Request} implementation to use with the Atmosphere Framework. Functionality

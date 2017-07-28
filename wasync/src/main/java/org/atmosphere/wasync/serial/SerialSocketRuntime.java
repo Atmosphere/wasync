@@ -15,8 +15,12 @@
  */
 package org.atmosphere.wasync.serial;
 
-import com.google.common.util.concurrent.SettableFuture;
-import com.ning.http.client.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.List;
+
+import org.asynchttpclient.Response;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Future;
 import org.atmosphere.wasync.Options;
@@ -29,10 +33,7 @@ import org.atmosphere.wasync.util.FutureProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.List;
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Serial extension for the {@link SocketRuntime}

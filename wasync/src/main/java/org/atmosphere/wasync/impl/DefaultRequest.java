@@ -15,15 +15,15 @@
  */
 package org.atmosphere.wasync.impl;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Encoder;
 import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Default implementation of the {@link org.atmosphere.wasync.Request}

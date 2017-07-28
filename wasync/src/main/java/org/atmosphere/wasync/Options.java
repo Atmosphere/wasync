@@ -15,7 +15,7 @@
  */
 package org.atmosphere.wasync;
 
-import com.ning.http.client.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClient;
 
 /**
  * Configure the underlying WebSocket/HTTP client.

@@ -1,11 +1,6 @@
 package org.atmosphere.wasync.transport;
 
-import org.atmosphere.wasync.Decoder;
-import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.FunctionResolver;
-import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +9,12 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.testng.Assert.assertTrue;
+import org.atmosphere.wasync.Decoder;
+import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.FunctionResolver;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.decoder.TrackMessageSizeDecoder;
+import org.testng.annotations.Test;
 
 /**
  * @author Sebastian Lövdahl

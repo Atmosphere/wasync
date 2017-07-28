@@ -15,14 +15,14 @@
  */
 package org.atmosphere.wasync.util;
 
-import com.ning.http.client.ListenableFuture;
-import org.atmosphere.wasync.Future;
-import org.atmosphere.wasync.Socket;
-
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.asynchttpclient.ListenableFuture;
+import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Socket;
 
 public class FutureProxy<T extends java.util.concurrent.Future> implements Future {
 
