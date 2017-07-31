@@ -2,6 +2,5 @@ sudo: false
 language: java
 jdk:
   - oraclejdk8
-  - openjdk8
 before_install: 'mvn -version'
 install: 'mvn clean install'
