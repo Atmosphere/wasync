@@ -215,7 +215,7 @@ public class AtmosphereRequest extends DefaultRequest<AtmosphereRequest.Atmosphe
                 l.add("true");
                 queryString.put("X-atmo-protocol", l);
 
-                Collection ct = headers().get("Content-Type");
+                Collection ct = headers().getAll("Content-Type");
                 if (ct != null && ct.size() > 0) {
                     l = new ArrayList<String>();
                     l.addAll(ct);

@@ -20,12 +20,13 @@ import static org.atmosphere.wasync.Event.MESSAGE;
 import java.util.List;
 
 import org.asynchttpclient.HttpResponseBodyPart;
-import org.asynchttpclient.HttpResponseHeaders;
 import org.asynchttpclient.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
+
+import io.netty.handler.codec.http.HttpHeaders;
 
 /**
  * Server Side Events {@link org.atmosphere.wasync.Transport} implementation
@@ -50,10 +51,10 @@ public class SSETransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
-    public State onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+    public State onHeadersReceived(HttpHeaders headers) throws Exception {
 
-        List<String> ct = headers.getHeaders().getAll("Content-Type");
-        if (ct == null || ct.size() == 0 || !ct.get(0).contains("text/event-stream")) {
+        String ct = headers.get("Content-Type");
+        if (ct == null  || !ct.contains("text/event-stream")) {
             status = Socket.STATUS.ERROR;
             throw new TransportNotSupported(500, "Invalid Content-Type" + ct);
         }

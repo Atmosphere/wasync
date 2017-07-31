@@ -270,8 +270,8 @@
         <source.property>1.8</source.property>
         <target.property>1.8</target.property>
         <atmosphere.version>2.4.13</atmosphere.version>
-        <nettosphere.version>2.4.10</nettosphere.version>
-        <ahc.version>2.0.33</ahc.version>
+        <nettosphere.version>3.0.1-SNAPSHOT</nettosphere.version>
+        <ahc.version>2.1.0-SNAPSHOT</ahc.version>
     </properties>
 </project>
 

@@ -29,6 +29,7 @@ import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
@@ -293,14 +294,35 @@ public class DefaultSocket implements Socket {
     protected List<Transport> getTransport(RequestBuilder r, Request request) throws IOException {
         List<Transport> transports = new ArrayList<Transport>();
 
+        WebSocketListener listener = new WebSocketListener() {
+			
+			@Override
+			public void onOpen(WebSocket websocket) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onError(Throwable t) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onClose(WebSocket websocket, int code, String reason) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+        
         if (request.transport().size() == 0) {
-            transports.add(new WebSocketTransport(r, options, request, functions));
+            transports.add(new WebSocketTransport(r, options, request, functions, listener));
             transports.add(new LongPollingTransport(r, options, request, functions));
         }
 
         for (Request.TRANSPORT t : request.transport()) {
             if (t.equals(Request.TRANSPORT.WEBSOCKET)) {
-                transports.add(new WebSocketTransport(r, options, request, functions));
+                transports.add(new WebSocketTransport(r, options, request, functions, listener));
             } else if (t.equals(Request.TRANSPORT.SSE)) {
                 transports.add(new SSETransport(r, options, request, functions));
             } else if (t.equals(Request.TRANSPORT.LONG_POLLING)) {

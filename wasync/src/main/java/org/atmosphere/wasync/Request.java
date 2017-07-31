@@ -15,9 +15,10 @@
  */
 package org.atmosphere.wasync;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import io.netty.handler.codec.http.HttpHeaders;
 
 /**
  *
@@ -46,7 +47,7 @@ public interface Request {
      * Return the list of headers
      * @return a Map of headers
      */
-    Map<String, Collection<String>> headers();
+    HttpHeaders headers();
 
     /**
      * Return the list of query params
