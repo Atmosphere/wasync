@@ -172,10 +172,12 @@ public class TransportsUtil {
                         return l;
                     }
 
+                    ArrayList<Object> list = new ArrayList<Object>();
                     for (Object m : l) {
-                        return matchDecoder(e, m, nd, decodedObjects);
+                            list.add(matchDecoder(e, m, nd, decodedObjects));
                     }
-                } else if (decoded != null) {
+                    return list;
+		} else if (decoded != null) {
                     logger.trace("Decoder {} match {}", d, instanceType);
                     decodedObjects.add(decoded);
                 }
