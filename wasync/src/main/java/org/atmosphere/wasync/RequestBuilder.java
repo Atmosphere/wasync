@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+
 /**
  * Base class for building {@link Request}
  *
@@ -34,7 +37,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     protected String uri = "http://localhost:8080";
     protected final List<Encoder<?, ?>> encoders = new CopyOnWriteArrayList<Encoder<?, ?>>();
     protected final List<Decoder<?, ?>> decoders = new CopyOnWriteArrayList<Decoder<?, ?>>();
-    protected final Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
+    protected HttpHeaders headers = new DefaultHttpHeaders();
     protected final Map<String, List<String>> queryString = new HashMap<String, List<String>>();
     protected FunctionResolver resolver = FunctionResolver.DEFAULT;
     protected final Class<T> derived;
@@ -107,12 +110,12 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * @return this
      */
     public T header(String name, String value) {
-        Collection<String> l = headers.get(name);
+        Collection<String> l = headers.getAll(name);
         if (l == null) {
             l = new ArrayList<String>();
         }
         l.add(value);
-        headers.put(name, l);
+        headers.add(name, l);
         return derived.cast(this);
     }
 
@@ -169,7 +172,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * Return the current tMap of headers
      * @return the current tMap of headers
      */
-    public Map<String, Collection<String>> headers() {
+    public HttpHeaders headers() {
         return headers;
     }
 

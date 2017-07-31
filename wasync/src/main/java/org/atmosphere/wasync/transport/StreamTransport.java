@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
-import org.asynchttpclient.HttpResponseHeaders;
 import org.asynchttpclient.HttpResponseStatus;
 import org.asynchttpclient.RequestBuilder;
 import org.atmosphere.wasync.Decoder;
@@ -52,6 +51,8 @@ import org.atmosphere.wasync.util.FluentStringsMap;
 import org.atmosphere.wasync.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.netty.handler.codec.http.HttpHeaders;
 
 /**
  * Streaming {@link org.atmosphere.wasync.Transport} implementation
@@ -183,8 +184,8 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      * {@inheritDoc}
      */
     @Override
-    public State onHeadersReceived(HttpResponseHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headers.getHeaders(), HEADERS.name(), resolver);
+    public State onHeadersReceived(HttpHeaders headers) throws Exception {
+        TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headers, HEADERS.name(), resolver);
 
         // TODO: Parse charset
         return AsyncHandler.State.CONTINUE;

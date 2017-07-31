@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.asynchttpclient.AsyncHandler;
-import org.asynchttpclient.AsyncHandler.State;
 import org.asynchttpclient.HttpResponseBodyPart;
-import org.asynchttpclient.HttpResponseHeaders;
 import org.asynchttpclient.HttpResponseStatus;
 import org.asynchttpclient.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
@@ -31,6 +29,8 @@ import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.util.Utils;
+
+import io.netty.handler.codec.http.HttpHeaders;
 
 /**
  * Long-Polling {@link org.atmosphere.wasync.Transport} implementation
@@ -60,7 +60,7 @@ public class LongPollingTransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
-    public State onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+    public State onHeadersReceived(HttpHeaders headers) throws Exception {
         if (handshakeOccurred.get()) {
             return super.onHeadersReceived(headers);
         }

@@ -25,6 +25,8 @@ import org.atmosphere.wasync.FunctionResolver;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.RequestBuilder;
 
+import io.netty.handler.codec.http.HttpHeaders;
+
 /**
  * Default implementation of the {@link org.atmosphere.wasync.Request}
  *
@@ -58,7 +60,7 @@ public class DefaultRequest<T extends RequestBuilder> implements Request {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, Collection<String>> headers() {
+    public HttpHeaders headers() {
         return builder.headers();
     }
 
