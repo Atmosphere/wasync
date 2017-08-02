@@ -114,6 +114,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         if (l == null) {
             l = new ArrayList<String>();
         }
+        l = new ArrayList<>(l);
         l.add(value);
         headers.add(name, l);
         return derived.cast(this);
