@@ -120,7 +120,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onThrowable(Throwable t) {
+	public void onThrowable0(Throwable t) {
 		logger.debug("", t);
 		status = Socket.STATUS.ERROR;
 		onFailure(t);
@@ -195,22 +195,19 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+	public void onBodyPartReceived0(HttpResponseBodyPart bodyPart) throws Exception {
 		logger.trace("Body received {}", new String(bodyPart.getBodyPartBytes()));
-		return State.CONTINUE;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+	public void onStatusReceived0(HttpResponseStatus responseStatus) throws Exception {
 		logger.trace("Status received {}", responseStatus);
 		TransportsUtil.invokeFunction(STATUS, decoders, functions, Integer.class,
 				new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
-		if (responseStatus.getStatusCode() == 101) {
-			return State.CONTINUE;
-		} else {
+		if (responseStatus.getStatusCode() != 101) {
 			logger.debug("Invalid status code {} for WebSocket Handshake", responseStatus.getStatusCode());
 			status = Socket.STATUS.ERROR;
 			throw new TransportNotSupported(responseStatus.getStatusCode(), responseStatus.getStatusText());
@@ -221,7 +218,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public State onHeadersReceived(HttpHeaders headers) throws Exception {
+	public void onHeadersReceived0(HttpHeaders headers) throws Exception {
 		logger.trace("Headers received {}", headers);
 		
 		Map<String, String> headerMap = new HashMap<String, String>();
@@ -230,14 +227,13 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 		}
 		TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headerMap, HEADERS.name(), resolver);
 
-		return State.CONTINUE;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public NettyWebSocket onCompleted() throws Exception {
+	public void onCompleted0() throws Exception {
 		// logger.trace("onCompleted {}", webSocket);
 		// if (webSocket == null) {
 		// logger.error("WebSocket Handshake Failed");
@@ -248,7 +244,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 		//
 		TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(),
 				resolver);
-		return webSocket;
 	}
 
 	void unlockFuture() {
@@ -263,7 +258,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onOpen() {
+	public void onOpen0() {
 		logger.trace("onOpen {}", webSocket);
 
 		if (connectOperationFuture != null && !protocolEnabled) {
@@ -280,7 +275,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 		}
 		webSocket.addWebSocketListener(l);
 		l.onOpen(webSocket);
-		webSocket.processBufferedFrames();
 	}
 
 	@Override
