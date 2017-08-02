@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A specialized {@link org.atmosphere.wasync.Request} implementation to use with the Atmosphere Framework. Functionality
  * like track message length, broadcaster cache, etc. can be configured using this object. Make sure your server
  * is properly configured before changing the default.
- * <p/>
+ * <p>
  * AtmosphereRequest MUST NOT be shared between {@link org.atmosphere.wasync.Socket} instance because they hold information about the
  * Atmosphere Protocol like the UUID.
  *

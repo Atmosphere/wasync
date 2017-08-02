@@ -48,7 +48,6 @@ public interface Future extends java.util.concurrent.Future<Socket> {
 
     /**
      * Mark this instance as done.
-     * @return  this
      */
     void done();
 

@@ -45,7 +45,7 @@ public interface Options {
     public int reconnectTimeoutInMilliseconds();
 
     /**
-     * Maximum reconnection attempts that will run in the interval defined by {@link #reconnectInSeconds}
+     * Maximum reconnection attempts that will run in the interval defined by {@link #reconnectTimeoutInMilliseconds}
      *
      * @return the number of maximum reconnection attempts
      */

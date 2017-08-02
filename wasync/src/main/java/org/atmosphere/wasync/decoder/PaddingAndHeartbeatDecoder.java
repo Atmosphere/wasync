@@ -23,7 +23,7 @@ import org.atmosphere.wasync.Event;
  * Trim white space protocol sent by the Atmosphere's org.atmosphere.interceptor.PaddingAtmosphereInterceptor,
  * discard heartbeat message from the server.
  *
- * @Author Jean-Francois Arcand
+ * @author Jean-Francois Arcand
  */
 public class PaddingAndHeartbeatDecoder implements Decoder<String, Decoded<String>> {
 

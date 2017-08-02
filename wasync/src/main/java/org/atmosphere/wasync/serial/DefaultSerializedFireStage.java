@@ -27,16 +27,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Default implementation of a {@link SerializedFireStage}.
- * <p/>
+ * <p>
  * This implementation is based on an unbounded stage that enqueues the payload
  * objects to be fired ({@link SerializedFireStage#enqueue(Object, SettableFuture)}) by
  * means of a {@link LinkedBlockingQueue}.
- * <p/>
+ * <p>
  * Every instance of this class spans its dedicated stage thread, which sequentially
  * consumes payload objects off the stage queue.
- * <p/>
+ * <p>
  * Binary payloads are aggregated up to a {@code maxBinaryPayloadAggregationSize}.
- * <p/>
+ * <p>
  *
  * @author Christian Bach
  */

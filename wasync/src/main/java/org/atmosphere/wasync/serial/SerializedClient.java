@@ -23,7 +23,7 @@ import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
 /**
  * {@code SerializedClient} is a {@link org.atmosphere.wasync.Client} that guarantees ordered message delivery, in-line with the
  * {@link Socket#fire(Object)} invocation sequence.
- * <p/>
+ * <p>
  * A sequence of fire calls over a {@code SerializedClient}'s socket (created through {@link SerializedClient#create()} :
  * <blockquote><pre>
  *     socket.fire("message1").fire("message2");
@@ -31,11 +31,11 @@ import org.atmosphere.wasync.impl.AtmosphereRequest.AtmosphereRequestBuilder;
  * guarantees that {@code message1} arrives at the recipient-side before {@code message2}. By default, wAsync uses multiple underlying
  * connections in delivering fire payloads. The {@code SerializedClient} guarantees that only one connection is used at any moment
  * in time, while still providing an asynchronous fire interface to clients.
- * <p/>
+ * <p>
  * {@code SerializedClient} instances can be configured by means of a {@link SerializedFireStage} in deciding on the exact
  * staging semantics and the (non-functional) quality properties of a supporting stage. The default implementation provided is
  * {@link DefaultSerializedFireStage}.
- * <p/>
+ * <p>
  *
  * @author Christian Bach
  */
