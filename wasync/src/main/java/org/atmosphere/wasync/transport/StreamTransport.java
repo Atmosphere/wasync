@@ -25,6 +25,7 @@ import static org.atmosphere.wasync.Event.STATUS;
 import static org.atmosphere.wasync.Event.TRANSPORT;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -185,7 +186,11 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public State onHeadersReceived(HttpHeaders headers) throws Exception {
-        TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headers, HEADERS.name(), resolver);
+    	Map<String, String> headerMap = new HashMap<String, String>();
+		for (Map.Entry<String, String> entry : headers) {
+			headerMap.put(entry.getKey(), entry.getValue());
+		}
+        TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headerMap, HEADERS.name(), resolver);
 
         // TODO: Parse charset
         return AsyncHandler.State.CONTINUE;
