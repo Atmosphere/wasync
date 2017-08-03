@@ -49,14 +49,14 @@ import java.nio.charset.CodingErrorAction;
  * encodings supported by the JRE are handled correctly. In particular for charsets such as
  * UTF-16, the implementation ensures that one and only one byte order marker
  * is produced.
- * <p/>
+ * <p>
  * Since in general it is not possible to predict the number of characters to be read from the
  * {@link Reader} to satisfy a read request on the {@link ReaderInputStream}, all reads from
  * the {@link Reader} are buffered. There is therefore no well defined correlation
  * between the current position of the {@link Reader} and that of the {@link ReaderInputStream}.
  * This also implies that in general there is no need to wrap the underlying {@link Reader}
  * in a {@link java.io.BufferedReader}.
- * <p/>
+ * <p>
  * {@link ReaderInputStream} implements the inverse transformation of {@link java.io.InputStreamReader};
  * in the following example, reading from <tt>in2</tt> would return the same byte
  * sequence as reading from <tt>in</tt> (provided that the initial byte sequence is legal

@@ -173,9 +173,10 @@ public class TransportsUtil {
                     }
 
                     for (Object m : l) {
-                        return matchDecoder(e, m, nd, decodedObjects);
+                    	return matchDecoder(e, m, nd, decodedObjects);
                     }
-                } else if (decoded != null) {
+                   
+		} else if (decoded != null) {
                     logger.trace("Decoder {} match {}", d, instanceType);
                     decodedObjects.add(decoded);
                 }

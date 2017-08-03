@@ -34,10 +34,10 @@ import org.slf4j.LoggerFactory;
 /**
  * {@code SerializedSocket} is a {@link Socket} implementation that guarantees ordered message delivery of
  * {@link Socket#fire(Object)} calls, by serializing fire calls over a {@link SerializedFireStage}.
- * <p/>
+ * <p>
  * {@code SerializedSocket} guarantees to use only one underlying connection at any moment in time, while still
  * providing an asynchronous fire interface to clients.
- * <p/>
+ * <p>
  *
  * @author Christian Bach
  */

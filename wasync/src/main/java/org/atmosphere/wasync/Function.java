@@ -17,11 +17,10 @@ package org.atmosphere.wasync;
 
 /**
  * A function is asynchronously invoked when a response is received, complete or not.
- * <p/>
+ * <p>
  * This library supports predefined life cycle's events (@link Event} that can be used. For example, a Function
  * can be defined for handling IOException:
  * <blockquote><pre>
- * <p/>
  *     class Function&lt;IOException&gt;() {
  *         public void on(IOEXception ex) {
  *         }
@@ -29,28 +28,25 @@ package org.atmosphere.wasync;
  * </pre></blockquote>
  * This function can be registered using the {@link Socket#on(Function)} as
  * <blockquote><pre>
- * <p/>
  *     socket.on(new Function&lt;IOEXception&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
  * This is the equivalent of doing
  * <blockquote><pre>
- * <p/>
  *     socket.on(Event.ERROR, new Function&lt;IOEXception&gt;() {
  *         ....
  *     }
  * </pre></blockquote>
  * Anonymous functions call also be invoked if a {@link Decoder} match its type
  * <blockquote><pre>
- * <p/>
  *     socket.decoder(new Decoder&lt;String, POJO&gt;(){
  *         &#64;Override
  *         public POJO decode(Event e, String message) {
  *             return new POJO(message);
  *         }
  *     }
- * <p/>
+ *
  *     .on(new Function&lt;POJO&gt;() {
  *         ....
  *     }

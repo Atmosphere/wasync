@@ -98,7 +98,7 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
     }
 
     /**
-     * Maximum reconnection attempts that will be executed if the connection is lost. Must be used in conjunction with {@link #reconnectInSeconds}
+     * Maximum reconnection attempts that will be executed if the connection is lost. Must be used in conjunction with {@link #reconnectTimeoutInMilliseconds}
      */
     public T reconnectAttempts(int reconnectAttempts) {
         this.reconnectAttempts = reconnectAttempts;
@@ -186,7 +186,7 @@ public abstract class OptionsBuilder<U extends Options, T extends OptionsBuilder
         return reconnectTimeoutInMilliseconds;
     }
     /**
-     * Maximum reconnection attempts that will be executed if the connection is lost. Must be used in conjunction with {@link #reconnectInSeconds}
+     * Maximum reconnection attempts that will be executed if the connection is lost. Must be used in conjunction with {@link #reconnectTimeoutInMilliseconds}
      *
      * @return the number of maximum reconnection attempts
      */

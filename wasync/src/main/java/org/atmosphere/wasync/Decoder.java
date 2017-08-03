@@ -30,8 +30,8 @@ package org.atmosphere.wasync;
          }
  * </pre></blockquote>
  * Important: Decoder cannot be chained, e.g the result of a Decoder will never be passed to another Decoder, like {@link Encoder}
- * @param <U>
- * @param <T>
+ * @param <U> origin type
+ * @param <T> destination type
  * @author Jeanfrancois Arcand
  */
 public interface Decoder<U, T> {
@@ -48,7 +48,7 @@ public interface Decoder<U, T> {
      * A Decoder may return an instance of a Decoded object to prevent some messages from being delivered to a {@link Function},
      * by returning a {@link Decoded#ABORT} instance. Returning an instance of Decoded with the action set to {@link Decoded.ACTION#CONTINUE}
      * will allow dispatching messages to {@link Function}
-     * @param <T>
+     * @param <T> destination type
      */
     public final static class Decoded<T> {
         /**
@@ -81,7 +81,7 @@ public interface Decoder<U, T> {
 
         /**
          * Create a decoded object with action set to {@link ACTION#CONTINUE}
-         * @param decodedMessage
+         * @param decodedMessage the decoded Message
          */
         public Decoded(T decodedMessage) {
             this.decodedMessage = decodedMessage;
