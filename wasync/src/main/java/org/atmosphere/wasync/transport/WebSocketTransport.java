@@ -195,7 +195,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onBodyPartReceived0(HttpResponseBodyPart bodyPart) throws Exception {
+	protected void onBodyPartReceived0(HttpResponseBodyPart bodyPart) throws Exception {
 		logger.trace("Body received {}", new String(bodyPart.getBodyPartBytes()));
 	}
 
@@ -203,7 +203,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onStatusReceived0(HttpResponseStatus responseStatus) throws Exception {
+	protected void onStatusReceived0(HttpResponseStatus responseStatus) throws Exception {
 		logger.trace("Status received {}", responseStatus);
 		TransportsUtil.invokeFunction(STATUS, decoders, functions, Integer.class,
 				new Integer(responseStatus.getStatusCode()), STATUS.name(), resolver);
@@ -218,9 +218,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onHeadersReceived0(HttpHeaders headers) throws Exception {
+	protected void onHeadersReceived0(HttpHeaders headers) throws Exception {
 		logger.trace("Headers received {}", headers);
-		
+
 		Map<String, String> headerMap = new HashMap<String, String>();
 		for (Map.Entry<String, String> entry : headers) {
 			headerMap.put(entry.getKey(), entry.getValue());
@@ -233,15 +233,13 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onCompleted0() throws Exception {
-		// logger.trace("onCompleted {}", webSocket);
-		// if (webSocket == null) {
-		// logger.error("WebSocket Handshake Failed");
-		// status = Socket.STATUS.ERROR;
-		// return null;
-		// }
-		//
-		//
+	protected void onCompleted0() throws Exception {
+		logger.trace("onCompleted {}", webSocket);
+		if (webSocket == null) {
+			logger.error("WebSocket Handshake Failed");
+			status = Socket.STATUS.ERROR;
+			return;
+		}
 		TransportsUtil.invokeFunction(TRANSPORT, decoders, functions, Request.TRANSPORT.class, name(), TRANSPORT.name(),
 				resolver);
 	}
@@ -258,12 +256,8 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onOpen0() {
+	protected void onOpen0() {
 		logger.trace("onOpen {}", webSocket);
-
-		if (connectOperationFuture != null && !protocolEnabled) {
-			unlockFuture();
-		}
 
 		if (connectOperationFuture != null && !protocolEnabled) {
 			unlockFuture();
@@ -278,8 +272,7 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	}
 
 	@Override
-	public void setWebSocket(NettyWebSocket webSocket) {
-		super.setWebSocket(webSocket);
+	protected void setWebSocket0(NettyWebSocket webSocket) {
 		this.webSocket = webSocket;
 	}
 
