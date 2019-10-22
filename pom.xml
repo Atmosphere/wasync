@@ -45,7 +45,7 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.ning</groupId>
+                <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client</artifactId>
                 <version>${ahc.version}</version>
             </dependency>
@@ -248,7 +248,7 @@
         <atmosphere.version>2.5.9</atmosphere.version>
         <source.property>1.8</source.property>
         <target.property>1.8</target.property>
-        <nettosphere.version>2.4.10</nettosphere.version>
+        <nettosphere.version>3.0.1-SNAPSHOT</nettosphere.version>
         <ahc.version>2.1.0-SNAPSHOT</ahc.version>
     </properties>
 </project>
