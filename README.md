@@ -4,7 +4,7 @@ wAsync is a Java based library allowing asynchronous communication with any WebS
 wAsync can be used with Node.js, Android, Atmosphere or any WebSocket Framework. To get started, read this super simple [Tutorial](https://github.com/Atmosphere/wasync/wiki/Getting-Started-with-wAsync)
 or read the [FAQ](https://github.com/Atmosphere/wasync/wiki/FAQ)
 
-You can browse the [javadoc](http://atmosphere.github.com/wasync/apidocs/) or browse our [samples](https://github.com/Atmosphere/atmosphere-samples/tree/master/wasync-samples).
+You can browse the [javadoc](http://atmosphere.github.io/wasync/apidocs/) or browse our [samples](https://github.com/Atmosphere/atmosphere-samples/tree/master/wasync-samples).
 
 You can [download the jar](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22wasync%22) or use Maven
 ```xml
@@ -106,7 +106,7 @@ or if you want to serialize the fire() method call so events are asynchronously 
         Socket socket = client.create(b.build());
 ```
 
-By default, the [FunctionResolver](http://atmosphere.github.com/wasync/apidocs/org/atmosphere/wasync/FunctionResolver.html) will associate the Decoder's type will be used to invoke the appropriate Function, if defined. For
+By default, the [FunctionResolver](http://atmosphere.github.io/wasync/apidocs/org/atmosphere/wasync/FunctionResolver.html) will associate the Decoder's type will be used to invoke the appropriate Function, if defined. For
 example,
 
 ```java
