@@ -160,7 +160,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
                 }
             }
 
-            if (protocolReceived) {
+            if (protocolReceived && !bodyPart.isLast()) {
                 TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
                 unlockFuture();
             }
@@ -186,7 +186,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public State onHeadersReceived(HttpHeaders headers) throws Exception {
-    	Map<String, String> headerMap = new HashMap<String, String>();
+    	Map<String, String> headerMap = new HashMap<>();
 		for (Map.Entry<String, String> entry : headers) {
 			headerMap.put(entry.getKey(), entry.getValue());
 		}

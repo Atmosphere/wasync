@@ -54,7 +54,7 @@ public class SSETransport extends StreamTransport {
     public State onHeadersReceived(HttpHeaders headers) throws Exception {
 
         String ct = headers.get("Content-Type");
-        if (ct == null  || !ct.contains("text/event-stream")) {
+        if (ct == null  || ct.length() == 0 || !ct.contains("text/event-stream")) {
             status = Socket.STATUS.ERROR;
             throw new TransportNotSupported(500, "Invalid Content-Type" + ct);
         }
@@ -67,15 +67,17 @@ public class SSETransport extends StreamTransport {
      */
     @Override
     public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
-        String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-        if (m.length() > 0) {
-            String[] data = m.split("data:");
-            for (String d : data) {
-                if (d.length() > 0)
-                    TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
-                unlockFuture();
-            }
-        }
+    	if(!bodyPart.isLast()) {
+    		String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+        	if (m.length() > 0) {
+            	String[] data = m.split("data:");
+            	for (String d : data) {
+                	if (d.length() > 0)
+                    	TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
+                	unlockFuture();
+            	}
+        	}
+    	}
         return State.CONTINUE;
     }
 }
