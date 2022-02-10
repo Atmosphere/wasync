@@ -15,25 +15,7 @@
  */
 package org.atmosphere.wasync.transport;
 
-import static org.atmosphere.wasync.Event.CLOSE;
-import static org.atmosphere.wasync.Event.ERROR;
-import static org.atmosphere.wasync.Event.HEADERS;
-import static org.atmosphere.wasync.Event.MESSAGE;
-import static org.atmosphere.wasync.Event.OPEN;
-import static org.atmosphere.wasync.Event.REOPENED;
-import static org.atmosphere.wasync.Event.STATUS;
-import static org.atmosphere.wasync.Event.TRANSPORT;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import io.netty.handler.codec.http.HttpHeaders;
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
@@ -53,7 +35,25 @@ import org.atmosphere.wasync.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.handler.codec.http.HttpHeaders;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.atmosphere.wasync.Event.CLOSE;
+import static org.atmosphere.wasync.Event.ERROR;
+import static org.atmosphere.wasync.Event.HEADERS;
+import static org.atmosphere.wasync.Event.MESSAGE;
+import static org.atmosphere.wasync.Event.OPEN;
+import static org.atmosphere.wasync.Event.REOPENED;
+import static org.atmosphere.wasync.Event.STATUS;
+import static org.atmosphere.wasync.Event.TRANSPORT;
 
 /**
  * Streaming {@link org.atmosphere.wasync.Transport} implementation
@@ -102,8 +102,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         protocolEnabled = request.queryString().get("X-atmo-protocol") != null;
         isBinary = options.binary() ||
                 // Backward compatibility.
-                (request.headers().get("Content-Type") != null ?
-                        request.headers().get("Content-Type").contains("application/octet-stream") : false);
+                (request.headers().get("Content-Type") != null && request.headers().get("Content-Type").contains("application/octet-stream"));
 
         timer = Executors.newSingleThreadScheduledExecutor();
     }
@@ -124,14 +123,17 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     public void onThrowable(Throwable t) {
         if (CancellationException.class.isAssignableFrom(t.getClass())) return;
 
-        if(request != null) {
-        	logger.warn("StreamTransport notified with exception {} for request : {}", t, request.uri());
+        if (request != null) {
+            logger.warn("StreamTransport notified with exception {} for request : {}", t, request.uri());
         }
         logger.warn("", t);
         status = Socket.STATUS.ERROR;
-        connectFutureException(t);
 
-        errorHandled.set(TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+        boolean handled = !TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+        if (!handled) {
+            connectFutureException(t);
+        }
+        errorHandled.set(handled);
     }
 
     /**
@@ -186,10 +188,10 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
      */
     @Override
     public State onHeadersReceived(HttpHeaders headers) throws Exception {
-    	Map<String, String> headerMap = new HashMap<>();
-		for (Map.Entry<String, String> entry : headers) {
-			headerMap.put(entry.getKey(), entry.getValue());
-		}
+        Map<String, String> headerMap = new HashMap<>();
+        for (Map.Entry<String, String> entry : headers) {
+            headerMap.put(entry.getKey(), entry.getValue());
+        }
         TransportsUtil.invokeFunction(HEADERS, decoders, functions, Map.class, headerMap, HEADERS.name(), resolver);
 
         // TODO: Parse charset
@@ -228,6 +230,10 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         status = Socket.STATUS.OPEN;
         TransportsUtil.invokeFunction(newStatus,
                 decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
+    }
+
+    public void onTcpConnectFailure(InetSocketAddress remoteAddress, Throwable cause) {
+        logger.trace("onTcpConnectFailure for remoteAddress: {} for request : {} {}", remoteAddress, request.uri(), cause);
     }
 
     /**
