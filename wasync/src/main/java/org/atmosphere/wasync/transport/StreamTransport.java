@@ -129,7 +129,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
         logger.warn("", t);
         status = Socket.STATUS.ERROR;
 
-        boolean handled = !TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+        boolean handled = TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
         if (!handled) {
             connectFutureException(t);
         }
