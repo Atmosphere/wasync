@@ -15,11 +15,21 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.FluentStringsMap;
-import com.ning.http.client.ListenableFuture;
-import com.ning.http.client.RequestBuilder;
-import com.ning.http.client.ws.WebSocket;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.asynchttpclient.AsyncHandler;
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.ws.WebSocket;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.FunctionWrapper;
@@ -33,19 +43,10 @@ import org.atmosphere.wasync.transport.SSETransport;
 import org.atmosphere.wasync.transport.StreamTransport;
 import org.atmosphere.wasync.transport.TransportNotSupported;
 import org.atmosphere.wasync.transport.WebSocketTransport;
+import org.atmosphere.wasync.util.FluentStringsMap;
 import org.atmosphere.wasync.util.FutureProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Default implementation of the {@link org.atmosphere.wasync.Socket}
@@ -251,12 +252,25 @@ public class DefaultSocket implements Socket {
 	                e.submit(new Runnable() {
 	                    @Override
 	                    public void run() {
-	                        options.runtime().close();
+	    	            	//TODO fix try catch
+	                        try {
+								options.runtime().close();
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 	                        e.shutdown();
 	                    }
 	                });
 	            } else {
-	                options.runtime().close();
+	            	
+	            	//TODO fix try catch
+	                try {
+						options.runtime().close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 	            }
 	        } else {
 	            logger.warn("Cannot close underlying AsyncHttpClient because it is shared. Make sure you close it manually.");

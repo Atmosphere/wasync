@@ -15,17 +15,18 @@
  */
 package org.atmosphere.wasync.transport;
 
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.RequestBuilder;
+import static org.atmosphere.wasync.Event.MESSAGE;
+
+import java.util.List;
+
+import org.asynchttpclient.HttpResponseBodyPart;
+import org.asynchttpclient.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 
-import java.util.List;
-
-import static org.atmosphere.wasync.Event.MESSAGE;
+import io.netty.handler.codec.http.HttpHeaders;
 
 /**
  * Server Side Events {@link org.atmosphere.wasync.Transport} implementation
@@ -50,10 +51,10 @@ public class SSETransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
-    public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+    public State onHeadersReceived(HttpHeaders headers) throws Exception {
 
-        List<String> ct = headers.getHeaders().get("Content-Type");
-        if (ct == null || ct.size() == 0 || !ct.get(0).contains("text/event-stream")) {
+        String ct = headers.get("Content-Type");
+        if (ct == null  || ct.length() == 0 || !ct.contains("text/event-stream")) {
             status = Socket.STATUS.ERROR;
             throw new TransportNotSupported(500, "Invalid Content-Type" + ct);
         }
@@ -65,16 +66,18 @@ public class SSETransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
-    public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
-        String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
-        if (m.length() > 0) {
-            String[] data = m.split("data:");
-            for (String d : data) {
-                if (d.length() > 0)
-                    TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
-                unlockFuture();
-            }
-        }
-        return STATE.CONTINUE;
+    public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+    	if(!bodyPart.isLast()) {
+    		String m = new String(bodyPart.getBodyPartBytes(), charSet).trim();
+        	if (m.length() > 0) {
+            	String[] data = m.split("data:");
+            	for (String d : data) {
+                	if (d.length() > 0)
+                    	TransportsUtil.invokeFunction(decoders, functions, d.getClass(), d, MESSAGE.name(), resolver);
+                	unlockFuture();
+            	}
+        	}
+    	}
+        return State.CONTINUE;
     }
 }

@@ -15,15 +15,15 @@
  */
 package org.atmosphere.wasync.decoder;
 
-import org.atmosphere.wasync.Event;
-import org.atmosphere.wasync.ReplayDecoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.atmosphere.wasync.Event;
+import org.atmosphere.wasync.ReplayDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TrackMessageSizeDecoder implements ReplayDecoder<String, String> {
 

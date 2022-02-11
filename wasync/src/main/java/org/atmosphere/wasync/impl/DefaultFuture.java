@@ -15,15 +15,15 @@
  */
 package org.atmosphere.wasync.impl;
 
-import org.atmosphere.wasync.Future;
-import org.atmosphere.wasync.Socket;
-
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.atmosphere.wasync.Future;
+import org.atmosphere.wasync.Socket;
 
 /**
  * The default {@link Future} used by the library, based on the {@link CountDownLatch}

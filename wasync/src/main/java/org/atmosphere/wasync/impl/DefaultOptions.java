@@ -15,7 +15,7 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClient;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.OptionsBuilder;
 import org.atmosphere.wasync.Transport;

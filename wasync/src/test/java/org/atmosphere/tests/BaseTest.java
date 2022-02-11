@@ -15,9 +15,9 @@
  */
 package org.atmosphere.tests;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -88,7 +88,7 @@ public abstract class BaseTest {
         if (server != null && server.isStarted()) {
             server.stop();
         }
-        ahc.closeAsynchronously();
+        ahc.close();
     }
 
     abstract Request.TRANSPORT transport();
@@ -109,17 +109,15 @@ public abstract class BaseTest {
     }
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient(int requestTimeout) {
-        NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-        nettyConfig.addProperty("child.tcpNoDelay", "true");
-        nettyConfig.addProperty("child.keepAlive", "true");
 
-        AsyncHttpClientConfig.Builder b = new AsyncHttpClientConfig.Builder();
+        DefaultAsyncHttpClientConfig.Builder b = new DefaultAsyncHttpClientConfig.Builder();
         b.setFollowRedirect(true)
                 .setMaxRequestRetry(-1)
                 .setConnectTimeout(-1)
-                .setReadTimeout(requestTimeout);
-        AsyncHttpClientConfig config = b.setAsyncHttpClientProviderConfig(nettyConfig).build();
-        return new AsyncHttpClient(config);
+                .setReadTimeout(requestTimeout)
+                .setTcpNoDelay(true)
+                .setKeepAlive(true);
+        return new DefaultAsyncHttpClient(b.build());
     }
 
     public final static AsyncHttpClient createDefaultAsyncHttpClient() {
@@ -313,7 +311,7 @@ public abstract class BaseTest {
 
         assertEquals(response.get(), RESUME);
     }
-    
+
     @Test
     public void basicWebSocketWithSizeTrackingOnTest() throws Exception {
         final CountDownLatch l = new CountDownLatch(1);
@@ -530,30 +528,21 @@ public abstract class BaseTest {
         Config config = new Config.Builder()
                 .port(port)
                 .host("127.0.0.1")
-                .resource("/suspend", new AtmosphereHandler() {
+                .resource("/404", new AtmosphereHandler() {
 
                     private final AtomicBoolean b = new AtomicBoolean(false);
 
                     @Override
                     public void onRequest(AtmosphereResource r) throws IOException {
-                        if (!b.getAndSet(true)) {
-                            r.suspend(-1);
-                        } else {
-                            r.getBroadcaster().broadcast(RESUME);
-                        }
+                        r.getResponse().setStatus(404);
                     }
 
                     @Override
                     public void onStateChange(AtmosphereResourceEvent r) throws IOException {
-                        if (!r.isResuming() || !r.isCancelled()) {
-                            r.getResource().getResponse().getWriter().print(r.getMessage());
-                            r.getResource().resume();
-                        }
                     }
 
                     @Override
                     public void destroy() {
-
                     }
                 }).build();
 
@@ -568,7 +557,7 @@ public abstract class BaseTest {
 
         RequestBuilder request = client.newRequestBuilder()
                 .method(Request.METHOD.GET)
-                .uri(targetUrl + "/ratata")
+                .uri(targetUrl + "/404")
                 .transport(transport());
 
         final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
@@ -668,26 +657,20 @@ public abstract class BaseTest {
 
         Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
-        IOException ioException = null;
-        try {
+        socket.on(new Function<ConnectException>() {
 
-            socket.on(new Function<ConnectException>() {
+            @Override
+            public void on(ConnectException t) {
+                response.set(t);
+                latch.countDown();
+            }
 
-                @Override
-                public void on(ConnectException t) {
-                    response.set(t);
-                    latch.countDown();
-                }
+        }).open(request.build());
 
-            }).open(request.build());
-        } catch (IOException ex) {
-            ioException = ex;
-        }
 
         latch.await(5, TimeUnit.SECONDS);
         socket.close();
         assertEquals(response.get().getClass(), ConnectException.class);
-        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
     }
 
     @Test
@@ -703,25 +686,20 @@ public abstract class BaseTest {
 
         Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
 
-        IOException ioException = null;
-        try {
-            socket.on(new Function<IOException>() {
+        socket.on(new Function<IOException>() {
 
-                @Override
-                public void on(IOException t) {
-                    response.set(t);
-                    latch.countDown();
-                }
+            @Override
+            public void on(IOException t) {
+                response.set(t);
+                latch.countDown();
+            }
 
-            }).open(request.build());
-        } catch (IOException ex) {
-            ioException = ex;
-        }
+        }).open(request.build());
+
 
         latch.await(5, TimeUnit.SECONDS);
         socket.close();
         assertTrue(IOException.class.isAssignableFrom(response.get().getClass()));
-        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
     }
 
     @Test
@@ -1299,7 +1277,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient c = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        final AsyncHttpClient c = new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         final CountDownLatch l = new CountDownLatch(getCount());
         Client client = ClientFactory.getDefault().newClient();
         RequestBuilder request = client.newRequestBuilder();
@@ -1429,36 +1407,31 @@ public abstract class BaseTest {
                 .transport(transport());
 
         final Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
-        IOException ioException = null;
-        try {
 
-            socket.on(new Function<ConnectException>() {
+        socket.on(new Function<ConnectException>() {
 
-                @Override
-                public void on(ConnectException t) {
-                    socket.close(); // I close it here, remove this close, issue will not happen
-                    response.set(t);
-                    latch.countDown();
-                }
+            @Override
+            public void on(ConnectException t) {
+                socket.close(); // I close it here, remove this close, issue will not happen
+                response.set(t);
+                latch.countDown();
+            }
 
-            }).on(new Function<IOException>() {
+        }).on(new Function<IOException>() {
 
-                @Override
-                public void on(IOException t) {
-                    response2.set(t);
-                    latch.countDown();
-                }
+            @Override
+            public void on(IOException t) {
+                response2.set(t);
+                latch.countDown();
+            }
 
-            }).open(request.build());
-        } catch (IOException ex) {
-            ioException = ex;
-        }
+        }).open(request.build());
+
         socket.fire("echo");
         latch.await(5, TimeUnit.SECONDS);
 
         assertEquals(response.get().getClass(), ConnectException.class);
         assertTrue(IOException.class.isAssignableFrom(response2.get().getClass()));
-        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
 
     }
 
@@ -1593,7 +1566,6 @@ public abstract class BaseTest {
             @Override
             public void on(IOException ioe) {
                 logger.error("", ioe);
-                ;
                 b.get().append("ERROR");
                 elatch.countDown();
             }
@@ -1965,27 +1937,23 @@ public abstract class BaseTest {
                 .transport(transport());
 
         Socket socket = client.create(client.newOptionsBuilder().runtime(ahc, false).build());
-        IOException ioException = null;
-        try {
-            socket.on(new Function<ConnectException>() {
 
-                @Override
-                public void on(ConnectException t) {
-                    latch.countDown();
-                }
+        socket.on(new Function<ConnectException>() {
 
-            }).on(Event.CLOSE.name(), new Function<String>() {
-                @Override
-                public void on(String t) {
-                    logger.info("Connection closed");
-                }
-            }).open(request.build());
-        } catch (IOException ex) {
-            ioException = ex;
-        }
+            @Override
+            public void on(ConnectException t) {
+                latch.countDown();
+            }
+
+        }).on(Event.CLOSE.name(), new Function<String>() {
+            @Override
+            public void on(String t) {
+                logger.info("Connection closed");
+            }
+        }).open(request.build());
+
 
         assertTrue(latch.await(10, TimeUnit.SECONDS));
-        assertTrue(IOException.class.isAssignableFrom(ioException.getClass()));
 
     }
 
@@ -2289,7 +2257,7 @@ public abstract class BaseTest {
         assertNotNull(server);
         server.start();
 
-        final AsyncHttpClient ahc = new AsyncHttpClient(new AsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
+        final AsyncHttpClient ahc = new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setMaxRequestRetry(0).build());
         AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
         RequestBuilder request = client.newRequestBuilder()

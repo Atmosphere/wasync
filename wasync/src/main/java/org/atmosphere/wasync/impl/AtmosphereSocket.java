@@ -15,21 +15,21 @@
  */
 package org.atmosphere.wasync.impl;
 
-import com.ning.http.client.FluentStringsMap;
-import com.ning.http.client.RequestBuilder;
-import org.atmosphere.wasync.Function;
-import org.atmosphere.wasync.FunctionWrapper;
-import org.atmosphere.wasync.Options;
-import org.atmosphere.wasync.Request;
-import org.atmosphere.wasync.transport.TransportNotSupported;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.asynchttpclient.RequestBuilder;
+import org.atmosphere.wasync.Function;
+import org.atmosphere.wasync.FunctionWrapper;
+import org.atmosphere.wasync.Options;
+import org.atmosphere.wasync.Request;
+import org.atmosphere.wasync.transport.TransportNotSupported;
+import org.atmosphere.wasync.util.FluentStringsMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AtmosphereSocket extends DefaultSocket {
 

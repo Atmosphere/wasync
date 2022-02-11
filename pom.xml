@@ -45,7 +45,7 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.ning</groupId>
+                <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client</artifactId>
                 <version>${ahc.version}</version>
             </dependency>
@@ -242,14 +242,36 @@
             </plugin>
         </plugins>
     </reporting>
+    <repositories>
+        <repository>
+            <id>oss.sonatype.org</id>
+            <url>http://oss.sonatype.org/content/repositories/releases</url>
+        </repository>
+        <repository>
+            <id>oss.sonatype.org-snapshot</id>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Sonatype Release</name>
+            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>sonatype-nexus-snapshots</name>
+            <url>${distMgmtSnapshotsUrl}</url>
+        </snapshotRepository>
+    </distributionManagement>
     <properties>
         <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
-        <source.property>1.7</source.property>
-        <target.property>1.7</target.property>
-        <atmosphere.version>2.5.9</atmosphere.version>
-        <nettosphere.version>2.4.10</nettosphere.version>
-        <ahc.version>1.9.40</ahc.version>
+        <atmosphere.version>2.7.4</atmosphere.version>
+        <source.property>1.8</source.property>
+        <target.property>1.8</target.property>
+        <nettosphere.version>3.2.5</nettosphere.version>
+        <ahc.version>2.12.3</ahc.version>
     </properties>
 </project>
 

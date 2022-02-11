@@ -15,21 +15,22 @@
  */
 package org.atmosphere.wasync.transport;
 
-import com.ning.http.client.AsyncHandler;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.HttpResponseHeaders;
-import com.ning.http.client.HttpResponseStatus;
-import com.ning.http.client.RequestBuilder;
+import static org.atmosphere.wasync.Event.MESSAGE;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.asynchttpclient.AsyncHandler;
+import org.asynchttpclient.HttpResponseBodyPart;
+import org.asynchttpclient.HttpResponseStatus;
+import org.asynchttpclient.RequestBuilder;
 import org.atmosphere.wasync.FunctionWrapper;
 import org.atmosphere.wasync.Options;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.atmosphere.wasync.util.Utils;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.atmosphere.wasync.Event.MESSAGE;
+import io.netty.handler.codec.http.HttpHeaders;
 
 /**
  * Long-Polling {@link org.atmosphere.wasync.Transport} implementation
@@ -59,18 +60,18 @@ public class LongPollingTransport extends StreamTransport {
      * {@inheritDoc}
      */
     @Override
-    public STATE onHeadersReceived(HttpResponseHeaders headers) throws Exception {
+    public State onHeadersReceived(HttpHeaders headers) throws Exception {
         if (handshakeOccurred.get()) {
             return super.onHeadersReceived(headers);
         }
-        return STATE.CONTINUE;
+        return State.CONTINUE;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public AsyncHandler.STATE onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
+    public State onStatusReceived(HttpResponseStatus responseStatus) throws Exception {
         if (handshakeOccurred.get()) {
             // onOpen only called once
             if (protocolEnabled && ++count == 1) {
@@ -78,11 +79,11 @@ public class LongPollingTransport extends StreamTransport {
             }
             return super.onStatusReceived(responseStatus);
         }
-        return STATE.CONTINUE;
+        return State.CONTINUE;
     }
 
     @Override
-    public STATE onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
+    public State onBodyPartReceived(HttpResponseBodyPart bodyPart) throws Exception {
         handshakeOccurred.set(true);
         if (isBinary) {
             byte[] payload = bodyPart.getBodyPartBytes();
@@ -91,9 +92,10 @@ public class LongPollingTransport extends StreamTransport {
                     TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
                     protocolReceived = true;
                 }
-                return AsyncHandler.STATE.CONTINUE;
+                return AsyncHandler.State.CONTINUE;
             } else {
-                TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
+            	if(!bodyPart.isLast())
+            		TransportsUtil.invokeFunction(decoders, functions, payload.getClass(), payload, MESSAGE.name(), resolver);
             }
             unlockFuture();
         } else {
@@ -104,13 +106,14 @@ public class LongPollingTransport extends StreamTransport {
                     TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
                     protocolReceived = true;
                 }
-                return AsyncHandler.STATE.CONTINUE;
+                return AsyncHandler.State.CONTINUE;
             } else {
-                TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
+            	if(!bodyPart.isLast())
+            		TransportsUtil.invokeFunction(decoders, functions, m.getClass(), m, MESSAGE.name(), resolver);
             }
             unlockFuture();
         }
-        return AsyncHandler.STATE.CONTINUE;
+        return AsyncHandler.State.CONTINUE;
     }
 
     /**

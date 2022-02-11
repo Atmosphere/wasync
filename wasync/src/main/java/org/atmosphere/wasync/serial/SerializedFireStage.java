@@ -15,9 +15,10 @@
  */
 package org.atmosphere.wasync.serial;
 
-import com.google.common.util.concurrent.SettableFuture;
-import com.ning.http.client.Response;
+import org.asynchttpclient.Response;
 import org.atmosphere.wasync.Socket;
+
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Interface for implementing serialized/ordered {@link Socket#fire(Object)}.

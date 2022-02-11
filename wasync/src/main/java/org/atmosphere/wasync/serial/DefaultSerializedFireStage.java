@@ -15,15 +15,16 @@
  */
 package org.atmosphere.wasync.serial;
 
-import com.google.common.util.concurrent.SettableFuture;
-import com.ning.http.client.ListenableFuture;
-import com.ning.http.client.Response;
-
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.Response;
+
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Default implementation of a {@link SerializedFireStage}.

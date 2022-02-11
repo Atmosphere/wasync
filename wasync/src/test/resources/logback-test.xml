@@ -6,7 +6,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.ning" level="ERROR"/>
+    <logger name="org.asynchttpclient" level="ERROR"/>
     <logger name="org.atmosphere" level="ERROR"/>
 
     <root>
