@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -64,8 +65,18 @@
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>6.9.10</version>
+                <version>7.5</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-tools-api</artifactId>
+                <version>3.6.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${felix-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -76,7 +87,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>
-                <version>1.0-beta-6</version>
+                <version>3.5.1</version>
             </extension>
         </extensions>
         <defaultGoal>install</defaultGoal>
@@ -84,7 +95,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>${source.property}</source>
                     <target>${target.property}</target>
@@ -94,7 +105,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.8.1</version>
+                <version>3.0.0-M5</version>
                 <configuration>
                     <forkMode>never</forkMode>
                     <redirectTestOutputToFile>${surefire.redirectTestOutputToFile}</redirectTestOutputToFile>
@@ -103,7 +114,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>3.2.0</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -111,11 +122,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.1</version>
+                <version>3.0.0-M5</version>
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.1.0</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -139,7 +150,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -159,7 +170,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -173,7 +184,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.7</version>
+                <version>3.3.1</version>
                 <configuration>
                     <aggregate>true</aggregate>
                     <source>1.7</source>
@@ -196,7 +207,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.1.1</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
@@ -212,19 +223,24 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.1</version>
                 <configuration>
                     <aggregate>true</aggregate>
                     <debug>true</debug>
+                    <doclint>none</doclint>
                     <links>
-                        <link>http://docs.oracle.com/javaee/6/docs/api/</link>
-                        <link>http://docs.oracle.com/javase/6/docs/api/</link>
+                        <link>http://download.oracle.com/javaee/6/api/</link>
+                        <link>http://download.oracle.com/javase/6/docs/api/</link>
                     </links>
+                    <excludePackageNames>cometedgwt:org.gwtcomet:com.sun:org.apache:weblogic:org.jboss
+                    </excludePackageNames>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.1.1</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
@@ -232,6 +248,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.1.2</version>
                 <reportSets>
                     <reportSet>
                         <reports>
@@ -242,36 +259,44 @@
             </plugin>
         </plugins>
     </reporting>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>sonatype releases</id>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     <repositories>
         <repository>
-            <id>oss.sonatype.org</id>
-            <url>http://oss.sonatype.org/content/repositories/releases</url>
+            <id>jboss</id>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
-            <id>oss.sonatype.org-snapshot</id>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>codehaus</id>
+            <name>repository.codehaus.org</name>
+            <url>https://repository.codehaus.org</url>
+        </repository>
+        <repository>
+            <id>codehaus-snapshots</id>
+            <url>https://snapshots.repository.codehaus.org</url>
+        </repository>
+        <repository>
+            <id>maven.java.net</id>
+            <url>https://maven.java.net/content/groups/public/</url>
         </repository>
     </repositories>
-    <distributionManagement>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Sonatype Release</name>
-            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>sonatype-nexus-snapshots</name>
-            <url>${distMgmtSnapshotsUrl}</url>
-        </snapshotRepository>
-    </distributionManagement>
     <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
         <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
-        <atmosphere.version>2.7.4</atmosphere.version>
+        <atmosphere.version>2.7.5</atmosphere.version>
         <source.property>1.8</source.property>
         <target.property>1.8</target.property>
         <nettosphere.version>3.2.5</nettosphere.version>
         <ahc.version>2.12.3</ahc.version>
+        <felix-version>5.1.4</felix-version>
     </properties>
 </project>
 
