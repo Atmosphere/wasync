@@ -15,27 +15,7 @@
  */
 package org.atmosphere.wasync.transport;
 
-import static org.atmosphere.wasync.Event.CLOSE;
-import static org.atmosphere.wasync.Event.ERROR;
-import static org.atmosphere.wasync.Event.HEADERS;
-import static org.atmosphere.wasync.Event.MESSAGE;
-import static org.atmosphere.wasync.Event.OPEN;
-import static org.atmosphere.wasync.Event.REOPENED;
-import static org.atmosphere.wasync.Event.STATUS;
-import static org.atmosphere.wasync.Event.TRANSPORT;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import io.netty.handler.codec.http.HttpHeaders;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
 import org.asynchttpclient.ListenableFuture;
@@ -58,7 +38,26 @@ import org.atmosphere.wasync.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.handler.codec.http.HttpHeaders;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.atmosphere.wasync.Event.CLOSE;
+import static org.atmosphere.wasync.Event.ERROR;
+import static org.atmosphere.wasync.Event.HEADERS;
+import static org.atmosphere.wasync.Event.MESSAGE;
+import static org.atmosphere.wasync.Event.OPEN;
+import static org.atmosphere.wasync.Event.REOPENED;
+import static org.atmosphere.wasync.Event.STATUS;
+import static org.atmosphere.wasync.Event.TRANSPORT;
 
 /**
  * WebSocket {@link org.atmosphere.wasync.Transport} implementation
@@ -174,8 +173,11 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	@Override
 	public void error(Throwable t) {
 		logger.warn("", t);
-		connectFutureException(t);
-		TransportsUtil.invokeFunction(Event.ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+		boolean handled = TransportsUtil.invokeFunction(Event.ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+		if (!handled) {
+			connectFutureException(t);
+		}
+		connectOperationFuture.done();
 	}
 
 	/**
@@ -277,9 +279,9 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 	}
 
 	void connectFutureException(Throwable t) {
-		IOException e = IOException.class.isAssignableFrom(t.getClass()) ? IOException.class.cast(t)
+		IOException e = IOException.class.isAssignableFrom(t.getClass()) ? (IOException) t
 				: new IOException(t);
-		connectOperationFuture.ioException(e).done();
+		connectOperationFuture.ioException(e);
 	}
 
 	void tryReconnect() {
@@ -295,7 +297,6 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 		} else {
 			reconnect();
 		}
-
 	}
 
 	void reconnect() {
@@ -366,9 +367,13 @@ public class WebSocketTransport extends WebSocketUpgradeHandler implements Trans
 		if (!reconnecting.get()) {
 			logger.trace("onFailure {}", t);
 
-			connectFutureException(t);
-			errorHandled.set(
-					TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver));
+
+			boolean handled = TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+			if (!handled){
+				connectFutureException(t);
+			}
+			errorHandled.set(handled);
+			connectOperationFuture.done();
 		}
 	}
 

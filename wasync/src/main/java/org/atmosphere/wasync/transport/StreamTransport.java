@@ -323,7 +323,7 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     }
 
     void connectFutureException(Throwable t) {
-        IOException e = IOException.class.isAssignableFrom(t.getClass()) ? IOException.class.cast(t) : new IOException(t);
+        IOException e = IOException.class.isAssignableFrom(t.getClass()) ? (IOException) t : new IOException(t);
         connectOperationFuture.ioException(e);
     }
 
@@ -333,8 +333,10 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     @Override
     public void error(Throwable t) {
         logger.warn("", t);
-        connectFutureException(t);
-        TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+        boolean handled = TransportsUtil.invokeFunction(ERROR, decoders, functions, t.getClass(), t, ERROR.name(), resolver);
+        if (!handled) {
+            connectFutureException(t);
+        }
     }
 
     /**
