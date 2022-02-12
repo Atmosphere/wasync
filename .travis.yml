@@ -5,3 +5,7 @@ jdk:
   - oraclejdk8
 before_install: 'mvn -version'
 install: 'mvn clean install'
+
+cache:
+  directories:
+  - $HOME/.m2
