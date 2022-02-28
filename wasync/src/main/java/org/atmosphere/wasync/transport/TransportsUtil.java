@@ -172,9 +172,14 @@ public class TransportsUtil {
                         return l;
                     }
 
+		    List<Object> newDecodedObjects = new ArrayList<>();
                     for (Object m : l) {
-                    	return matchDecoder(e, m, nd, decodedObjects);
+                            List<Object> decodedResults = matchDecoder(e, m, nd, decodedObjects);
+                            if ( !decodedResults.isEmpty()) {
+                                newDecodedObjects.add(decodedResults.get( decodedResults.size()-1));
+                            }
                     }
+                    return newDecodedObjects;
                    
 		} else if (decoded != null) {
                     logger.trace("Decoder {} match {}", d, instanceType);
