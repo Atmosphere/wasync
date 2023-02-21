@@ -226,10 +226,12 @@ public class StreamTransport implements AsyncHandler<String>, Transport {
     }
 
     void triggerOpen() {
-        Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
-        status = Socket.STATUS.OPEN;
-        TransportsUtil.invokeFunction(newStatus,
+        if (!status.equals(Socket.STATUS.OPEN)) {
+            Event newStatus = status.equals(Socket.STATUS.INIT) ? OPEN : REOPENED;
+            status = Socket.STATUS.OPEN;
+            TransportsUtil.invokeFunction(newStatus,
                 decoders, functions, String.class, newStatus.name(), newStatus.name(), resolver);
+        }
     }
 
     public void onTcpConnectFailure(InetSocketAddress remoteAddress, Throwable cause) {
