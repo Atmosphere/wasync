@@ -9,7 +9,7 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>wasync-project</artifactId>
     <name>wasync</name>
-    <version>3.0.2</version>
+    <version>3.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         wAsync: A WebSockets/HTTP Client Library
@@ -19,7 +19,7 @@
         <connection>scm:git:git@github.com:Atmosphere/wasync.git</connection>
         <developerConnection>scm:git:git@github.com:Atmosphere/wasync.git</developerConnection>
         <url>http://github.com/Atmosphere/wasync</url>
-      <tag>wasync-project-3.0.2</tag>
+      <tag>wasync-project-3.0.0</tag>
   </scm>
     <prerequisites>
         <maven>2.2.0</maven>
