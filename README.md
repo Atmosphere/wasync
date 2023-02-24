@@ -11,7 +11,7 @@ You can [download the jar](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22was
           <dependency>
               <groupId>org.atmosphere</groupId>
               <artifactId>wasync</artifactId>
-              <version>3.0.1</version>
+              <version>3.0.2</version>
           </dependency>
 ```
 As simple as
